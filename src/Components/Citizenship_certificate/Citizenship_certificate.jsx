@@ -1,0 +1,246 @@
+import React, { useState } from 'react';
+import Swal from 'sweetalert2';
+
+const Citizenship_certificate = () => {
+    const [formData, setFormData] = useState({
+        applicantName: '',
+        fatherName: '',
+        motherName: '',
+        spouseName: '',
+        gender: 'পুরুষ',
+        maritalStatus: 'অবিবাহিত',
+        dob: '',
+        idType: 'NID',
+        idNumber: '',
+        mobile: '',
+        email: '',
+        // বর্তমান ঠিকানা
+        currentVillage: '',
+        currentWard: '',
+        currentPostCode: '',
+        // স্থায়ী ঠিকানা
+        permanentVillage: '',
+        permanentWard: '',
+        permanentPostCode: '',
+        sameAsCurrent: false
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    // বর্তমান ও স্থায়ী ঠিকানা একই হলে কপি করার লজিক
+    const handleCheckboxChange = (e) => {
+        const checked = e.target.checked;
+        if (checked) {
+            setFormData({
+                ...formData,
+                sameAsCurrent: true,
+                permanentVillage: formData.currentVillage,
+                permanentWard: formData.currentWard,
+                permanentPostCode: formData.currentPostCode
+            });
+        } else {
+            setFormData({
+                ...formData,
+                sameAsCurrent: false,
+                permanentVillage: '',
+                permanentWard: '',
+                permanentPostCode: ''
+            });
+        }
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        // সফল সাবমিশন অ্যালার্ট
+        Swal.fire({
+            icon: 'success',
+            title: 'নাগরিকত্ব সনদের আবেদনটি সফলভাবে জমা হয়েছে!',
+            text: 'আপনার আবেদনটি যাচাইকরণের পর ডিজিটাল সনদটি প্রস্তুত করা হবে এবং আপনাকে এসএমএস এর মাধ্যমে জানানো হবে।',
+            confirmButtonText: 'ঠিক আছে',
+            confirmButtonColor: '#000F9F'
+        });
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                
+                {/* ফর্ম হেডার */}
+                <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
+                    <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৩</span>
+                    <h2 className="text-2xl md:text-3xl font-extrabold">জাতীয়তা / নাগরিকত্ব সনদপত্রের আবেদন</h2>
+                    <p className="text-sm text-blue-100 font-medium">সঠিক নাগরিকত্ব সনদ পাওয়ার জন্য অনুগ্রহ করে আপনার সকল তথ্য জাতীয় পরিচয়পত্র/জন্ম নিবন্ধন অনুযায়ী পূরণ করুন।</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
+                    
+                    {/* সেকশন ১: আবেদনকারীর ব্যক্তিগত বিবরণ */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>👤</span> আবেদনকারীর ব্যক্তিগত বিবরণ
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">আবেদনকারীর নাম (পূর্ণ নাম) <span className="text-red-500">*</span></label>
+                                <input required type="text" name="applicantName" value={formData.applicantName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="উদা: মোঃ আরিফুল ইসলাম" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">পিতার নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="fatherName" value={formData.fatherName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মাতার নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="motherName" value={formData.motherName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">স্বামী/স্ত্রীর নাম (যদি থাকে)</label>
+                                <input type="text" name="spouseName" value={formData.spouseName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">লিঙ্গ <span className="text-red-500">*</span></label>
+                                <select name="gender" value={formData.gender} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-[#000F9F]">
+                                    <option>পুরুষ</option>
+                                    <option>মহিলা</option>
+                                    <option>অন্যান্য</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">বৈবাহিক অবস্থা <span className="text-red-500">*</span></label>
+                                <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-[#000F9F]">
+                                    <option>অবিবাহিত</option>
+                                    <option>বিবাহিত</option>
+                                    <option>বিধবা / বিপত্নীক</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জন্ম তারিখ <span className="text-red-500">*</span></label>
+                                <input required type="date" name="dob" value={formData.dob} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">যোগাযোগের মোবাইল নম্বর <span className="text-red-500">*</span></label>
+                                <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="01XXXXXXXXX" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ২: পরিচয় ও আইডেন্টিফিকেশন */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>🆔</span> জাতীয় পরিচয় বা সনাক্তকরণ তথ্য
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">আইডির ধরন সিলেক্ট করুন <span className="text-red-500">*</span></label>
+                                <select name="idType" value={formData.idType} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-[#000F9F]">
+                                    <option value="NID">জাতীয় পরিচয়পত্র (NID)</option>
+                                    <option value="BirthCert">জন্ম নিবন্ধন সনদ (BRN)</option>
+                                </select>
+                            </div>
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">সিলেক্টকৃত আইডির নম্বর <span className="text-red-500">*</span></label>
+                                <input required type="number" name="idNumber" value={formData.idNumber} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="আইডি বা সার্টিফিকেট নম্বরটি দিন" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ৩: ঠিকানা বিবরণ */}
+                    <div className="space-y-6">
+                        {/* বর্তমান ঠিকানা */}
+                        <div className="space-y-4">
+                            <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                                <span>📍</span> বর্তমান ঠিকানা
+                            </h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা/রাস্তা <span className="text-red-500">*</span></label>
+                                    <input required type="text" name="currentVillage" value={formData.currentVillage} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                    <input required type="number" name="currentWard" value={formData.currentWard} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১-৯" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">পোস্ট কোড <span className="text-red-500">*</span></label>
+                                    <input required type="number" name="currentPostCode" value={formData.currentPostCode} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* স্থায়ী ঠিকানা */}
+                        <div className="space-y-4">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 border-gray-100 gap-2">
+                                <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2">
+                                    <span>🏢</span> স্থায়ী ঠিকানা
+                                </h3>
+                                <label className="flex items-center gap-1.5 text-xs text-blue-800 font-bold bg-blue-50 px-2.5 py-1.5 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                                    <input type="checkbox" checked={formData.sameAsCurrent} onChange={handleCheckboxChange} className="rounded text-[#000F9F] focus:ring-[#000F9F] h-3.5 w-3.5 cursor-pointer" />
+                                    বর্তমান ও স্থায়ী ঠিকানা একই
+                                </label>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা/রাস্তা <span className="text-red-500">*</span></label>
+                                    <input required disabled={formData.sameAsCurrent} type="text" name="permanentVillage" value={formData.permanentVillage} onChange={handleChange} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                    <input required disabled={formData.sameAsCurrent} type="number" name="permanentWard" value={formData.permanentWard} onChange={handleChange} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} placeholder="১-৯" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">পোস্ট কোড <span className="text-red-500">*</span></label>
+                                    <input required disabled={formData.sameAsCurrent} type="number" name="permanentPostCode" value={formData.permanentPostCode} onChange={handleChange} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>📎</span> প্রয়োজনীয় ফাইল সংযুক্তিকরণ (সর্বোচ্চ 2MB)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
+                                <div>
+                                    <p className="text-xs font-bold text-gray-700">আবেদনকারীর ১ কপি পাসপোর্ট সাইজ ছবি</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">ছবিটি সনদে প্রিন্ট হবে (বাধ্যতামূলক)</p>
+                                </div>
+                                <input required type="file" accept="image/*" className="text-xs max-w-[175px]" />
+                            </div>
+
+                            <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
+                                <div>
+                                    <p className="text-xs font-bold text-gray-700">NID / জন্ম নিবন্ধন সনদের স্ক্যান কপি</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">তথ্য যাচাইয়ের জন্য (বাধ্যতামূলক)</p>
+                                </div>
+                                <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[175px]" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* অঙ্গীকারনামা */}
+                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                        <input required type="checkbox" id="citizen-terms" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
+                        <label htmlFor="citizen-terms" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
+                            আমি শপথপূর্বক ঘোষণা করছি যে, আমি বাংলাদেশের একজন স্থায়ী নাগরিক। ফর্মে প্রদত্ত সকল তথ্য সত্য ও নির্ভুল। ভুল বা অসত্য তথ্য দিয়ে সনদপত্র গ্রহণ করলে কর্তৃপক্ষ আইনি ব্যবস্থা গ্রহণ করতে পারবে।
+                        </label>
+                    </div>
+
+                    {/* সাবমিট বাটন */}
+                    <div className="flex justify-end pt-4">
+                        <button type="submit" className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer">
+                            নাগরিকত্ব আবেদন সাবমিট করুন
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default Citizenship_certificate;

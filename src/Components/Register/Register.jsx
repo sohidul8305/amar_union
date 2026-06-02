@@ -99,7 +99,7 @@ const Register = () => {
                 title: "নিবন্ধন সফল হয়েছে!"
             });
 
-            navigate('/dashboard'); 
+            navigate('/dashboard');
         } catch (err) {
             console.error("Full Registration Error: ", err);
             if (err.code === 'auth/email-already-in-use') {

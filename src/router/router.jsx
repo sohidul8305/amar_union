@@ -5,6 +5,8 @@ import Home from "../Pages/Home/Home";
 import Register from "../Components/Register/Register";
 import Login from "../Components/Login/Login";
 import Dashboard from "../Pages/Home/Dashboard/Dashboard";
+import Treadlicence from "../Components/Treadlicence/Treadlicence";
+import Premises from "../Components/Premises/Premises";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +28,14 @@ const router = createBrowserRouter([
       {
         path: "/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "/service/trade-license",
+        element: <Treadlicence />,
+      },
+      {
+        path: "service/premises-license",
+        element: <Premises />,
       },
     ],
   },

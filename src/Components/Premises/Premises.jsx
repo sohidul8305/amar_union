@@ -1,0 +1,196 @@
+import React, { useState } from 'react';
+import Swal from 'sweetalert2';
+
+const Premises = () => {
+    const [formData, setFormData] = useState({
+        applicantName: '',
+        fatherHusbandName: '',
+        nid: '',
+        mobile: '',
+        email: '',
+        establishmentName: '',
+        establishmentType: 'বাণিজ্যিক দোকান',
+        spaceArea: '',
+        village: '',
+        ward: '',
+        holdingNo: '',
+        postCode: '',
+        tradeLicenseNo: '',
+        rentDeed: null,
+        nidCopy: null,
+        fireSafetyDoc: null
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
+
+    const handleFileChange = (e) => {
+        const { name, files } = e.target;
+        setFormData({ ...formData, [name]: files[0] });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        
+        // সফল সাবমিশন অ্যালার্ট
+        Swal.fire({
+            icon: 'success',
+            title: 'প্রিমিসেস লাইসেন্স আবেদন সফল!',
+            text: 'আপনার প্রাঙ্গণ যাচাইকরণের পর ইউনিয়ন পরিষদ থেকে পরবর্তী সিদ্ধান্ত জানিয়ে দেওয়া হবে।',
+            confirmButtonText: 'ঠিক আছে',
+            confirmButtonColor: '#000F9F'
+        });
+    };
+
+    return (
+        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                
+                {/* ফর্ম হেডার */}
+                <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
+                    <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৯ (ক)</span>
+                    <h2 className="text-2xl md:text-3xl font-extrabold">প্রিমিসেস (প্রাঙ্গণ) লাইসেন্স আবেদন</h2>
+                    <p className="text-sm text-blue-100 font-medium">ব্যবসা বা ফ্যাক্টরি প্রাঙ্গণ বৈধকরণের জন্য নিচের তথ্যগুলো সঠিকভাবে প্রদান করুন।</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
+                    
+                    {/* সেকশন ১: আবেদনকারীর বিবরণ */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>👤</span> আবেদনকারীর ব্যক্তিগত বিবরণ
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">আবেদনকারীর নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="applicantName" value={formData.applicantName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="উদা: মোঃ শফিকুল ইসলাম" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">পিতা/স্বামীর নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="fatherHusbandName" value={formData.fatherHusbandName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জাতীয় পরিচয়পত্র নম্বর (NID) <span className="text-red-500">*</span></label>
+                                <input required type="number" name="nid" value={formData.nid} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="১০ বা ১৭ ডিজিটের এনআইডি" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর <span className="text-red-500">*</span></label>
+                                <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="01XXXXXXXXX" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ২: প্রাঙ্গণ ও প্রতিষ্ঠানের বিবরণ */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>🏢</span> প্রাঙ্গণ ও প্রতিষ্ঠানের বিবরণ
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">প্রতিষ্ঠানের নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="establishmentName" value={formData.establishmentName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] text-sm outline-none" placeholder="উদা: ইসলামিয়া কোল্ড স্টোরেজ" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">প্রাঙ্গণের ধরন <span className="text-red-500">*</span></label>
+                                <select name="establishmentType" value={formData.establishmentType} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-[#000F9F]">
+                                    <option>বাণিজ্যিক দোকান / শোরুম</option>
+                                    <option>কারখানা / ম্যানুফ্যাকচারিং প্ল্যান্ট</option>
+                                    <option>গুদামঘর / ওয়ারহাউজ</option>
+                                    <option>হোটেল / রেস্টুরেন্ট প্রাঙ্গণ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ট্রেড লাইসেন্স নম্বর (যদি থাকে)</label>
+                                <input type="text" name="tradeLicenseNo" value={formData.tradeLicenseNo} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="ট্রেড লাইসেন্স নম্বর দিন" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মোট আয়তন (বর্গফুট হিসেবে) <span className="text-red-500">*</span></label>
+                                <input required type="number" name="spaceArea" value={formData.spaceArea} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="উদা: ১২০০" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ৩: প্রাঙ্গণের ভৌগোলিক অবস্থান/ঠিকানা */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>📍</span> প্রাঙ্গণের সঠিক অবস্থান / ঠিকানা
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা <span className="text-red-500">*</span></label>
+                                <input required type="text" name="village" value={formData.village} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                <input required type="number" name="ward" value={formData.ward} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১-৯" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">হোল্ডিং নং <span className="text-red-500">*</span></label>
+                                <input required type="text" name="holdingNo" value={formData.holdingNo} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">পোস্ট কোড <span className="text-red-500">*</span></label>
+                                <input required type="number" name="postCode" value={formData.postCode} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>📎</span> প্রয়োজনীয় সংযুক্তিসমূহ (সর্বোচ্চ 2MB)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50 hover:bg-blue-50/40 transition-colors">
+                                <label className="cursor-pointer block space-y-2">
+                                    <span className="text-2xl">📜</span>
+                                    <p className="text-xs font-bold text-gray-700">ভাড়া চুক্তি / মালিকানার দলিল <span className="text-red-500">*</span></p>
+                                    <input required type="file" name="rentDeed" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
+                                    <p className="text-[11px] text-gray-400">{formData.rentDeed ? formData.rentDeed.name : "ফাইল সিলেক্ট করুন"}</p>
+                                </label>
+                            </div>
+
+                            <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50 hover:bg-blue-50/40 transition-colors">
+                                <label className="cursor-pointer block space-y-2">
+                                    <span className="text-2xl">🪪</span>
+                                    <p className="text-xs font-bold text-gray-700">আবেদনকারীর NID কপি <span className="text-red-500">*</span></p>
+                                    <input required type="file" name="nidCopy" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
+                                    <p className="text-[11px] text-gray-400">{formData.nidCopy ? formData.nidCopy.name : "ফাইল সিলেক্ট করুন"}</p>
+                                </label>
+                            </div>
+
+                            <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50 hover:bg-blue-50/40 transition-colors">
+                                <label className="cursor-pointer block space-y-2">
+                                    <span className="text-2xl">🧯</span>
+                                    <p className="text-xs font-bold text-gray-700">ফায়ার সার্ভিস ছাড়পত্র (যদি থাকে)</p>
+                                    <input type="file" name="fireSafetyDoc" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
+                                    <p className="text-[11px] text-gray-400">{formData.fireSafetyDoc ? formData.fireSafetyDoc.name : "ফাইল সিলেক্ট করুন"}</p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* অঙ্গীকারনামা */}
+                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                        <input required type="checkbox" id="agree" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
+                        <label htmlFor="agree" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
+                            আমি ঘোষণা করছি যে, উক্ত প্রাঙ্গণে কোনো অবৈধ বা পরিবেশের জন্য ক্ষতিকর ব্যবসা পরিচালনা করা হবে না এবং ইউনিয়ন পরিষদের সকল নিয়ম কানুন মেনে চলা হবে।
+                        </label>
+                    </div>
+
+                    {/* সাবমিট বাটন */}
+                    <div className="flex justify-end pt-4">
+                        <button type="submit" className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer">
+                            লাইসেন্সের আবেদন জমা দিন
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    );
+};
+
+export default Premises;

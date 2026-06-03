@@ -14,7 +14,7 @@ const Citizenship_certificate = () => {
         idNumber: '',
         mobile: '',
         email: '',
-        // বর্তমান ঠিকানা
+        // वर्तमान ঠিকানা
         currentVillage: '',
         currentWard: '',
         currentPostCode: '',
@@ -30,7 +30,7 @@ const Citizenship_certificate = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    // বর্তমান ও স্থায়ী ঠিকানা একই হলে কপি করার লজিক
+    // বর্তমান ও স্থায়ী ঠিকানা একই হলে কপি করার লজিক
     const handleCheckboxChange = (e) => {
         const checked = e.target.checked;
         if (checked) {
@@ -55,13 +55,90 @@ const Citizenship_certificate = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // সফল সাবমিশন অ্যালার্ট
+        // ১. সাবমিট করার আগে কনফার্মেশন অ্যালার্ট
         Swal.fire({
-            icon: 'success',
-            title: 'নাগরিকত্ব সনদের আবেদনটি সফলভাবে জমা হয়েছে!',
-            text: 'আপনার আবেদনটি যাচাইকরণের পর ডিজিটাল সনদটি প্রস্তুত করা হবে এবং আপনাকে এসএমএস এর মাধ্যমে জানানো হবে।',
-            confirmButtonText: 'ঠিক আছে',
-            confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "আপনার নাগরিকত্ব সনদের আবেদনটি সাবমিট করতে চান?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল করুন'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // লোডিং স্টেট দেখানোর জন্য
+                Swal.fire({
+                    title: 'প্রসেসিং হচ্ছে...',
+                    text: 'অনুগ্রহ করে অপেক্ষা করুন',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // ২. ব্যাকএন্ড এপিআই-তে ডাটা পাঠানো
+                fetch('http://localhost:5000/citizenship-certificate', {
+                    method: 'POST',
+                    headers: {
+                        'content-type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // ৩. সফল সাবমিশন অ্যালার্ট
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'আবেদনটি সফলভাবে জমা হয়েছে!',
+                            text: `আবেদন আইডি: ${data.citizenshipId}। যাচাইকরণের পর আপনাকে এসএমএস এর মাধ্যমে জানানো হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // ফর্ম রিসেট করা
+                        setFormData({
+                            applicantName: '',
+                            fatherName: '',
+                            motherName: '',
+                            spouseName: '',
+                            gender: 'পুরুষ',
+                            maritalStatus: 'অবিবাহিত',
+                            dob: '',
+                            idType: 'NID',
+                            idNumber: '',
+                            mobile: '',
+                            email: '',
+                            currentVillage: '',
+                            currentWard: '',
+                            currentPostCode: '',
+                            permanentVillage: '',
+                            permanentWard: '',
+                            permanentPostCode: '',
+                            sameAsCurrent: false
+                        });
+                        e.target.reset(); // ফাইল ইনপুটগুলো রিসেট করার জন্য
+                    } else {
+                        // ব্যাকএন্ড থেকে কোনো এরর আসলে
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'দুঃখিত!',
+                            text: data.message || 'আবেদনটি জমা দেওয়া সম্ভব হয়নি।',
+                            confirmButtonColor: '#000F9F'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'সার্ভার এরর!',
+                        text: 'সার্ভারের সাথে যোগাযোগ করা যাচ্ছে না। আবার চেষ্টা করুন।',
+                        confirmButtonColor: '#000F9F'
+                    });
+                });
+            }
         });
     };
 
@@ -73,7 +150,7 @@ const Citizenship_certificate = () => {
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
                     <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৩</span>
                     <h2 className="text-2xl md:text-3xl font-extrabold">জাতীয়তা / নাগরিকত্ব সনদপত্রের আবেদন</h2>
-                    <p className="text-sm text-blue-100 font-medium">সঠিক নাগরিকত্ব সনদ পাওয়ার জন্য অনুগ্রহ করে আপনার সকল তথ্য জাতীয় পরিচয়পত্র/জন্ম নিবন্ধন অনুযায়ী পূরণ করুন।</p>
+                    <p className="text-sm text-blue-100 font-medium">সঠিক নাগরিকত্ব সনদ পাওয়ার জন্য অনুগ্রহ করে আপনার সকল তথ্য জাতীয় পরিচয়পত্র/জন্ম নিবন্ধন অনুযায়ী পূরণ করুন।</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
@@ -130,7 +207,7 @@ const Citizenship_certificate = () => {
                     {/* সেকশন ২: পরিচয় ও আইডেন্টিফিকেশন */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>🆔</span> জাতীয় পরিচয় বা সনাক্তকরণ তথ্য
+                            <span>🆔</span> জাতীয় পরিচয় বা সনাক্তকরণ তথ্য
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
@@ -160,7 +237,7 @@ const Citizenship_certificate = () => {
                                     <input required type="text" name="currentVillage" value={formData.currentVillage} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
                                     <input required type="number" name="currentWard" value={formData.currentWard} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১-৯" />
                                 </div>
                                 <div>
@@ -170,38 +247,38 @@ const Citizenship_certificate = () => {
                             </div>
                         </div>
 
-                        {/* স্থায়ী ঠিকানা */}
+                        {/* স্থায়ী ঠিকানা */}
                         <div className="space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 border-gray-100 gap-2">
                                 <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2">
-                                    <span>🏢</span> স্থায়ী ঠিকানা
+                                    <span>🏢</span> স্থায়ী ঠিকানা
                                 </h3>
                                 <label className="flex items-center gap-1.5 text-xs text-blue-800 font-bold bg-blue-50 px-2.5 py-1.5 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
                                     <input type="checkbox" checked={formData.sameAsCurrent} onChange={handleCheckboxChange} className="rounded text-[#000F9F] focus:ring-[#000F9F] h-3.5 w-3.5 cursor-pointer" />
-                                    বর্তমান ও স্থায়ী ঠিকানা একই
+                                    বর্তমান ও স্থায়ী ঠিকানা একই
                                 </label>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা/রাস্তা <span className="text-red-500">*</span></label>
-                                    <input required disabled={formData.sameAsCurrent} type="text" name="permanentVillage" value={formData.permanentVillage} onChange={handleChange} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} />
+                                    <input required type="text" name="permanentVillage" value={formData.permanentVillage} onChange={handleChange} disabled={formData.sameAsCurrent} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
-                                    <input required disabled={formData.sameAsCurrent} type="number" name="permanentWard" value={formData.permanentWard} onChange={handleChange} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} placeholder="১-৯" />
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                    <input required type="number" name="permanentWard" value={formData.permanentWard} onChange={handleChange} disabled={formData.sameAsCurrent} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} placeholder="১-৯" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">পোস্ট কোড <span className="text-red-500">*</span></label>
-                                    <input required disabled={formData.sameAsCurrent} type="number" name="permanentPostCode" value={formData.permanentPostCode} onChange={handleChange} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} />
+                                    <input required type="number" name="permanentPostCode" value={formData.permanentPostCode} onChange={handleChange} disabled={formData.sameAsCurrent} className={`w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F] ${formData.sameAsCurrent ? 'bg-slate-100 text-gray-500 cursor-not-allowed' : ''}`} />
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
+                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📎</span> প্রয়োজনীয় ফাইল সংযুক্তিকরণ (সর্বোচ্চ 2MB)
+                            <span>📎</span> প্রয়োজনীয় ফাইল সংযুক্তিকরণ (সর্বোচ্চ 2MB)
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
@@ -215,7 +292,7 @@ const Citizenship_certificate = () => {
                             <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
                                 <div>
                                     <p className="text-xs font-bold text-gray-700">NID / জন্ম নিবন্ধন সনদের স্ক্যান কপি</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">তথ্য যাচাইয়ের জন্য (বাধ্যতামূলক)</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5">তথ্য যাচাইয়ের জন্য (বাধ্যতামূলক)</p>
                                 </div>
                                 <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[175px]" />
                             </div>
@@ -226,7 +303,7 @@ const Citizenship_certificate = () => {
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
                         <input required type="checkbox" id="citizen-terms" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
                         <label htmlFor="citizen-terms" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
-                            আমি শপথপূর্বক ঘোষণা করছি যে, আমি বাংলাদেশের একজন স্থায়ী নাগরিক। ফর্মে প্রদত্ত সকল তথ্য সত্য ও নির্ভুল। ভুল বা অসত্য তথ্য দিয়ে সনদপত্র গ্রহণ করলে কর্তৃপক্ষ আইনি ব্যবস্থা গ্রহণ করতে পারবে।
+                            আমি শপথপূর্বক ঘোষণা করছি যে, আমি বাংলাদেশের একজন স্থায়ী নাগরিক। ফর্মে প্রদত্ত সকল তথ্য সত্য ও নির্ভুল। ভুল বা অসত্য তথ্য দিয়ে সনদপত্র গ্রহণ করলে কর্তৃপক্ষ আইনি ব্যবস্থা গ্রহণ করতে পারবে।
                         </label>
                     </div>
 

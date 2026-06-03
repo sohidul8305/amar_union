@@ -12,40 +12,108 @@ const Death_certificate = () => {
         deathReason: '',
         deathPlace: 'বাসস্থান',
         nidOrBrn: '',
-        // মৃত্যুর স্থান/ঠিকানা
         village: '',
         ward: '',
         postCode: '',
-        // আবেদনকারীর তথ্য
         applicantName: '',
         applicantRelation: '',
         applicantMobile: '',
         applicantNid: ''
     });
 
+    const [loading, setLoading] = useState(false);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // সফল সাবমিশন অ্যালার্ট
         Swal.fire({
-            icon: 'success',
-            title: 'মৃত্যু সনদের আবেদনটি সফলভাবে জমা হয়েছে!',
-            text: 'প্রদত্ত তথ্য ও দাপ্তরিক নথিপত্র যাচাইকরণের পর মৃত্যু সনদটি প্রস্তুত করা হবে এবং আপনাকে এসএমএস-এর মাধ্যমে জানানো হবে।',
-            confirmButtonText: 'ঠিক আছে',
-            confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "আবেদনটি সাবমিট করার পর তথ্য পরিবর্তন করা যাবে না!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল করুন'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                setLoading(true);
+                Swal.fire({
+                    title: 'প্রসেস করা হচ্ছে...',
+                    text: 'অনুগ্রহ করে অপেক্ষা করুন।',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    const response = await fetch('http://localhost:5000/api/death-certificate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'মৃত্যু সনদের আবেদনটি সফল হয়েছে!',
+                            html: `আপনার আবেদনটি সফলভাবে ডাটাবেজে সংরক্ষিত হয়েছে। <br><br> <strong>আবেদন আইডি: <span style="color:#000F9F">${data.deathCertId}</span></strong><br>যাচাইকরণের পর মৃত্যু সনদটি প্রস্তুত করা হবে এবং আপনাকে এসএমএস-এর মাধ্যমে জানানো হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // Reset form
+                        setFormData({
+                            deceasedName: '',
+                            fatherName: '',
+                            motherName: '',
+                            spouseName: '',
+                            gender: 'পুরুষ',
+                            deathDate: '',
+                            deathReason: '',
+                            deathPlace: 'বাসস্থান',
+                            nidOrBrn: '',
+                            village: '',
+                            ward: '',
+                            postCode: '',
+                            applicantName: '',
+                            applicantRelation: '',
+                            applicantMobile: '',
+                            applicantNid: ''
+                        });
+                        e.target.reset();
+                    } else {
+                        throw new Error(data.message || "সার্ভারে সমস্যা হয়েছে");
+                    }
+
+                } catch (error) {
+                    console.error("Error submitting form:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'দুঃখিত!',
+                        text: error.message || 'আবেদনটি সাবমিট করা যায়নি। ব্যাকএন্ড সার্ভার বা ডাটাবেজ কানেকশন চেক করুন।',
+                        confirmButtonColor: '#d33'
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            }
         });
     };
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-                
-                {/* ফর্ম হেডার */}
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
                     <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-২ (ক)</span>
                     <h2 className="text-2xl md:text-3xl font-extrabold">মৃত্যু সনদপত্রের জন্য আবেদন</h2>
@@ -53,8 +121,7 @@ const Death_certificate = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
-                    
-                    {/* সেকশন ১: মৃত ব্যক্তির বিবরণ */}
+                    {/* Deceased Person Details */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>🕯️</span> মৃত ব্যক্তির বিবরণ
@@ -91,7 +158,7 @@ const Death_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ২: মৃত্যু সংক্রান্ত তথ্য ও স্থান */}
+                    {/* Death Information */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>📅</span> মৃত্যু সংক্রান্ত বিবরণ ও স্থান
@@ -115,7 +182,6 @@ const Death_certificate = () => {
                             </div>
                         </div>
 
-                        {/* মৃত্যুর কালীন স্থায়ী বা শেষ ঠিকানা */}
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা/রাস্তা <span className="text-red-500">*</span></label>
@@ -132,7 +198,7 @@ const Death_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৩: আবেদনকারীর বিবরণ */}
+                    {/* Applicant Details */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>🙋‍♂️</span> আবেদনকারীর বিবরণ (যে ব্যক্তি আবেদন করছেন)
@@ -143,7 +209,7 @@ const Death_certificate = () => {
                                 <input required type="text" name="applicantName" value={formData.applicantName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="আবেদনকারীর পূর্ণ নাম" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">مৃত ব্যক্তির সাথে সম্পর্ক <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মৃত ব্যক্তির সাথে সম্পর্ক <span className="text-red-500">*</span></label>
                                 <input required type="text" name="applicantRelation" value={formData.applicantRelation} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="উদা: পুত্র / কন্যা / ভাই" />
                             </div>
                             <div>
@@ -157,31 +223,7 @@ const Death_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল সংযুক্তিকরণ */}
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📎</span> প্রয়োজনীয় ফাইল আপলোড (PDF/Image, সর্বোচ্চ 2MB)
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">হাসপাতালের ডেথ সার্টিফিকেট অথবা দাফন রশিদ</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">মৃত্যু নিশ্চিতকরণের প্রমাণ (বাধ্যতামূলক)</p>
-                                </div>
-                                <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[175px]" />
-                            </div>
-
-                            <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">মৃত ব্যক্তির NID / অনলাইন জন্ম নিবন্ধন কপি</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">নাম ও সঠিক জন্ম তারিখ যাচাইয়ের জন্য</p>
-                                </div>
-                                <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[175px]" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* অঙ্গীকারনামা */}
+                    {/* Terms */}
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
                         <input required type="checkbox" id="death-terms" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
                         <label htmlFor="death-terms" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
@@ -189,13 +231,12 @@ const Death_certificate = () => {
                         </label>
                     </div>
 
-                    {/* সাবমিট বাটন */}
+                    {/* Submit Button */}
                     <div className="flex justify-end pt-4">
-                        <button type="submit" className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer">
-                            মৃত্যু সনদের আবেদন সাবমিট করুন
+                        <button type="submit" disabled={loading} className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer disabled:opacity-50">
+                            {loading ? 'সাবমিট হচ্ছে...' : 'মৃত্যু সনদের আবেদন সাবমিট করুন'}
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>

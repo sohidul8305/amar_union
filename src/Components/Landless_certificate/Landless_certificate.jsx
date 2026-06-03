@@ -19,29 +19,97 @@ const Landless_certificate = () => {
         currentAddress: ''
     });
 
+    const [loading, setLoading] = useState(false);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // সফল সাবমিশন অ্যালার্ট
         Swal.fire({
-            icon: 'success',
-            title: 'ভূমিহীন সনদের আবেদনটি সফলভাবে জমা হয়েছে!',
-            text: 'আপনার ইউনিয়ন/পৌর এলাকার দায়িত্বপ্রাপ্ত ভূমি উপ-সহকারী কর্মকর্তা (নায়েব) এবং চেয়ারম্যান মহোদয়ের যৌথ তদন্তের পর সনদটি প্রদান করা হবে।',
-            confirmButtonText: 'ঠিক আছে',
-            confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "আবেদনটি সাবমিট করার পর তথ্য পরিবর্তন করা যাবে না!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল করুন'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                setLoading(true);
+                Swal.fire({
+                    title: 'প্রসেস করা হচ্ছে...',
+                    text: 'অনুগ্রহ করে অপেক্ষা করুন।',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    const response = await fetch('http://localhost:5000/api/landless-certificate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ভূমিহীন সনদের আবেদনটি সফল হয়েছে!',
+                            html: `আপনার আবেদনটি সফলভাবে ডাটাবেজে সংরক্ষিত হয়েছে। <br><br> <strong>আবেদন আইডি: <span style="color:#000F9F">${data.landlessId}</span></strong><br>আপনার ইউনিয়ন/পৌর এলাকার দায়িত্বপ্রাপ্ত ভূমি উপ-সহকারী কর্মকর্তা (নায়েব) এবং চেয়ারম্যান মহোদয়ের যৌথ তদন্তের পর সনদটি প্রদান করা হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // Reset form
+                        setFormData({
+                            applicantName: '',
+                            fatherHusbandName: '',
+                            motherName: '',
+                            gender: 'পুরুষ',
+                            dateOfBirth: '',
+                            nidOrBrn: '',
+                            mobileNumber: '',
+                            profession: '',
+                            yearlyIncome: '',
+                            familyMembers: '',
+                            village: '',
+                            ward: '',
+                            postCode: '',
+                            currentAddress: ''
+                        });
+                        e.target.reset();
+                    } else {
+                        throw new Error(data.message || "সার্ভারে সমস্যা হয়েছে");
+                    }
+
+                } catch (error) {
+                    console.error("Error submitting form:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'দুঃখিত!',
+                        text: error.message || 'আবেদনটি সাবমিট করা যায়নি। ব্যাকএন্ড সার্ভার বা ডাটাবেজ কানেকশন চেক করুন।',
+                        confirmButtonColor: '#d33'
+                    });
+                } finally {
+                    setLoading(false);
+                }
+            }
         });
     };
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-                
-                {/* ফর্ম হেডার */}
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
                     <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৭ (গ)</span>
                     <h2 className="text-2xl md:text-3xl font-extrabold">ভূমিহীন সনদপত্রের জন্য আবেদন</h2>
@@ -49,8 +117,7 @@ const Landless_certificate = () => {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
-                    
-                    {/* সেকশন ১: আবেদনকারীর ব্যক্তিগত বিবরণ */}
+                    {/* Personal Information */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>👤</span> আবেদনকারীর ব্যক্তিগত বিবরণ
@@ -87,7 +154,7 @@ const Landless_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ২: আর্থ-সামাজিক অবস্থা */}
+                    {/* Socio-economic Information */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>🌾</span> পেশা ও অর্থনৈতিক বিবরণ
@@ -108,14 +175,14 @@ const Landless_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৩: স্থায়ী ও বর্তমান ঠিকানা */}
+                    {/* Address Information */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>📍</span> ঠিকানার বিবরণ (যেখানে ভূমিহীন হিসেবে স্থায়ী বসবাস)
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহл্লা/আশ্রয়ণ প্রকল্প <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা/আশ্রয়ণ প্রকল্প <span className="text-red-500">*</span></label>
                                 <input required type="text" name="village" value={formData.village} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="গ্রাম বা প্রকল্পের নাম" />
                             </div>
                             <div>
@@ -133,31 +200,7 @@ const Landless_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
-                    <div className="space-y-4">
-                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📎</span> প্রয়োজনীয় ডকুমেন্ট সংযুক্তি (PDF/Image, সর্বোচ্চ 2MB)
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">আবেদনকারীর জাতীয় পরিচয়পত্র (NID)</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">অথবা অনলাইন জন্ম নিবন্ধন কপি</p>
-                                </div>
-                                <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[170px]" />
-                            </div>
-
-                            <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">ওয়ার্ড মেম্বার/কাউন্সিলরের প্রত্যয়নপত্র</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">ভূমিহীনতার সপক্ষে মেম্বারের সুপারিশপত্র</p>
-                                </div>
-                                <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[170px]" />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* শর্তাবলী ও সাকেন্দ অঙ্গীকারনামা */}
+                    {/* Terms */}
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
                         <input required type="checkbox" id="landless-terms" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
                         <label htmlFor="landless-terms" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
@@ -165,13 +208,12 @@ const Landless_certificate = () => {
                         </label>
                     </div>
 
-                    {/* সাবমিট বাটন */}
+                    {/* Submit Button */}
                     <div className="flex justify-end pt-4">
-                        <button type="submit" className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer">
-                            ভূমিহীন সনদের আবেদন জমা দিন
+                        <button type="submit" disabled={loading} className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer disabled:opacity-50">
+                            {loading ? 'সাবমিট হচ্ছে...' : 'ভূমিহীন সনদের আবেদন জমা দিন'}
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>

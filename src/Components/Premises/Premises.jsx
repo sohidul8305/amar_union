@@ -9,7 +9,7 @@ const Premises = () => {
         mobile: '',
         email: '',
         establishmentName: '',
-        establishmentType: 'বাণিজ্যিক দোকান',
+        establishmentType: 'বাণিজ্যিক দোকান / শোরুম', // ডিফল্ট ভ্যালু অপশনের সাথে ম্যাচ করা হলো
         spaceArea: '',
         village: '',
         ward: '',
@@ -34,13 +34,93 @@ const Premises = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // সফল সাবমিশন অ্যালার্ট
+        // ১. কনফার্মেশন সুইট অ্যালার্ট (Sure Pop-up)
         Swal.fire({
-            icon: 'success',
-            title: 'প্রিমিসেস লাইসেন্স আবেদন সফল!',
-            text: 'আপনার প্রাঙ্গণ যাচাইকরণের পর ইউনিয়ন পরিষদ থেকে পরবর্তী সিদ্ধান্ত জানিয়ে দেওয়া হবে।',
-            confirmButtonText: 'ঠিক আছে',
-            confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "প্রাঙ্গণ লাইসেন্সের জন্য আপনার দেওয়া তথ্যগুলো সঠিক আছে তো?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                
+                // ব্যাকএন্ডে ডেটা পাঠানোর সময় লোডিং অ্যানিমেশন শো করা
+                Swal.fire({
+                    title: 'আবেদন প্রসেস হচ্ছে...',
+                    text: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    // ফাইলগুলোকে ডেটাবেজে নাম আকারে বা ট্র্যাকিং অবজেক্ট আকারে পাঠানোর প্রস্তুতি
+                    const submissionData = {
+                        ...formData,
+                        rentDeed: formData.rentDeed ? formData.rentDeed.name : null,
+                        nidCopy: formData.nidCopy ? formData.nidCopy.name : null,
+                        fireSafetyDoc: formData.fireSafetyDoc ? formData.fireSafetyDoc.name : null,
+                    };
+
+                    // ২. আপনার এক্সপ্রেস ব্যাকএন্ড এপিআই কল (পোর্ট ৫০০০ অনুযায়ী সেট করা)
+                    const response = await fetch('http://localhost:5000/premises', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(submissionData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // ৩. ডেটাবেজে সেভ সফল হলে সাকসেস মেসেজ ও আইডি প্রদর্শন
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'প্রিমিসেস লাইসেন্স আবেদন সফল!',
+                            text: `আপনার প্রাঙ্গণ আইডি: ${data.premisesId}। ভেরিফিকেশনের পর ইউনিয়ন পরিষদ থেকে পরবর্তী সিদ্ধান্ত জানিয়ে দেওয়া হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // ফর্ম রিসেট করা
+                        setFormData({
+                            applicantName: '',
+                            fatherHusbandName: '',
+                            nid: '',
+                            mobile: '',
+                            email: '',
+                            establishmentName: '',
+                            establishmentType: 'বাণিজ্যিক দোকান / শোরুম',
+                            spaceArea: '',
+                            village: '',
+                            ward: '',
+                            holdingNo: '',
+                            postCode: '',
+                            tradeLicenseNo: '',
+                            rentDeed: null,
+                            nidCopy: null,
+                            fireSafetyDoc: null
+                        });
+                    } else {
+                        throw new Error('Submission Failed');
+                    }
+
+                } catch (error) {
+                    // নেটওয়ার্ক বা সার্ভার এরর হলে অ্যালার্ট
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'দুঃখিত!',
+                        text: 'সার্ভার ত্রুটির কারণে আবেদনটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।',
+                        confirmButtonText: 'ঠিক আছে',
+                        confirmButtonColor: '#000F9F'
+                    });
+                }
+            }
         });
     };
 
@@ -90,14 +170,14 @@ const Premises = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">প্রতিষ্ঠানের নাম <span className="text-red-500">*</span></label>
-                                <input required type="text" name="establishmentName" value={formData.establishmentName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] text-sm outline-none" placeholder="উদা: ইসলামিয়া কোল্ড স্টোরেজ" />
+                                <input required type="text" name="establishmentName" value={formData.establishmentName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] text-sm outline-none" placeholder="উদা: ইসলামিয়া কোল্ড স্টোরেজ" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">প্রাঙ্গণের ধরন <span className="text-red-500">*</span></label>
                                 <select name="establishmentType" value={formData.establishmentType} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm bg-white outline-none focus:ring-2 focus:ring-[#000F9F]">
                                     <option>বাণিজ্যিক দোকান / শোরুম</option>
                                     <option>কারখানা / ম্যানুফ্যাকচারিং প্ল্যান্ট</option>
-                                    <option>গুদামঘর / ওয়ারহাউজ</option>
+                                    <option>গুদামঘর / ওয়ারহাউজ</option>
                                     <option>হোটেল / রেস্টুরেন্ট প্রাঙ্গণ</option>
                                 </select>
                             </div>
@@ -106,13 +186,13 @@ const Premises = () => {
                                 <input type="text" name="tradeLicenseNo" value={formData.tradeLicenseNo} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="ট্রেড লাইসেন্স নম্বর দিন" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">মোট আয়তন (বর্গফুট হিসেবে) <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মোট আয়তন (বর্গফুট হিসেবে) <span className="text-red-500">*</span></label>
                                 <input required type="number" name="spaceArea" value={formData.spaceArea} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="উদা: ১২০০" />
                             </div>
                         </div>
                     </div>
 
-                    {/* সেকশন ৩: প্রাঙ্গণের ভৌগোলিক অবস্থান/ঠিকানা */}
+                    {/* সেকশন ৩: প্রাঙ্গণের সঠিক ঠিকানা */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>📍</span> প্রাঙ্গণের সঠিক অবস্থান / ঠিকানা
@@ -123,7 +203,7 @@ const Premises = () => {
                                 <input required type="text" name="village" value={formData.village} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
                                 <input required type="number" name="ward" value={formData.ward} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১-৯" />
                             </div>
                             <div>
@@ -137,18 +217,18 @@ const Premises = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
+                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল সংযুক্তি */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📎</span> প্রয়োজনীয় সংযুক্তিসমূহ (সর্বোচ্চ 2MB)
+                            <span>📎</span> প্রয়োজনীয় সংযুক্তিসমূহ (সর্বোচ্চ 2MB)
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50 hover:bg-blue-50/40 transition-colors">
                                 <label className="cursor-pointer block space-y-2">
                                     <span className="text-2xl">📜</span>
-                                    <p className="text-xs font-bold text-gray-700">ভাড়া চুক্তি / মালিকানার দলিল <span className="text-red-500">*</span></p>
+                                    <p className="text-xs font-bold text-gray-700">ভাড়া চুক্তি / মালিকানার দলিল <span className="text-red-500">*</span></p>
                                     <input required type="file" name="rentDeed" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                                    <p className="text-[11px] text-gray-400">{formData.rentDeed ? formData.rentDeed.name : "ফাইল সিলেক্ট করুন"}</p>
+                                    <p className="text-[11px] text-gray-400 truncate max-w-xs mx-auto">{formData.rentDeed ? formData.rentDeed.name : "ফাইল সিলেক্ট করুন"}</p>
                                 </label>
                             </div>
 
@@ -157,16 +237,16 @@ const Premises = () => {
                                     <span className="text-2xl">🪪</span>
                                     <p className="text-xs font-bold text-gray-700">আবেদনকারীর NID কপি <span className="text-red-500">*</span></p>
                                     <input required type="file" name="nidCopy" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                                    <p className="text-[11px] text-gray-400">{formData.nidCopy ? formData.nidCopy.name : "ফাইল সিলেক্ট করুন"}</p>
+                                    <p className="text-[11px] text-gray-400 truncate max-w-xs mx-auto">{formData.nidCopy ? formData.nidCopy.name : "ফাইল সিলেক্ট করুন"}</p>
                                 </label>
                             </div>
 
                             <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50 hover:bg-blue-50/40 transition-colors">
                                 <label className="cursor-pointer block space-y-2">
                                     <span className="text-2xl">🧯</span>
-                                    <p className="text-xs font-bold text-gray-700">ফায়ার সার্ভিস ছাড়পত্র (যদি থাকে)</p>
+                                    <p className="text-xs font-bold text-gray-700">ফায়ার সার্ভিস ছাড়পত্র (যদি থাকে)</p>
                                     <input type="file" name="fireSafetyDoc" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                                    <p className="text-[11px] text-gray-400">{formData.fireSafetyDoc ? formData.fireSafetyDoc.name : "ফাইল সিলেক্ট করুন"}</p>
+                                    <p className="text-[11px] text-gray-400 truncate max-w-xs mx-auto">{formData.fireSafetyDoc ? formData.fireSafetyDoc.name : "ফাইল সিলেক্ট করুন"}</p>
                                 </label>
                             </div>
                         </div>
@@ -176,7 +256,7 @@ const Premises = () => {
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
                         <input required type="checkbox" id="agree" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
                         <label htmlFor="agree" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
-                            আমি ঘোষণা করছি যে, উক্ত প্রাঙ্গণে কোনো অবৈধ বা পরিবেশের জন্য ক্ষতিকর ব্যবসা পরিচালনা করা হবে না এবং ইউনিয়ন পরিষদের সকল নিয়ম কানুন মেনে চলা হবে।
+                            আমি ঘোষণা করছি যে, উক্ত প্রাঙ্গণে কোনো অবৈধ বা পরিবেশের জন্য ক্ষতিকর ব্যবসা পরিচালনা করা হবে না এবং ইউনিয়ন পরিষদের সকল নিয়ম কানুন মেনে চলা হবে।
                         </label>
                     </div>
 

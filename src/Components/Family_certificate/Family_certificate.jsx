@@ -16,10 +16,22 @@ const Family_certificate = () => {
         postCode: ''
     });
 
-    // 💡 পরিবারের সদস্যদের ডাইনামিক তালিকা হ্যান্ডেল করার স্টেট
+    // পরিবারের সদস্যদের ডাইনামিক তালিকা হ্যান্ডেল করার স্টেট
     const [members, setMembers] = useState([
         { name: '', age: '', relation: '', nidBirthCert: '', occupation: '' }
     ]);
+
+    // ফাইল আপলোড স্টেট
+    const [files, setFiles] = useState({
+        headNidDoc: null,
+        taxReceiptDoc: null
+    });
+
+    // পরিবারের প্রধানের ইনপুট চেঞ্জ হ্যান্ডেলার
+    const handleHeadChange = (e) => {
+        const { name, value } = e.target;
+        setHeadInfo({ ...headInfo, [name]: value });
+    };
 
     // নতুন সদস্যের সারি (Row) যোগ করা
     const addMemberRow = () => {
@@ -42,16 +54,89 @@ const Family_certificate = () => {
         setMembers(updatedMembers);
     };
 
+    // ফাইল চেঞ্জ হ্যান্ডেলার
+    const handleFileChange = (e) => {
+        const { name, files: uploadedFiles } = e.target;
+        setFiles({ ...files, [name]: uploadedFiles[0] });
+    };
+
+    // ফর্ম সাবমিট হ্যান্ডলার (কনফার্মেশন, লোডিং এবং সাকসেস সুইট অ্যালার্ট সহ)
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // সফল সাবমিশন অ্যালার্ট
+        // ১. সাবমিশন কনফার্মেশন অ্যালার্ট
         Swal.fire({
-            icon: 'success',
-            title: 'পারিবারিক সনদের আবেদনটি জমা হয়েছে!',
-            text: 'আপনার প্রদানকৃত তথ্যসমূহ যাচাই করে খুব শীঘ্রই ডিজিটাল পারিবারিক সনদপত্রটি ইস্যু করা হবে।',
-            confirmButtonText: 'ঠিক আছে',
-            confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "আবেদনের সকল তথ্য সঠিক ও সত্য তো?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                
+                // লোডিং পপআপ চালু
+                Swal.fire({
+                    title: 'আবেদন জমা হচ্ছে...',
+                    text: 'অনুগ্রহ করে অপেক্ষা করুন।',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    // পে-লোড অবজেক্ট তৈরি
+                    const submissionData = {
+                        headInfo,
+                        members,
+                        headNidDocName: files.headNidDoc ? files.headNidDoc.name : null,
+                        taxReceiptDocName: files.taxReceiptDoc ? files.taxReceiptDoc.name : null
+                    };
+
+                    // ব্যাকএন্ড এপিআই-তে ডেটা পাঠানো
+                    const response = await fetch('http://localhost:5000/family-certificate', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(submissionData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // ২. সফলভাবে সেভ হলে সাকসেস মেসেজ ও ফ্যামিলি আইডি শো করা
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'পারিবারিক সনদের আবেদনটি জমা হয়েছে!',
+                            text: `আপনার পারিবারিক সনদ ট্র্যাকিং আইডি: ${data.familyCertificateId}। আপনার প্রদানকৃত তথ্যসমূহ যাচাই করে খুব শীঘ্রই সনদপত্রটি ইস্যু করা হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // সম্পূর্ণ স্টেট ও ফর্ম রিসেট করা
+                        setHeadInfo({ headName: '', fatherHusbandName: '', motherName: '', nid: '', mobile: '', email: '', village: '', ward: '', holdingNo: '', postCode: '' });
+                        setMembers([{ name: '', age: '', relation: '', nidBirthCert: '', occupation: '' }]);
+                        setFiles({ headNidDoc: null, taxReceiptDoc: null });
+                        document.getElementById('family-form').reset();
+                    } else {
+                        throw new Error('Submission failed');
+                    }
+
+                } catch (error) {
+                    // কোনো ত্রুটি হলে এরর মেসেজ
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'দুঃখিত!',
+                        text: 'সার্ভার বা নেটওয়ার্ক সমস্যার কারণে আবেদনটি জমা নেওয়া যায়নি।',
+                        confirmButtonText: 'ঠিক আছে',
+                        confirmButtonColor: '#000F9F'
+                    });
+                }
+            }
         });
     };
 
@@ -63,10 +148,10 @@ const Family_certificate = () => {
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
                     <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৫</span>
                     <h2 className="text-2xl md:text-3xl font-extrabold">পারিবারিক সনদপত্রের জন্য আবেদন</h2>
-                    <p className="text-sm text-blue-100 font-medium">পরিবারের প্রধান এবং পরিবারের সকল জীবিত সদস্যদের বিবরণ সঠিকভাবে বাংলায় পূরণ করুন।</p>
+                    <p className="text-sm text-blue-100 font-medium">পরিবারের প্রধান এবং পরিবারের সকল জীবিত सदस्यों বিবরণ সঠিকভাবে বাংলায় পূরণ করুন।</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
+                <form id="family-form" onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
                     
                     {/* সেকশন ১: পরিবারের প্রধানের বিবরণ */}
                     <div className="space-y-4">
@@ -76,27 +161,27 @@ const Family_certificate = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">পরিবারের প্রধানের নাম <span className="text-red-500">*</span></label>
-                                <input required type="text" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="উদা: মোঃ আবদুর রউফ" />
+                                <input required type="text" name="headName" value={headInfo.headName} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="উদা: মোঃ আবদুর রউফ" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">পিতা/স্বামীর নাম <span className="text-red-500">*</span></label>
-                                <input required type="text" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                                <input required type="text" name="fatherHusbandName" value={headInfo.fatherHusbandName} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">মাতার নাম <span className="text-red-500">*</span></label>
-                                <input required type="text" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                                <input required type="text" name="motherName" value={headInfo.motherName} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">জাতীয় পরিচয়পত্র নম্বর (NID) <span className="text-red-500">*</span></label>
-                                <input required type="number" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১০ বা ১৭ ডিজিটের এনআইডি" />
+                                <input required type="number" name="nid" value={headInfo.nid} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১০ বা ১৭ ডিজিটের এনআইডি" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর <span className="text-red-500">*</span></label>
-                                <input required type="tel" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="01XXXXXXXXX" />
+                                <input required type="tel" name="mobile" value={headInfo.mobile} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="01XXXXXXXXX" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা (ঐচ্ছিক)</label>
-                                <input type="email" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="example@mail.com" />
+                                <input type="email" name="email" value={headInfo.email} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="example@mail.com" />
                             </div>
                         </div>
                     </div>
@@ -104,24 +189,24 @@ const Family_certificate = () => {
                     {/* সেকশন ২: স্থায়ী/বর্তমান ঠিকানা */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📍</span> বর্তমান ও স্থায়ী ঠিকানা
+                            <span>📍</span> বর্তমান ও স্থায়ী ঠিকানা
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহл্লা <span className="text-red-500">*</span></label>
-                                <input required type="text" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা <span className="text-red-500">*</span></label>
+                                <input required type="text" name="village" value={headInfo.village} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
-                                <input required type="number" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১-৯" />
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                <input required type="number" name="ward" value={headInfo.ward} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="১-৯" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">হোল্ডিং নং</label>
-                                <input type="text" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="যদি থাকে" />
+                                <input type="text" name="holdingNo" value={headInfo.holdingNo} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="যদি থাকে" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">পোস্ট কোড <span className="text-red-500">*</span></label>
-                                <input required type="number" className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                                <input required type="number" name="postCode" value={headInfo.postCode} onChange={handleHeadChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                         </div>
                     </div>
@@ -153,8 +238,8 @@ const Family_certificate = () => {
                                         <input required type="text" name="relation" value={member.relation} onChange={(e) => handleMemberChange(index, e)} className="w-full bg-white border border-gray-300 p-2 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#000F9F]" placeholder="উদা: স্ত্রী / পুত্র / কন্যা" />
                                     </div>
                                     <div className="sm:col-span-1">
-                                        <label className="block text-[11px] font-semibold text-gray-600 mb-1">বয়স</label>
-                                        <input required type="number" name="age" value={member.age} onChange={(e) => handleMemberChange(index, e)} className="w-full bg-white border border-gray-300 p-2 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#000F9F]" placeholder="বয়স" />
+                                        <label className="block text-[11px] font-semibold text-gray-600 mb-1">বয়স</label>
+                                        <input required type="number" name="age" value={member.age} onChange={(e) => handleMemberChange(index, e)} className="w-full bg-white border border-gray-300 p-2 rounded-lg text-xs outline-none focus:ring-1 focus:ring-[#000F9F]" placeholder="বয়স" />
                                     </div>
                                     <div className="sm:col-span-2">
                                         <label className="block text-[11px] font-semibold text-gray-600 mb-1">পেশা</label>
@@ -174,26 +259,26 @@ const Family_certificate = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
+                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল আপলোড */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📎</span> প্রয়োজনীয় ফাইল আপলোড (PDF/Image, সর্বোচ্চ 2MB)
+                            <span>📎</span> প্রয়োজনীয় ফাইল আপলোড (PDF/Image, সর্বোচ্চ 2MB)
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">পরিবার প্রধানের NID কপি</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">বাধ্যতামূলক ডকুমেন্ট</p>
+                                <div className="max-w-[60%]">
+                                    <p className="text-xs font-bold text-gray-700 truncate">পরিবার প্রধানের NID কপি</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">{files.headNidDoc ? files.headNidDoc.name : "বাধ্যতামূলক ডকুমেন্ট"}</p>
                                 </div>
-                                <input required type="file" accept="image/*,application/pdf" className="text-xs max-w-[180px]" />
+                                <input required type="file" name="headNidDoc" onChange={handleFileChange} accept="image/*,application/pdf" className="text-xs max-w-[180px]" />
                             </div>
 
                             <div className="border border-gray-200 p-4 rounded-xl bg-slate-50 flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-700">রেশন কার্ড / প্রত্যয়নপত্র বা ঘরের ট্যাক্স রসিদ</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">যাচাইকরণের সুবিধার জন্য</p>
+                                <div className="max-w-[60%]">
+                                    <p className="text-xs font-bold text-gray-700 truncate">রেশন কার্ড / প্রত্যয়নপত্র বা ঘরের ট্যাক্স রসি</p>
+                                    <p className="text-[10px] text-gray-400 mt-0.5 truncate">{files.taxReceiptDoc ? files.taxReceiptDoc.name : "যাচাইকরণের সুবিধার জন্য"}</p>
                                 </div>
-                                <input type="file" accept="image/*,application/pdf" className="text-xs max-w-[180px]" />
+                                <input type="file" name="taxReceiptDoc" onChange={handleFileChange} accept="image/*,application/pdf" className="text-xs max-w-[180px]" />
                             </div>
                         </div>
                     </div>
@@ -202,7 +287,7 @@ const Family_certificate = () => {
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
                         <input required type="checkbox" id="family-terms" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
                         <label htmlFor="family-terms" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
-                            আমি এই মর্মে ঘোষণা করছি যে, উপরে বর্ণিত বিবরণ ও আমার পরিবারের সদস্য তালিকা সম্পূর্ণ সঠিক এবং সত্য। কোনো সদস্যের নাম বাদ দেওয়া হয়নি বা ভুল তথ্য দেওয়া হয়নি। পরবর্তীতে কোনো ভুল ধরা পড়লে কর্তৃপক্ষ আমার সনদ বাতিল করতে পারবে।
+                            আমি এই মর্মে ঘোষণা করছি যে, উপরে বর্ণিত বিবরণ ও আমার পরিবারের সদস্য তালিকা সম্পূর্ণ সঠিক এবং সত্য। কোনো সদস্যের নাম বাদ দেওয়া হয়নি বা ভুল তথ্য দেওয়া হয়নি। পরবর্তীতে কোনো ভুল ধরা পড়লে কর্তৃপক্ষ আমার সনদ বাতিল করতে পারবে।
                         </label>
                     </div>
 

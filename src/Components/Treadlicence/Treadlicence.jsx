@@ -5,7 +5,7 @@ const Treadlicence = () => {
     const [formData, setFormData] = useState({
         institutionName: '',
         ownerName: '',
-        ownerType: 'পাবলিক লিমিটেড',
+        ownerType: 'একক মালিকানা (Sole Proprietor)', // ডিফল্ট ভ্যালু ম্যাচ করা হলো
         businessType: '',
         capital: '',
         nid: '',
@@ -33,13 +33,93 @@ const Treadlicence = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // ফর্ম সাবমিট অ্যালার্ট (আপনার ব্যাকএন্ড এপিআই এখানে যুক্ত হবে)
+        // ১. প্রথমে কনফার্মেশন সুইট অ্যালার্ট (Sure/Confirmation Pop-up)
         Swal.fire({
-            icon: 'success',
-            title: 'আবেদনটি সফলভাবে জমা হয়েছে!',
-            text: 'আপনার আবেদন আইডিটি সংরক্ষণ করুন। খুব শীঘ্রই আপনার মোবাইল নম্বরে এসএমএস এর মাধ্যমে পরবর্তী আপডেট জানানো হবে।',
-            confirmButtonText: 'ঠিক আছে',
-            confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "আপনার দেওয়া তথ্যগুলো সঠিকভাবে যাচাই করে সাবমিট করুন।",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল করুন'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                
+                // স্ক্রিনে একটি লোডিং অ্যানিমেশন দেখানোর জন্য
+                Swal.fire({
+                    title: 'প্রসেসিং হচ্ছে...',
+                    text: 'অনুগ্রহ করে অপেক্ষা করুন।',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                try {
+                    // ফাইলগুলোকে ডাটাবেজে স্ট্রিং আকারে বা নাম আকারে পাঠানোর জন্য প্রিপারেশন
+                    // (নোট: রিয়েল প্রজেক্টে ফাইলগুলো আলাদাভাবে ক্লাউড বা সার্ভারে আপলোড করে সেই URL ডাটাবেজে পাঠাতে হয়)
+                    const submissionData = {
+                        ...formData,
+                        nidCopy: formData.nidCopy ? formData.nidCopy.name : null,
+                        holdingTax: formData.holdingTax ? formData.holdingTax.name : null,
+                        tinCertificate: formData.tinCertificate ? formData.tinCertificate.name : null,
+                    };
+
+                    // ২. ব্যাকএন্ড এপিআই কল (আপনার ব্যাকএন্ড পোর্ট অনুযায়ী URL সেট করুন)
+                    const response = await fetch('http://localhost:5000/license', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(submissionData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // ৩. সফল হলে সাকসেস মেসেজ ও অ্যাপ্লিকেশন আইডি প্রদর্শন
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'আবেদনটি সফলভাবে জমা হয়েছে!',
+                            text: `আপনার আবেদন আইডি: ${data.applicationId}। খুব শীঘ্রই আপনার মোবাইল নম্বরে পরবর্তী আপডেট জানানো হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // ফর্ম রিসেট করা
+                        setFormData({
+                            institutionName: '',
+                            ownerName: '',
+                            ownerType: 'একক মালিকানা (Sole Proprietor)',
+                            businessType: '',
+                            capital: '',
+                            nid: '',
+                            mobile: '',
+                            email: '',
+                            village: '',
+                            ward: '',
+                            holdingNo: '',
+                            postCode: '',
+                            tinCertificate: null,
+                            nidCopy: null,
+                            holdingTax: null
+                        });
+                    } else {
+                        throw new Error('Submission failed');
+                    }
+
+                } catch (error) {
+                    // কোনো ত্রুটি হলে এরর অ্যালার্ট
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'দুঃখিত!',
+                        text: 'সার্ভার সমস্যার কারণে আবেদনটি জমা নেওয়া যায়নি। আবার চেষ্টা করুন।',
+                        confirmButtonText: 'ঠিক আছে',
+                        confirmButtonColor: '#000F9F'
+                    });
+                }
+            }
         });
     };
 
@@ -51,7 +131,7 @@ const Treadlicence = () => {
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
                     <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৭</span>
                     <h2 className="text-2xl md:text-3xl font-extrabold">নতুন ট্রেড লাইসেন্স এর জন্য আবেদন</h2>
-                    <p className="text-sm text-blue-100 font-medium">অনুগ্রহ করে নিচের তথ্যগুলো সঠিকভাবে বাংলায় পূরণ করুন।</p>
+                    <p className="text-sm text-blue-100 font-medium">অনুগ্রহ করে নিচের তথ্যগুলো সঠিকভাবে বাংলায় পূরণ করুন।</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
@@ -135,10 +215,10 @@ const Treadlicence = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় কাগজপত্র সংযুক্তিকরণ */}
+                    {/* সেকশন ৪: প্রয়োজনীয় কাগজপত্র সংযুক্তিকরণ */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
-                            <span>📎</span> প্রয়োজনীয় কাগজপত্র আপলোড (PDF/Image, সর্বোচ্চ 2MB)
+                            <span>📎</span> প্রয়োজনীয় কাগজপত্র আপলোড (PDF/Image, সর্বোচ্চ 2MB)
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50 hover:bg-blue-50/40 transition-colors">
@@ -146,7 +226,7 @@ const Treadlicence = () => {
                                     <span className="text-2xl">🪪</span>
                                     <p className="text-xs font-bold text-gray-700">মালিকের NID কপি <span className="text-red-500">*</span></p>
                                     <input required type="file" name="nidCopy" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                                    <p className="text-[11px] text-gray-400">{formData.nidCopy ? formData.nidCopy.name : "ফাইল সিলেক্ট করুন"}</p>
+                                    <p className="text-[11px] text-gray-400 truncate max-w-xs mx-auto">{formData.nidCopy ? formData.nidCopy.name : "ফাইল সিলেক্ট করুন"}</p>
                                 </label>
                             </div>
 
@@ -155,7 +235,7 @@ const Treadlicence = () => {
                                     <span className="text-2xl">📄</span>
                                     <p className="text-xs font-bold text-gray-700">হোল্ডিং ট্যাক্স রসিদ <span className="text-red-500">*</span></p>
                                     <input required type="file" name="holdingTax" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                                    <p className="text-[11px] text-gray-400">{formData.holdingTax ? formData.holdingTax.name : "ফাইল সিলেক্ট করুন"}</p>
+                                    <p className="text-[11px] text-gray-400 truncate max-w-xs mx-auto">{formData.holdingTax ? formData.holdingTax.name : "ফাইল সিলেক্ট করুন"}</p>
                                 </label>
                             </div>
 
@@ -164,7 +244,7 @@ const Treadlicence = () => {
                                     <span className="text-2xl">🧾</span>
                                     <p className="text-xs font-bold text-gray-700">TIN সার্টিফিকেট (যদি থাকে)</p>
                                     <input type="file" name="tinCertificate" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
-                                    <p className="text-[11px] text-gray-400">{formData.tinCertificate ? formData.tinCertificate.name : "ফাইল সিলেক্ট করুন"}</p>
+                                    <p className="text-[11px] text-gray-400 truncate max-w-xs mx-auto">{formData.tinCertificate ? formData.tinCertificate.name : "ফাইল সিলেক্ট করুন"}</p>
                                 </label>
                             </div>
                         </div>

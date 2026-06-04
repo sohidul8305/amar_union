@@ -21,7 +21,16 @@ const Warish = () => {
             if (result.isConfirmed) {
                 Swal.fire({ title: 'আবেদন জমা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    const submissionData = { deceasedInfo, applicantInfo, heirs, deathCertificateDocName: files.deathCertificateDoc?.name || null, applicantNidDocName: files.applicantNidDoc?.name || null };
+                    // এখানে email ফিল্ডটি রুট লেভেলে যুক্ত করা হয়েছে যেন ড্যাশবোর্ড কুয়েরি ঠিকঠাক কাজ করে
+                    const submissionData = { 
+                        deceasedInfo, 
+                        applicantInfo, 
+                        heirs, 
+                        email: applicantInfo.applicantEmail, 
+                        deathCertificateDocName: files.deathCertificateDoc?.name || null, 
+                        applicantNidDocName: files.applicantNidDoc?.name || null 
+                    };
+                    
                     const response = await fetch('http://localhost:5000/api/warish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(submissionData) });
                     const data = await response.json();
                     if (data.success) {
@@ -32,12 +41,12 @@ const Warish = () => {
                         setFiles({ deathCertificateDoc: null, applicantNidDoc: null });
                         document.getElementById('warish-form').reset();
                     } else throw new Error();
-                } catch (error) { Swal.fire({ icon: 'error', title: 'দুঃখিত!', text: 'সার্ভার বা নেটওয়ার্ক সমস্যা', confirmButtonColor: '#000F9F' }); }
+                } catch (error) { Swal.fire({ icon: 'error', title: 'দুঃখিত!', text: 'সার্ভার বা নেটওয়ার্ক সমস্যা', confirmButtonColor: '#000F9F' }); }
             }
         });
     };
 
-    return ( /* JSX ঠিক রেখে শুধু applicantEmail ফিল্ড যোগ করুন */ 
+    return ( 
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">

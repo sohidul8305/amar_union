@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { AuthContext } from '../../Provider/AuthProvider'; 
 import Swal from 'sweetalert2';
 
-const Treadlicence = () => {
+const TradeLicense = () => {
+    const { user } = useContext(AuthContext); 
     const [formData, setFormData] = useState({
         institutionName: '',
         ownerName: '',
@@ -37,7 +39,7 @@ const Treadlicence = () => {
 
         Swal.fire({
             title: 'আপনি কি নিশ্চিত?',
-            text: "আপনার দেওয়া তথ্যগুলো সঠিকভাবে যাচাই করে সাবমিট করুন।",
+            text: "আপনার দেওয়া তথ্যগুলো সঠিকভাবে যাচাই করে সাবমিট করুন।",
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#000F9F',
@@ -48,21 +50,33 @@ const Treadlicence = () => {
             if (result.isConfirmed) {
                 setLoading(true);
                 Swal.fire({
-                    title: 'প্রসেসিং হচ্ছে...',
+                    title: 'প্রсеসিং হচ্ছে...',
                     text: 'অনুগ্রহ করে অপেক্ষা করুন।',
                     allowOutsideClick: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
 
                 try {
+                    // ব্যাকএন্ডে পাঠানোর জন্য ডেটা সাজানো হচ্ছে
                     const submissionData = {
-                        ...formData,
+                        institutionName: formData.institutionName,
+                        ownerName: formData.ownerName,
+                        ownerType: formData.ownerType,
+                        businessType: formData.businessType,
+                        capital: formData.capital,
+                        nid: formData.nid,
+                        mobile: formData.mobile,
+                        email: user?.email || formData.email || 'N/A', // লগইন ইমেইলকে প্রাধান্য দেওয়া হলো
+                        village: formData.village,
+                        ward: formData.ward,
+                        holdingNo: formData.holdingNo,
+                        postCode: formData.postCode,
                         nidCopy: formData.nidCopy ? formData.nidCopy.name : null,
                         holdingTax: formData.holdingTax ? formData.holdingTax.name : null,
                         tinCertificate: formData.tinCertificate ? formData.tinCertificate.name : null,
                     };
 
-                    const response = await fetch('http://localhost:5000/license', {
+                    const response = await fetch('http://localhost:5000/api/trade-license', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(submissionData)
@@ -79,7 +93,7 @@ const Treadlicence = () => {
                             confirmButtonColor: '#000F9F'
                         });
 
-                        // ফর্ম রিসেট
+                        // ফর্ম রিসেট করা
                         setFormData({
                             institutionName: '',
                             ownerName: '',
@@ -102,10 +116,11 @@ const Treadlicence = () => {
                         throw new Error(data.message || 'Submission failed');
                     }
                 } catch (error) {
+                    console.error("Submission Error: ", error);
                     Swal.fire({
                         icon: 'error',
                         title: 'দুঃখিত!',
-                        text: 'সার্ভার সমস্যার কারণে আবেদনটি জমা নেওয়া যায়নি। আবার চেষ্টা করুন।',
+                        text: 'সার্ভার সমস্যার কারণে আবেদনটি জমা নেওয়া যায়নি। আবার চেষ্টা করুন।',
                         confirmButtonText: 'ঠিক আছে',
                         confirmButtonColor: '#000F9F'
                     });
@@ -192,4 +207,4 @@ const Treadlicence = () => {
     );
 };
 
-export default Treadlicence;
+export default TradeLicense;

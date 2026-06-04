@@ -9,7 +9,7 @@ const Premises = () => {
         mobile: '',
         email: '',
         establishmentName: '',
-        establishmentType: 'বাণিজ্যিক দোকান / শোরুম', // ডিফল্ট ভ্যালু অপশনের সাথে ম্যাচ করা হলো
+        establishmentType: 'বাণিজ্যিক দোকান / শোরুম', 
         spaceArea: '',
         village: '',
         ward: '',
@@ -37,7 +37,7 @@ const Premises = () => {
         // ১. কনফার্মেশন সুইট অ্যালার্ট (Sure Pop-up)
         Swal.fire({
             title: 'আপনি কি নিশ্চিত?',
-            text: "প্রাঙ্গণ লাইসেন্সের জন্য আপনার দেওয়া তথ্যগুলো সঠিক আছে তো?",
+            text: "প্রাঙ্গণ লাইসেন্সের জন্য আপনার দেওয়া তথ্যগুলো সঠিক আছে তো?",
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#000F9F',
@@ -47,7 +47,7 @@ const Premises = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 
-                // ব্যাকএন্ডে ডেটা পাঠানোর সময় লোডিং অ্যানিমেশন শো করা
+                // ব্যাকএন্ডে ডেটা পাঠানোর সময় লোডিং অ্যানিমেশন শো করা
                 Swal.fire({
                     title: 'আবেদন প্রসেস হচ্ছে...',
                     text: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।',
@@ -66,8 +66,8 @@ const Premises = () => {
                         fireSafetyDoc: formData.fireSafetyDoc ? formData.fireSafetyDoc.name : null,
                     };
 
-                    // ২. আপনার এক্সপ্রেস ব্যাকএন্ড এপিআই কল (পোর্ট ৫০০০ অনুযায়ী সেট করা)
-                    const response = await fetch('http://localhost:5000/premises', {
+                    // ২. এক্সপ্রেস ব্যাকএন্ড এপিআই কল (রুট আপডেট করা হয়েছে)
+                    const response = await fetch('http://localhost:5000/api/premises', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -82,7 +82,7 @@ const Premises = () => {
                         Swal.fire({
                             icon: 'success',
                             title: 'প্রিমিসেস লাইসেন্স আবেদন সফল!',
-                            text: `আপনার প্রাঙ্গণ আইডি: ${data.premisesId}। ভেরিফিকেশনের পর ইউনিয়ন পরিষদ থেকে পরবর্তী সিদ্ধান্ত জানিয়ে দেওয়া হবে।`,
+                            text: `আপনার প্রাঙ্গণ আইডি: ${data.premisesId}। ভেরিফিকেশনের পর ইউনিয়ন পরিষদ থেকে পরবর্তী সিদ্ধান্ত জানিয়ে দেওয়া হবে।`,
                             confirmButtonText: 'ঠিক আছে',
                             confirmButtonColor: '#000F9F'
                         });
@@ -106,16 +106,19 @@ const Premises = () => {
                             nidCopy: null,
                             fireSafetyDoc: null
                         });
+                        
+                        // চেকবক্স আনচেক করার জন্য
+                        document.getElementById('agree').checked = false;
                     } else {
                         throw new Error('Submission Failed');
                     }
 
                 } catch (error) {
-                    // নেটওয়ার্ক বা সার্ভার এরর হলে অ্যালার্ট
+                    // নেটওয়ার্ক বা সার্ভার এরর হলে অ্যালার্ট
                     Swal.fire({
                         icon: 'error',
                         title: 'দুঃখিত!',
-                        text: 'সার্ভার ত্রুটির কারণে আবেদনটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।',
+                        text: 'সার্ভার ত্রুটির কারণে আবেদনটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।',
                         confirmButtonText: 'ঠিক আছে',
                         confirmButtonColor: '#000F9F'
                     });
@@ -158,6 +161,11 @@ const Premises = () => {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর <span className="text-red-500">*</span></label>
                                 <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="01XXXXXXXXX" />
+                            </div>
+                            {/* ইমেইল ফিল্ডটি formData-তে আছে কিন্তু ফর্মে ইনপুট ছিল না, তাই এটি যুক্ত করা হলো ড্যাশবোর্ড ট্র্যাকিং সুবিধার জন্য */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা <span className="text-red-500">*</span></label>
+                                <input required type="email" name="email" value={formData.email} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="example@mail.com" />
                             </div>
                         </div>
                     </div>
@@ -217,7 +225,7 @@ const Premises = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল সংযুক্তি */}
+                    {/* সেকশন ৪: প্রয়োজনীয় ফাইল সংযুক্তি */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>📎</span> প্রয়োজনীয় সংযুক্তিসমূহ (সর্বোচ্চ 2MB)
@@ -263,7 +271,7 @@ const Premises = () => {
                     {/* সাবমিট বাটন */}
                     <div className="flex justify-end pt-4">
                         <button type="submit" className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer">
-                            লাইসেন্সের আবেদন জমা দিন
+                            লাইসেন্সের আবেদন জানাচ্ছি
                         </button>
                     </div>
 

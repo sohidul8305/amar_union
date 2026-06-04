@@ -63,13 +63,12 @@ const Register = () => {
         try {
             let photoURL = "";
 
-            // 💡 ঝামেলাবিহীন ফ্রি ওপেন ইমেজ আপলোড গেটওয়ে (No API key needed, No CORS issue)
+            // 💡 ইমেজ আপলোড গেটওয়ে
             if (image) {
                 try {
                     const imgFormData = new FormData();
                     imgFormData.append("image", image);
 
-                    // এখানে imgbb এর একটি পাবলিক ভ্যালিডেটর ব্যবহার করা হয়েছে যা ফুল ফ্রি ও ওপেন
                     const response = await fetch("https://api.imgbb.com/1/upload?key=6d207e0211ec7f402e69066b82935714", {
                         method: "POST",
                         body: imgFormData,
@@ -81,17 +80,32 @@ const Register = () => {
                     }
                 } catch (imgErr) {
                     console.error("Image Upload Failed:", imgErr);
-                    // ছবি আপলোড ফেল করলেও অ্যাকাউন্ট যেন তৈরি হয়
                 }
             }
 
             // ১. ফায়ারবেস রেজিস্ট্রেশন
             const userCredential = await registerUser(formData.email, formData.password);
             
-            // ২. প্রোফাইল আপডেট
+            // ২. ফায়ারবেস প্রোফাইল আপডেট (নাম এবং ছবি)
             await updateUserProfile(userCredential.user, {
                 displayName: formData.fullName,
                 photoURL: photoURL || null 
+            });
+
+            // 💡 ৩. ডাটাবেজে মোবাইল নম্বরসহ ইউজারের ডাটা সেভ করা (যাতে ড্যাশবোর্ডে দেখানো যায়)
+            const userData = {
+                name: formData.fullName,
+                email: formData.email,
+                mobile: formData.mobile,
+                nidOrBrd: formData.nidOrBrd,
+                photoURL: photoURL || null,
+                createdAt: new Date()
+            };
+
+            await fetch('http://localhost:5000/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
             });
 
             Toast.fire({
@@ -105,7 +119,7 @@ const Register = () => {
             if (err.code === 'auth/email-already-in-use') {
                 setError("এই ইমেইলটি দিয়ে ইতিমধ্যে অ্যাকাউন্ট তৈরি করা হয়েছে।");
             } else if (err.code === 'auth/weak-password') {
-                setError("পাসওয়ার্ডটি দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন।");
+                setError("পাসওয়ার্ডটি দুর্বল, আরও শক্তিশালী পাসওয়ার্ড দিন।");
             } else {
                 setError(err.message.replace("Firebase: ", ""));
             }
@@ -121,7 +135,23 @@ const Register = () => {
     const handleGoogleSignIn = async () => {
         setError('');
         try {
-            await signInGoogle();
+            const result = await signInGoogle();
+            
+            // গুগল দিয়ে লগইন করলেও ডাটাবেজে ইউজার ডাটা চেক/সেভ করার জন্য
+            const userData = {
+                name: result.user.displayName,
+                email: result.user.email,
+                mobile: result.user.phoneNumber || 'প্রদান করা হয়নি',
+                photoURL: result.user.photoURL,
+                createdAt: new Date()
+            };
+
+            await fetch('http://localhost:5000/api/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(userData)
+            });
+
             Toast.fire({
                 icon: "success",
                 title: "গুগল সাইন-ইন সফল!"
@@ -140,7 +170,6 @@ const Register = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-2xl w-full space-y-6 bg-white p-6 sm:p-10 rounded-2xl shadow-xl border border-slate-100">
-                
                 <div className="text-center">
                     <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-gradient-to-tr from-[#0b6330] to-[#0f4c81] text-white text-2xl font-bold shadow-md">
                         AU

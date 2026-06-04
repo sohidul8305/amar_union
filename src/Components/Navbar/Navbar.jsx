@@ -1,11 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useRef, useEffect } from 'react';
 import logo from "../../assets/image/amarunion.logo.jpeg"; 
-import { Link } from 'react-router-dom'; // 💡 react-router-dom ব্যবহার করুন
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../Provider/AuthProvider'; // 💡 আপনার সঠিক পাথ অনুযায়ী ইমপোর্ট করুন
+import toast from 'react-hot-toast'; // 💡 react-hot-toast ইমপোর্ট করা হয়েছে
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [profileDropdown, setProfileDropdown] = useState(false); // প্রোফাইল ড্রপডাউন স্টেট
+  const dropdownRef = useRef(null);
+  
+  // AuthContext থেকে ডেটা এবং ফাংশন নেওয়া
+  const { user, logOut } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  // 💡 সাবমেনুর আইটেমগুলোতে id এবং path যোগ করা হয়েছে ডাইনামিক লিংকের জন্য
+  // প্রোফাইল ড্রপডাউনের বাইরে ক্লিক করলে তা বন্ধ করার জন্য
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // 💡 লগইন চেকিং ফাংশন (লগইন না থাকলে আটকে দেবে)
+  const handleProtectedNavigation = (e, path) => {
+    if (!user) {
+      e.preventDefault(); // লিংকের ডিফল্ট বিহেভিয়ার বন্ধ করবে
+      toast.error('আবেদন করতে প্রথমে লগইন করুন!'); // টোস্ট মেসেজ
+      navigate('/login'); // লগইন পেজে রিডাইরেক্ট
+      setIsOpen(false); // মোবাইল মেনু খোলা থাকলে বন্ধ করবে
+    }
+  };
+
+  // লগআউট হ্যান্ডলার
+  const handleLogOut = () => {
+    logOut()
+      .then(() => {
+        toast.success('সফলভাবে লগআউট হয়েছে');
+        setProfileDropdown(false);
+      })
+      .catch((error) => toast.error(error.message));
+  };
+
   const navItems = [
     { name: 'হোম', link: '/' },
     {
@@ -27,7 +65,7 @@ const Navbar = () => {
       ]
     },
     { 
-      name: 'কর্মকর্তা-कर्मचारी', 
+      name: 'কর্মকর্তা-কর্মচারী', 
       hasDropdown: true,
       submenu: [
         { name: 'সচিব', id: 'secretary' },
@@ -75,7 +113,7 @@ const Navbar = () => {
   return (
     <nav className="w-full bg-white text-gray-800 shadow-md sticky top-0 z-50 font-sans">
       
-      {/* ================= ১. ওপরের টপ বার (লোগো এবং লগইন/রেজিস্টার) ================= */}
+      {/* ================= ১. ওপরের টপ বার ================= */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
         {/* লোগো সেকশন */}
@@ -93,25 +131,68 @@ const Navbar = () => {
           </div>
         </Link>
 
-        {/* ডেক্সটপ লগইন/রেজিস্টার বাটন */}
+        {/* ডেক্সটপ রাইট সেকশন (লগইন বা প্রোফাইল ড্রপডাউন) */}
         <div className="hidden md:flex items-center gap-3">
-          <Link to="/login">
-            <button className="text-sm font-semibold text-gray-600 hover:text-[#000F9F] transition-colors px-3 py-2 cursor-pointer">
-              লগইন
-            </button>
-          </Link>
-          <Link to="/register">
-            <button className="bg-[#000F9F] text-white font-bold text-sm px-5 py-2 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
-              রেজিস্ট্রেশন
-            </button>
-          </Link>
+          {user ? (
+            /* 💡 লগইন করা থাকলে প্রোফাইল ড্রপডাউন দেখাবে */
+            <div className="relative" ref={dropdownRef}>
+              <button 
+                onClick={() => setProfileDropdown(!profileDropdown)}
+                className="flex items-center gap-2 border border-gray-200 p-1 pr-3 rounded-full hover:bg-gray-50 transition-all cursor-pointer"
+              >
+                <img 
+                  src={user?.photoURL || "https://www.w3schools.com/howto/img_avatar.png"} 
+                  alt="Profile" 
+                  className="h-8 w-8 rounded-full object-cover border border-[#000F9F]"
+                />
+                <span className="text-sm font-semibold text-gray-700 max-w-[100px] truncate">
+                  {user?.displayName || 'ইউজার'}
+                </span>
+                <svg className={`w-3 h-3 text-gray-500 transition-transform ${profileDropdown ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* প্রোফাইল ড্রপডাউন মেনু */}
+              {profileDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                  <div className="px-4 py-2 border-b border-gray-100">
+                    <p className="text-xs text-gray-400">লগইন করা আছেন</p>
+                    <p className="text-sm font-bold text-gray-800 truncate">{user?.email}</p>
+                  </div>
+                  <Link to="/dashboard" onClick={() => setProfileDropdown(false)} className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-[#000F9F] font-medium">
+                    ড্যাশবোর্ড
+                  </Link>
+                  <button onClick={handleLogOut} className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium cursor-pointer">
+                    লগআউট
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* লগইন না করা থাকলে আগের বাটনগুলো দেখাবে */
+            <>
+              <Link to="/login">
+                <button className="text-sm font-semibold text-gray-600 hover:text-[#000F9F] transition-colors px-3 py-2 cursor-pointer">
+                  লগইন
+                </button>
+              </Link>
+              <Link to="/register">
+                <button className="bg-[#000F9F] text-white font-bold text-sm px-5 py-2 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer">
+                  রেজিস্ট্রেশন
+                </button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* মোবাইল রেসপনসিভ বাটন */}
         <div className="md:hidden flex items-center gap-3">
-          <Link to="/login" className="text-xs bg-[#000F9F] text-white font-medium px-3 py-1.5 rounded-lg">
-            লগইন
-          </Link>
+          {!user && (
+            <Link to="/login" className="text-xs bg-[#000F9F] text-white font-medium px-3 py-1.5 rounded-lg">
+              লগইন
+            </Link>
+          )}
           <button
             onClick={() => setIsOpen(!isOpen)}
             type="button"
@@ -150,7 +231,7 @@ const Navbar = () => {
                 {/* ড্রপডাউন এবং মেগা মেনু */}
                 {item.hasDropdown && (
                   item.isMega ? (
-                    /* মেগা মেনু (নাগরিক সেবা) */
+                    /* মেগা মেনু (নাগরিক সেবা) -> এখানে ক্লিক করলে লগইন প্রোটেকশন চেক হবে */
                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-[650px] bg-white text-gray-800 rounded-b-2xl shadow-2xl p-5 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50 border border-gray-100 grid grid-cols-3 gap-4">
                       {item.submenu.map((subGroup, sIdx) => (
                         <div key={sIdx} className="space-y-2">
@@ -158,7 +239,12 @@ const Navbar = () => {
                           <ul className="space-y-1">
                             {subGroup.items.map((subItem, iIdx) => (
                               <li key={iIdx}>
-                                <Link to={`/service/${subItem.id}`} className="block py-1 px-1.5 text-xs font-semibold text-gray-600 rounded-md hover:bg-blue-50 hover:text-[#000F9F] transition-colors">
+                                {/* 💡 onClick এ প্রটেকশন হ্যান্ডলার যোগ করা হয়েছে */}
+                                <Link 
+                                  to={`/service/${subItem.id}`} 
+                                  onClick={(e) => handleProtectedNavigation(e, `/service/${subItem.id}`)}
+                                  className="block py-1 px-1.5 text-xs font-semibold text-gray-600 rounded-md hover:bg-blue-50 hover:text-[#000F9F] transition-colors"
+                                >
                                   • {subItem.name}
                                 </Link>
                               </li>
@@ -168,7 +254,7 @@ const Navbar = () => {
                       ))}
                     </div>
                   ) : (
-                    /* নরমাল ড্রপডাউন */
+                    /* নরমাল ড্রপডাউন (যদি এগুলোতেও প্রোটেকশন চান তবে এখানেও onClick দিতে পারেন, বর্তমানে শুধু নাগরিক সেবায় দেওয়া হয়েছে) */
                     <div className="absolute top-full left-0 mt-0 w-48 bg-white text-gray-800 rounded-b-xl shadow-2xl py-2 opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 z-50 border border-gray-100">
                       {item.submenu?.map((subItem, sIdx) => (
                         <Link key={sIdx} to={`/service/${subItem.id}`} className="block px-4 py-2 hover:bg-blue-50 text-sm font-semibold text-gray-700 hover:text-[#000F9F] transition-colors">
@@ -187,6 +273,21 @@ const Navbar = () => {
       {/* ================= ৩. মোবাইল ড্রপডাউন মেনু ================= */}
       <div className={`${isOpen ? 'max-h-[80vh] overflow-y-auto opacity-100' : 'max-h-0 opacity-0'} md:hidden overflow-hidden transition-all duration-300 ease-in-out bg-[#000b70] text-white border-t border-white/10`}>
         <div className="px-3 py-3 space-y-1 text-sm">
+          
+          {/* 💡 মোবাইল মেনুতে লগইন করা থাকলে প্রোফাইল ইনফো ও ড্যাশবোর্ড লিংক দেখাবে */}
+          {user && (
+            <div className="bg-white/10 p-3 rounded-xl mb-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <img src={user?.photoURL || "https://www.w3schools.com/howto/img_avatar.png"} className="h-9 w-9 rounded-full border border-white" alt="" />
+                <div>
+                  <p className="font-bold text-xs">{user?.displayName || 'ইউজার'}</p>
+                  <p className="text-[10px] text-gray-300">{user?.email}</p>
+                </div>
+              </div>
+              <Link to="/dashboard" onClick={() => setIsOpen(false)} className="text-xs bg-white text-[#000F9F] font-bold px-2.5 py-1 rounded-lg">ড্যাশবোর্ড</Link>
+            </div>
+          )}
+
           {navItems.map((item, index) => (
             <div key={index} className="border-b border-white/5 last:border-none">
               <div className="block px-4 py-2.5 font-medium hover:bg-white/5 transition-all flex justify-between items-center">
@@ -201,7 +302,15 @@ const Navbar = () => {
                       <div key={gIdx} className="py-1">
                         <p className="text-[#00e5ff] font-bold text-[11px] px-2">{group.title}</p>
                         {group.items.map((sub, iIdx) => (
-                          <Link key={iIdx} to={`/service/${sub.id}`} onClick={() => setIsOpen(false)} className="block py-1.5 px-4 hover:text-white">• {sub.name}</Link>
+                          /* 💡 মোবাইল মেগা মেনুতে ও প্রোটেকশন চেক */
+                          <Link 
+                            key={iIdx} 
+                            to={`/service/${sub.id}`} 
+                            onClick={(e) => handleProtectedNavigation(e, `/service/${sub.id}`)} 
+                            className="block py-1.5 px-4 hover:text-white"
+                          >
+                            • {sub.name}
+                          </Link>
                         ))}
                       </div>
                     ))
@@ -215,10 +324,17 @@ const Navbar = () => {
             </div>
           ))}
 
-          <div className="pt-4 px-4">
-            <Link to="/register" onClick={() => setIsOpen(false)} className="w-full bg-white text-[#000F9F] font-bold py-2.5 rounded-xl shadow-md text-center block text-sm">
-              রেজিস্ট্রেশন করুন
-            </Link>
+          {/* মোবাইল নিচের বাটন */}
+          <div className="pt-2">
+            {user ? (
+              <button onClick={handleLogOut} className="w-full bg-red-600 text-white font-bold py-2.5 rounded-xl shadow-md text-center block text-sm cursor-pointer">
+                লগআউট করুন
+              </button>
+            ) : (
+              <Link to="/register" onClick={() => setIsOpen(false)} className="w-full bg-white text-[#000F9F] font-bold py-2.5 rounded-xl shadow-md text-center block text-sm">
+                রেজিস্ট্রেশন করুন
+              </Link>
+            )}
           </div>
         </div>
       </div>

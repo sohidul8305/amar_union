@@ -92,7 +92,7 @@ const Register = () => {
                 photoURL: photoURL || null 
             });
 
-            // 💡 ৩. ডাটাবেজে মোবাইল নম্বরসহ ইউজারের ডাটা সেভ করা (যাতে ড্যাশবোর্ডে দেখানো যায়)
+            // 💡 ৩. ডাটাবেজে মোবাইল নম্বরসহ ইউজারের ডাটা সেভ করা (photoURL সরাসরি ভেরিয়েবল থেকে নেওয়া হয়েছে)
             const userData = {
                 name: formData.fullName,
                 email: formData.email,
@@ -137,11 +137,10 @@ const Register = () => {
         try {
             const result = await signInGoogle();
             
-            // গুগল দিয়ে লগইন করলেও ডাটাবেজে ইউজার ডাটা চেক/সেভ করার জন্য
             const userData = {
                 name: result.user.displayName,
                 email: result.user.email,
-                mobile: result.user.phoneNumber || 'প্রদান করা হয়নি',
+                mobile: result.user.phoneNumber || 'প্রদান করা হয়নি',
                 photoURL: result.user.photoURL,
                 createdAt: new Date()
             };

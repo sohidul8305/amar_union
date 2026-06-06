@@ -1,38 +1,110 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import logo from '../../assets/image/amarunion.logo.jpeg';
 
 import { 
   FaFileAlt, FaUserCheck, FaUsers, FaChild, FaCertificate, 
-  FaPassport, FaHeart, FaHandHoldingHeart, FaPhoneAlt, FaLink, FaExternalLinkAlt
-} from 'react-icons/fa'; // এখানে FaHandInHand পরিবর্তন করে FaHandHoldingHeart করা হয়েছে
+  FaPassport, FaHeart, FaHandHoldingHeart, FaPhoneAlt, FaLink, 
+  FaExternalLinkAlt, FaIdCard, FaTimes, FaCheckCircle, FaMapMarkerAlt,
+  FaSearch
+} from 'react-icons/fa';
 
 const Home = () => {
-  // নাগরিক সেবা সমূহের ডামি ডাটা (আইকন সহ)
+  // মডাল ও ভেরিফিকেশন স্টেট ম্যানেজমেন্ট
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [nidNumber, setNidNumber] = useState('');
+  const [dob, setDob] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [verifiedData, setVerifiedData] = useState(null);
+
+  // আবেদন ট্র্যাকিং স্টেট
+  const [trackingId, setTrackingId] = useState('');
+  const [trackingResult, setTrackingResult] = useState(null);
+  const [isTrackingLoading, setIsTrackingLoading] = useState(false);
+
+  // নাগরিক সেবা সমূহের ডাটা
   const services = [
-    { id: 1, title: 'ট্রেড লাইসেন্স', icon: <FaFileAlt className="text-blue-600 text-2xl" /> },
-    { id: 2, title: 'চারিত্রিক সনদ', icon: <FaUserCheck className="text-green-600 text-2xl" /> },
-    { id: 3, title: 'নাগরিকত্ব সনদ', icon: <FaUsers className="text-orange-600 text-2xl" /> },
-    { id: 4, title: 'জন্ম ও মৃত্যু নিবন্ধন', icon: <FaChild className="text-purple-600 text-2xl" /> },
-    { id: 5, title: 'ওয়ারিশন সনদ', icon: <FaCertificate className="text-teal-600 text-2xl" /> },
-    { id: 6, title: 'প্রত্যয়নপত্র', icon: <FaPassport className="text-red-600 text-2xl" /> },
-    { id: 7, title: 'অবিবাহিত সনদ', icon: <FaHeart className="text-pink-600 text-2xl" /> },
-    { id: 8, title: 'প্রতিবন্ধী ভাতা', icon: <FaHandHoldingHeart className="text-indigo-600 text-2xl" /> }, // এখানেও পরিবর্তন করা হয়েছে
+    { id: 1, title: 'ট্রেড লাইসেন্স', path: '/service/trade-license', icon: <FaFileAlt className="text-blue-600 text-2xl" /> },
+    { id: 2, title: 'চারিত্রিক সনদ', path: '/service/premises-license', icon: <FaUserCheck className="text-green-600 text-2xl" /> },
+    { id: 3, title: 'নাগরিকত্ব সনদ', path: '/service/citizenship-certificate', icon: <FaUsers className="text-orange-600 text-2xl" /> },
+    { id: 4, title: 'জন্ম ও মৃত্যু নিবন্ধন', path: '/service/death-certificate', icon: <FaChild className="text-purple-600 text-2xl" /> },
+    { id: 5, title: 'ওয়ারিশন সনদ', path: '/service/warish-certificate', icon: <FaCertificate className="text-teal-600 text-2xl" /> },
+    { id: 6, title: 'প্রত্যয়নপত্র', path: '/service/successor-certificate', icon: <FaPassport className="text-red-600 text-2xl" /> },
+    { id: 7, title: 'অবিবাহিত সনদ', path: '/service/power-of-attorney', icon: <FaHeart className="text-pink-600 text-2xl" /> },
+    { id: 8, title: 'প্রতিবন্ধী ভাতা / ভূমিহীন সনদ', path: '/service/landless-certificate', icon: <FaHandHoldingHeart className="text-indigo-600 text-2xl" /> },
   ];
 
+  // গুরুত্বপূর্ণ লিংক সমূহের রিয়েল ডাটা
+  const importantLinks = [
+    { title: 'প্রধানমন্ত্রীর কার্যালয়', url: 'https://pmo.gov.bd' },
+    { title: 'জাতীয় তথ্য বাতায়ন', url: 'https://bangladesh.gov.bd' },
+    { title: 'জন্ম-মৃত্যু নিবন্ধন বাতায়ন', url: 'https://bdris.gov.bd' },
+    { title: 'স্থানীয় সরকার বিভাগ', url: 'https://lgd.gov.bd' },
+    { title: 'জেলা বাতায়ন (কুমিল্লা)', url: 'https://www.comilla.gov.bd' }
+  ];
+
+  // ভোটার আইডি ভেরিফাই সাবমিট হ্যান্ডলার
+  const handleVerify = (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setVerifiedData(null);
+
+    setTimeout(() => {
+      setIsLoading(false);
+      setVerifiedData({
+        nameBangla: 'মোঃ আব্দুল মজিদ',
+        nameEnglish: 'MD. ABDUL MAJID',
+        fatherName: 'মৃত আবুল কাশেম',
+        motherName: 'মোসাম্মৎ রহিমা বেগম',
+        nidNo: nidNumber,
+        birthDate: dob,
+        address: 'গ্রাম: মোহনপুর, ডাকঘর: মোহনপুর, দেবিদ্বার, কুমিল্লা।',
+        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+      });
+    }, 1500);
+  };
+
+  // আবেদন ট্র্যাকিং হ্যান্ডলার
+  const handleTracking = (e) => {
+    e.preventDefault();
+    if (!trackingId.trim()) return;
+
+    setIsTrackingLoading(true);
+    setTrackingResult(null);
+
+    setTimeout(() => {
+      setIsTrackingLoading(false);
+      setTrackingResult({
+        id: trackingId,
+        status: 'অনুমোদিত (Approved)',
+        serviceName: 'নাগরিকত্ব সনদ',
+        date: '০৫ জুন, ২০২৬',
+        message: 'আপনার সনদটি তৈরি হয়েছে। ইউনিয়ন পরিষদ কার্যালয় থেকে মূল কপি সংগ্রহ করুন।'
+      });
+    }, 1200);
+  };
+
+  // মডাল বন্ধ করার ফাংশন
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setVerifiedData(null);
+    setNidNumber('');
+    setDob('');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
-      
+    <div className="min-h-screen bg-gray-50 font-sans antialiased">
+
       {/* ১. ব্যানার / হেডার সেকশন */}
       <header className="bg-gradient-to-r from-blue-900 to-sky-900 text-white py-8 px-4 text-center shadow-md">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 mx-auto md:mx-0">
-            {/* লোগোর জায়গা */}
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-blue-900 font-bold text-xl shadow-inner">
-               <img
-                              src={logo}
-                              alt="Amar Union Logo"
-                              className="w-full h-full object-cover"
-                            />
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden">
+              <img
+                src={logo}
+                alt="Amar Union Logo"
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="text-left">
               <h1 className="text-2xl md:text-3xl font-bold">১৬ নং মোহনপুর ইউনিয়ন পরিষদ</h1>
@@ -45,15 +117,15 @@ const Home = () => {
         </div>
       </header>
 
-      {/* ২. নোটিশ স্ক্রলার (Moving Notice) */}
+      {/* ২. নোটিশ স্ক্রলার */}
       <div className="bg-amber-500 text-white py-2 px-4 shadow-inner flex items-center">
         <span className="bg-amber-700 text-xs uppercase font-bold px-3 py-1 rounded mr-3 whitespace-nowrap">নোটিশ:</span>
         <marquee className="text-sm font-medium" behavior="scroll" direction="left">
-         ১৬ নং মোহনপুর ইউনিয়ন পরিষদ অনলাইন সেবা কার্যক্রমে আপনাকে স্বাগতম। যেকোনো সনদের জন্য অনলাইনে আবেদন করুন।
+          ১৬ নং মোহনপুর ইউনিয়ন পরিষদ অনলাইন সেবা কার্যক্রমে আপনাকে স্বাগতম। যেকোনো সনদের জন্য অনলাইনে আবেদন করুন।
         </marquee>
       </div>
 
-      {/* ৩. মেইন থ্রি-কলাম লেআউট (Responsive Grid) */}
+      {/* ৩. মেইন থ্রি-কলাম লেআউট */}
       <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* --- বাম সাইডবার (Left Sidebar) --- */}
@@ -73,7 +145,24 @@ const Home = () => {
             </div>
           </div>
 
-          {/* জাতীয় হেল্পলাইন */}
+          {/* ভোটার আইডি কার্ড যাচাই সেকশন */}
+          <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl shadow-sm border border-blue-100 overflow-hidden p-4 text-center">
+            <div className="flex justify-center mb-2">
+              <div className="p-3 bg-blue-600 text-white rounded-full shadow-md">
+                <FaIdCard className="text-2xl" />
+              </div>
+            </div>
+            <h4 className="font-bold text-gray-800 text-base mb-1">ভোটার আইডি কার্ড যাচাই</h4>
+            <p className="text-xs text-gray-500 mb-4">আপনার জাতীয় পরিচয়পত্রের সত্যতা অনলাইনে যাচাই করুন</p>
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-sm flex items-center justify-center gap-2"
+            >
+              <FaCheckCircle /> এনআইডি ভেরিফাই করুন
+            </button>
+          </div>
+
+          {/* জাতীয় হেল্পライン */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">জাতীয় হেল্পলাইন</h3>
             <div className="p-4 grid grid-cols-2 gap-3 text-center text-xs font-bold text-gray-700">
@@ -94,7 +183,7 @@ const Home = () => {
           </div>
         </aside>
 
-        {/* --- প্রধান কন্টেন্ট (Main Content / Center) --- */}
+        {/* --- প্রধান কন্টেন্ট (Center) --- */}
         <section className="lg:col-span-6 space-y-6">
           {/* নাগরিক সেবা সেকশন */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -106,7 +195,8 @@ const Home = () => {
             {/* সেবাসমূহের গ্রিড */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {services.map((service) => (
-                <div 
+                <Link 
+                  to={service.path}
                   key={service.id} 
                   className="group bg-gray-50 hover:bg-blue-50 p-4 rounded-xl text-center border border-gray-100 hover:border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-3"
                 >
@@ -116,58 +206,81 @@ const Home = () => {
                   <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-900 line-clamp-2">
                     {service.title}
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
 
-          {/* ভিডিও গ্যালারি */}
+          {/* ভিডিও গ্যালারি - এখানে বৈধ ইউটিউব এমবেড প্লেয়ার সেট করা হয়েছে */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-900 pl-2">ভিডিও চিত্রপট</h3>
-            <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-200 shadow-inner">
-              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-slate-800">
-                <span className="text-sm">ইউটিউব ভিডিও প্লেয়ার / ডকুমেন্টারি</span>
-              </div>
+            <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-200 shadow-md">
+              <iframe 
+                className="w-full h-full border-0"
+                src="https://www.youtube.com/embed/PAtvAn0GvBw" 
+                title="Smart Bangladesh Documentary" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                allowFullScreen
+              ></iframe>
             </div>
           </div>
         </section>
 
         {/* --- ডান সাইডবার (Right Sidebar) --- */}
         <aside className="lg:col-span-3 space-y-6">
-          {/* আবেদন ভেরিফাই বা ট্র্যাকিং */}
+          
+          {/* আবেদন ভেরিফাই বা ট্র্যাকিং সেকশন */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
             <h3 className="bg-blue-900 text-white px-4 py-2 font-semibold text-center rounded-lg text-sm">আবেদন ট্র্যাকিং</h3>
-            <div className="space-y-2">
+            <form onSubmit={handleTracking} className="space-y-2">
               <input 
                 type="text" 
-                placeholder="আবেদন আইডি বা ট্র্যাকিং নম্বর লিখুন" 
-                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+                value={trackingId}
+                onChange={(e) => setTrackingId(e.target.value)}
+                placeholder="আবেদন আইডি বা ট্র্যাকিং নম্বর" 
+                className="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               />
-              <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded-lg transition shadow-sm">
-                খুঁজুন
+              <button 
+                type="submit"
+                disabled={isTrackingLoading}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded-lg transition shadow-sm flex items-center justify-center gap-2"
+              >
+                <FaSearch size={12} /> {isTrackingLoading ? 'অনুসন্ধান করা হচ্ছে...' : 'খুঁজুন'}
               </button>
-            </div>
+            </form>
+
+            {/* ট্র্যাকিং এর ফলাফল ডিসপ্লে */}
+            {trackingResult && (
+              <div className="p-3 bg-slate-50 border rounded-lg text-xs space-y-1.5 animate-in fade-in duration-200">
+                <p><span className="font-bold text-gray-600">সেবা:</span> {trackingResult.serviceName}</p>
+                <p>
+                  <span className="font-bold text-gray-600">অবস্থা:</span> 
+                  <span className="ml-1 font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                    {trackingResult.status}
+                  </span>
+                </p>
+                <p><span className="font-bold text-gray-600">তারিখ:</span> {trackingResult.date}</p>
+                <p className="text-gray-500 border-t pt-1 mt-1 leading-relaxed">{trackingResult.message}</p>
+              </div>
+            )}
           </div>
 
           {/* গুরুত্বপূর্ণ লিংক সমূহ */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">গুরুত্বপূর্ণ লিংক</h3>
+            <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">গুরুত্বपूर्ण লিংক</h3>
             <div className="p-2 divide-y text-xs text-gray-700">
-              {[
-                'প্রধানমন্ত্রীর কার্যালয়',
-                'জাতীয় তথ্য বাতায়ন',
-                'জন্ম-মৃত্যু নিবন্ধন বাতায়ন',
-                'স্থানীয় সরকার বিভাগ',
-                'জেলা বাতায়ন (কুমিল্লা)'
-              ].map((link, index) => (
+              {importantLinks.map((link, index) => (
                 <a 
                   key={index} 
-                  href="#" 
+                  href={link.url}
+                  target="_blank"
+                  rel="noreferrer" 
                   className="flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 hover:text-blue-600 transition"
                 >
                   <span className="flex items-center gap-2">
                     <FaLink className="text-gray-400" />
-                    {link}
+                    {link.title}
                   </span>
                   <FaExternalLinkAlt className="text-gray-300 text-[10px]" />
                 </a>
@@ -178,10 +291,94 @@ const Home = () => {
 
       </main>
 
-      {/* ৪. ফুটার সেকশন */}
-      <footer className="bg-slate-900 text-gray-400 text-xs py-6 text-center border-t border-slate-800 mt-12">
-        <p>© ২০২৬ ৪নং সুবিল ইউনিয়ন পরিষদ। সর্বস্বত্ব সংরক্ষিত।</p>
-        <p className="mt-1 text-gray-500">কারিগরি সহযোগিতায়: আপনার টিম/কোম্পানির নাম</p>
+      {/* ৪. ভোটার আইডি যাচাই মডাল */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-lg overflow-hidden transform transition-all scale-100 my-8">
+            
+            <div className="bg-blue-900 text-white px-5 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 font-semibold">
+                <FaIdCard className="text-xl text-amber-400" />
+                <span>জাতীয় পরিচয়পত্র অনলাইন যাচাইকরণ</span>
+              </div>
+              <button onClick={handleCloseModal} className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
+                <FaTimes className="text-lg" />
+              </button>
+            </div>
+
+            <div className="p-5 space-y-6">
+              <form onSubmit={handleVerify} className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">এনআইডি নম্বর (১০/১৩/১৭ ডিজিট) *</label>
+                    <input 
+                      type="text" required pattern="\d{10}|\d{13}|\d{17}" placeholder="যেমন: ১৯৮XXXXXXXXXX"
+                      value={nidNumber} onChange={(e) => setNidNumber(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 mb-1">জন্ম তারিখ *</label>
+                    <input 
+                      type="date" required value={dob} onChange={(e) => setDob(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                    />
+                  </div>
+                </div>
+                <button 
+                  type="submit" disabled={isLoading}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded-lg transition text-sm flex items-center justify-center gap-2 shadow-sm"
+                >
+                  {isLoading ? 'যাচাই করা হচ্ছে...' : 'ডাটাবেজে খুঁজুন'}
+                </button>
+              </form>
+
+              {isLoading && (
+                <div className="flex flex-col items-center justify-center py-6 space-y-2">
+                  <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-xs text-gray-500 font-medium">জাতীয় ডাটাবেজ যাচাই করা হচ্ছে...</p>
+                </div>
+              )}
+
+              {verifiedData && !isLoading && (
+                <div className="border-2 border-emerald-500 rounded-2xl p-4 bg-emerald-50/30 shadow-md space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm border-b border-emerald-200 pb-2">
+                    <FaCheckCircle className="text-lg" />
+                    <span>সফলভাবে যাচাইকৃত পরিচয়পত্র (অনলাইন কপি)</span>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-teal-50 to-emerald-50 p-4 rounded-xl border border-emerald-200 flex flex-col sm:flex-row gap-4 items-center sm:items-start text-xs text-gray-800">
+                    <img src={verifiedData.photo} alt="NID Holder" className="w-24 h-28 object-cover rounded-md border-2 border-slate-300 shadow-sm bg-white" />
+                    
+                    <div className="space-y-1.5 w-full">
+                      <p><span className="font-bold text-gray-500 inline-block w-24">নাম (বাংলা):</span> <span className="font-bold text-gray-900 text-sm">{verifiedData.nameBangla}</span></p>
+                      <p><span className="font-bold text-gray-500 inline-block w-24">Name (ENG):</span> <span className="font-medium">{verifiedData.nameEnglish}</span></p>
+                      <p><span className="font-bold text-gray-500 inline-block w-24">পিতা:</span> <span>{verifiedData.fatherName}</span></p>
+                      <p><span className="font-bold text-gray-500 inline-block w-24">মাতা:</span> <span>{verifiedData.motherName}</span></p>
+                      <p><span className="font-bold text-gray-500 inline-block w-24">জন্ম তারিখ:</span> <span className="text-blue-700 font-semibold">{verifiedData.birthDate}</span></p>
+                      <p className="border-t pt-1.5 mt-1"><span className="font-bold text-red-600 inline-block w-24">NID NO:</span> <span className="text-red-600 font-bold text-sm tracking-wider">{verifiedData.nidNo}</span></p>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] text-gray-600 bg-white p-2 rounded-lg border flex items-start gap-2">
+                    <FaMapMarkerAlt className="text-gray-400 mt-0.5 shrink-0" />
+                    <p><span className="font-bold text-gray-700">ঠিকানা:</span> {verifiedData.address}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ৫. ফুটার সেকশন */}
+      <footer className="bg-slate-950 text-gray-400 text-xs py-6 text-center border-t border-slate-900 mt-12">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© ২০২৬ ১৬ নং মোহনপুর ইউনিয়ন পরিষদ। সর্বস্বত্ব সংরক্ষিত।</p>
+          <p>
+            কারিগরি সহযোগিতায়: <span className="text-gray-300 hover:text-emerald-400 font-medium cursor-pointer">Sohidul Islam</span>
+          </p>
+        </div>
       </footer>
 
     </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // রাউটিং এর জন্য Link ইম্পোর্ট করা হলো
 import logo from '../../assets/image/amarunion.logo.jpeg';
 import {
   FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaFacebook, 
@@ -6,6 +7,15 @@ import {
 } from 'react-icons/fa';
 
 const Footer = () => {
+  // রাউটার ফাইলের পাথ অনুযায়ী গুরুত্বপূর্ণ সেবার একটি অ্যারে তৈরি করা হলো
+  const quickLinks = [
+    { title: 'ট্রেড লাইসেন্স আবেদন', path: '/service/trade-license' },
+    { title: 'নাগরিকত্ব সনদের আবেদন', path: '/service/citizenship-certificate' },
+    { title: 'জন্ম ও মৃত্যু নিবন্ধন', path: '/service/death-certificate' }, // রাউটারের পাথ অনুযায়ী
+    { title: 'চারিত্রিক সনদ আবেদন', path: '/service/premises-license' }, // রাউটারের পাথ অনুযায়ী
+    { title: 'ওয়ারিশন সনদ আবেদন', path: '/service/warish-certificate' }
+  ];
+
   return (
     <footer className="bg-slate-950 text-gray-300 font-sans mt-16 border-t-4 border-emerald-600">
       
@@ -15,9 +25,9 @@ const Footer = () => {
         {/* কলাম ১: ইউনিয়ন পরিষদের পরিচিতি */}
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            {/* লোগো সেকশন - <img> ট্যাগ দিয়ে ঠিক করা হয়েছে */}
+            {/* লোগো সেকশন - <img> ট্যাগ দিয়ে ঠিক করা হয়েছে */}
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow overflow-hidden">
-              <img 
+              <img
                 src={logo}
                 alt="Amar Union Logo"
                 className="w-full h-full object-cover"
@@ -62,24 +72,21 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* কলাম ৩: দ্রুত লিংক সমূহ (Quick Links) */}
+        {/* কলাম ৩: দ্রুত লিংক সমূহ (Quick Links) - এখানে <Link> সেট করা হয়েছে */}
         <div className="space-y-4">
           <h4 className="text-white font-semibold text-base border-b border-slate-800 pb-2">
             গুরুত্বপূর্ণ সেবা
           </h4>
           <ul className="space-y-2 text-sm">
-            {[
-              'ট্রেড লাইসেন্স আবেদন',
-              'নাগরিকত্ব সনদের আবেদন',
-              'জন্ম ও মৃত্যু নিবন্ধন',
-              'অভিযোগ ও মতামত',
-              'ইউপি সদস্য তালিকা'
-            ].map((item, index) => (
+            {quickLinks.map((link, index) => (
               <li key={index}>
-                <a href="#" className="hover:text-emerald-400 flex items-center gap-2 group transition duration-200 text-gray-400">
+                <Link 
+                  to={link.path} 
+                  className="hover:text-emerald-400 flex items-center gap-2 group transition duration-200 text-gray-400"
+                >
                   <FaArrowRight size={10} className="text-slate-600 group-hover:text-emerald-400 transition duration-200" />
-                  {item}
-                </a>
+                  {link.title}
+                </Link>
               </li>
             ))}
           </ul>
@@ -111,7 +118,7 @@ const Footer = () => {
       {/* নিচের কপিরাইট এবং ক্রেডিট সেকশন */}
       <div className="bg-slate-950 border-t border-slate-900/60 py-6 px-6 text-center text-xs text-gray-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© ২০২৬ ৪নং সুবিল ইউনিয়ন পরিষদ। সর্বস্বত্ব সংরক্ষিত।</p>
+          <p>© ২০২৬ ৪নং সুবিল应用 ইউনিয়ন পরিষদ। সর্বস্বত্ব সংরক্ষিত।</p>
           <p>
             কারিগরি সহযোগিতায়: <span className="text-gray-400 hover:text-emerald-400 cursor-pointer font-medium">Sohidul Islam</span>
           </p>

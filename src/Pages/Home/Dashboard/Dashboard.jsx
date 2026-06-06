@@ -11,11 +11,11 @@ const Dashboard = () => {
     const [loadingProfile, setLoadingProfile] = useState(true);
     const navigate = useNavigate();
 
-    // প্রোফাইল লোড করা
+    // 💡 ফিক্স ১: user.number এর বদলে ইউনিক user.email দিয়ে ডাটাবেজ থেকে প্রোফাইল লোড করা
     useEffect(() => {
         if (user?.email) {
             setLoadingProfile(true);
-            fetch(`http://localhost:5000/api/users/${user.number}`)
+            fetch(`http://localhost:5000/api/users/${user.email}`)
                 .then(res => res.json())
                 .then(data => {
                     setUserProfile(data);
@@ -72,20 +72,34 @@ const Dashboard = () => {
                 <div className="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm mb-8 border border-slate-100">
                     <h1 className="text-xl md:text-2xl font-bold text-slate-800">স্বাগতম, ড্যাশবোর্ডে</h1>
                     <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-slate-600 hidden sm:inline">{userProfile?.displayName || user?.displayName || "ব্যবহারকারী"}</span>
-                        <img src={userProfile?.photoURL || user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt="Profile" className="h-10 w-10 rounded-full object-cover border border-[#0b6330]" />
+                        <span className="text-sm font-semibold text-slate-600 hidden sm:inline">{userProfile?.name || userProfile?.displayName || user?.displayName || "ব্যবহারকারী"}</span>
+                        {/* 💡 ফিক্স ২: রিয়েল-টাইম ইমেজ লোডিং নিশ্চিত করার জন্য key ও সঠিক সোর্স ব্যবহার */}
+                        <img 
+                            key={userProfile?.photoURL || user?.photoURL}
+                            src={userProfile?.photoURL || user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} 
+                            alt="Profile" 
+                            className="h-10 w-10 rounded-full object-cover border border-[#0b6330]" 
+                        />
                     </div>
                 </div>
 
-                {/* প্রোফাইল কার্ড */}
+                {/* প্রোফাইলカード */}
                 <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-6 max-w-2xl mb-10">
                     <div className="flex flex-col sm:flex-row items-center gap-6">
-                        <img src={userProfile?.photoURL || user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} alt="User Profile" className="h-28 w-28 rounded-full object-cover ring-4 ring-green-100 shadow" />
+                        {/* 💡 ফিক্স ৩: মেইন প্রোফাইল ছবির জন্য রেন্ডারিং ইস্যু সমাধান */}
+                        <img 
+                            key={userProfile?.photoURL || user?.photoURL}
+                            src={userProfile?.photoURL || user?.photoURL || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"} 
+                            alt="User Profile" 
+                            className="h-28 w-28 rounded-full object-cover ring-4 ring-green-100 shadow" 
+                        />
                         <div className="text-center sm:text-left space-y-2">
                             <span className="bg-green-100 text-[#0b6330] text-xs font-bold px-3 py-1 rounded-full uppercase">নাগরিক প্রোফাইল</span>
-                            <h3 className="text-2xl font-extrabold text-slate-800">{userProfile?.displayName || user?.displayName || "নাম পাওয়া যায়নি"}</h3>
+                            <h3 className="text-2xl font-extrabold text-slate-800">{userProfile?.name || userProfile?.displayName || user?.displayName || "নাম পাওয়া যায়নি"}</h3>
                             <p className="text-sm text-slate-500 font-medium">📧 ইমেইল: {user?.email || "ইমেইল পাওয়া যায়নি"}</p>
-                            <p className="text-sm text-slate-600 font-medium">📞 মোবাইল নম্বর: {userProfile?.phoneNumber || "নম্বর পাওয়া যায়নি"}</p>
+                            {/* 💡 ফিক্স ৪: ডাটাবেজের 'mobile' ফিল্ডটি এখানে কল করা হয়েছে যেন সঠিক নম্বর শো করে */}
+                            <p className="text-sm text-slate-600 font-medium">📞 মোবাইল নম্বর: {userProfile?.mobile || user?.phoneNumber || "নম্বর পাওয়া যায়নি"}</p>
+                            {userProfile?.nidOrBrd && <p className="text-sm text-slate-600 font-medium">🆔 এনআইডি / জন্ম নিবন্ধন: {userProfile.nidOrBrd}</p>}
                             <p className="text-xs text-slate-400">অ্যাকাউন্ট আইডি (UID): {user?.uid}</p>
                         </div>
                     </div>
@@ -97,13 +111,13 @@ const Dashboard = () => {
                     {loadingApps ? (
                         <div className="p-6 text-center text-slate-500">আবেদনপত্র লোড হচ্ছে...</div>
                     ) : applications.length === 0 ? (
-                        <div className="p-6 text-center text-slate-500">আপনি এখনো কোনো বিষয়ে আবেদন করেননি।</div>
+                        <div className="p-6 text-center text-slate-500">আপনি এখনো কোনো বিষয়ে আবেদন করেননি।</div>
                     ) : (
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-100 text-slate-700 text-sm font-semibold">
                                     <th className="p-4">আবেদন আইডি</th>
-                                    <th className="p-4">আবেদনের বিষয় (সেবা)</th>
+                                    <th className="p-4">আবেদনের বিষয় (সেবা)</th>
                                     <th className="p-4">আবেদনের তারিখ</th>
                                     <th className="p-4">অবস্থা (Status)</th>
                                 </tr>

@@ -18,6 +18,13 @@ import Landless_certificate from "../Components/Landless_certificate/Landless_ce
 import AdminLogin from "../Pages/Home/admin/AdminLogin";
 import AdminDashboard from "../Pages/Home/admin/AdminDashboard";
 import AdminProtectedRoute from "../Components/AdminProtectedRoute/AdminProtectedRoute";
+import Intro from "../Pages/Home/Intro/Intro";
+import Glance from "../Pages/Home/Glance/Glance";
+import Structure from "../Pages/Home/Structure/Structure";
+import Current_chairman from "../Pages/Home/Current_chairman/Current_chairman";
+import Councillors from "../Pages/Home/Councillors/Councillors";
+import Secretary from "../Pages/Home/Secretary/Secretary";
+import Ex_chairmans from "../Pages/Home/Ex_chairmans/Ex_chairmans";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +44,13 @@ const router = createBrowserRouter([
       { path: "service/power-of-attorney", element: <Power_of_attorney /> },
       { path: "service/death-certificate", element: <Death_certificate /> },
       { path: "service/landless-certificate", element: <Landless_certificate /> },
+      { path: "service/intro", element: <Intro/> },
+      { path: "service/at-a-glance", element: <Glance/> },
+      { path: "service/structure", element: <Structure/> },
+      { path: "service/current-chairman", element: <Current_chairman/> },
+      { path: "service/councillors", element: <Councillors/> },
+      { path: "service/secretary", element: <Secretary/> },
+      { path: "service/ex-chairmans", element: <Ex_chairmans/> },
     ],
   },
   // 🆕 অ্যাডমিন রাউট (লেআউট ছাড়া)

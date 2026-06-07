@@ -104,10 +104,10 @@ const Navbar = () => {
         }
       ]
     },
-    { name: 'আপডেট', link: '#' },
-    { name: 'গ্যালারী', link: '#' },
-    { name: 'সনদ যাচাই', link: '#' },
-    { name: 'যোগাযোগ', link: '#' },
+    { name: 'আপডেট', link: '/update' },
+    { name: 'গ্যালারী', link: '/gellary' },
+    { name: 'সনদ যাচাই', link: '/check' },
+    { name: 'যোগাযোগ', link: '/contact' },
   ];
 
   return (

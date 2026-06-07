@@ -25,6 +25,12 @@ import Current_chairman from "../Pages/Home/Current_chairman/Current_chairman";
 import Councillors from "../Pages/Home/Councillors/Councillors";
 import Secretary from "../Pages/Home/Secretary/Secretary";
 import Ex_chairmans from "../Pages/Home/Ex_chairmans/Ex_chairmans";
+import Account from "../Pages/Home/Account/Account";
+import Other_staff from "../Pages/Home/Other_staff/Other_staff";
+import Update from "../Pages/Home/Update/Update";
+import Gellary from "../Pages/Home/Gellary/Gellary";
+import Check from "../Pages/Home/Check/Check";
+import Contact from "../Pages/Home/Contact/Contact";
 
 const router = createBrowserRouter([
   {
@@ -51,6 +57,12 @@ const router = createBrowserRouter([
       { path: "service/councillors", element: <Councillors/> },
       { path: "service/secretary", element: <Secretary/> },
       { path: "service/ex-chairmans", element: <Ex_chairmans/> },
+      { path: "service/accountant", element: <Account/> },
+      { path: "service/other-staff", element: <Other_staff/> },
+      { path: "/update", element: <Update/> },
+      { path: "/gellary", element: <Gellary/> },
+      { path: "/check", element: <Check/> },
+      { path: "/contact", element: <Contact/> },
     ],
   },
   // 🆕 অ্যাডমিন রাউট (লেআউট ছাড়া)

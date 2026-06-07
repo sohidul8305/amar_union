@@ -31,6 +31,7 @@ import Update from "../Pages/Home/Update/Update";
 import Gellary from "../Pages/Home/Gellary/Gellary";
 import Check from "../Pages/Home/Check/Check";
 import Contact from "../Pages/Home/Contact/Contact";
+import Dashboarrd from "../Pages/Home/Dashboarrd/Dashboarrd";
 
 const router = createBrowserRouter([
   {
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
   {
     path: "/admin-login",
     element: <AdminLogin />,
+  },
+  {
+    path: "/admin-dashboard-secret",
+    element: <Dashboarrd />,
   },
   {
     path: "/admin-dashboard",

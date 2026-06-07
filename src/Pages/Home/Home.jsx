@@ -1,49 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import logo from '../../assets/image/amarunion.logo.jpeg';
 
-import { 
-  FaFileAlt, FaUserCheck, FaUsers, FaChild, FaCertificate, 
-  FaPassport, FaHeart, FaHandHoldingHeart, FaPhoneAlt, FaLink, 
-  FaExternalLinkAlt, FaIdCard, FaTimes, FaCheckCircle, FaMapMarkerAlt,
-  FaSearch
-} from 'react-icons/fa';
+// react-icons এর সব আইকন ডাইনামিক ব্যবহারের জন্য ইম্পোর্ট করা হলো
+import * as FaIcons from 'react-icons/fa'; 
 
 const Home = () => {
-  // মডাল ও ভেরিফিকেশন স্টেট ম্যানেজমেন্ট
+  // ----------------------------------------------------
+  // ১. ডাইনামিক স্টেট ম্যানেজমেন্ট (ডিফল্ট ডাটা সহ)
+  // ----------------------------------------------------
+  const [unionInfo, setUnionInfo] = useState({
+    name: '১৬ নং মোহনপুর ইউনিয়ন পরিষদ',
+    subTitle: 'দেবিদ্বার, কুমিল্লা',
+    tagline: 'স্মার্ট ইউনিয়ন, SMART বাংলাদেশ',
+    logoUrl: logo,
+    copyright: '© ২০২৬ ১৬ নং মোহনপুর ইউনিয়ন পরিষদ। সর্বস্বত্ব সংরক্ষিত।',
+    developer: 'Sohidul Islam'
+  });
+
+  const [scrollingNotice, setScrollingNotice] = useState('১৬ নং মোহনপুর ইউনিয়ন পরিষদ অনলাইন সেবা কার্যক্রমে আপনাকে স্বাগতম। যেকোনো সনদের জন্য অনলাইনে আবেদন করুন।');
+
+  const [notices, setNotices] = useState([
+    { _id: '1', title: 'ভিজিডি চক্রের চাল বিতরণ সংক্রান্ত নোটিশ', date: '২৬ মে, ২০২৬' },
+    { _id: '2', title: '২০২৬-২৭ অর্থ বছরের বাজেট ঘোষণা', date: '২০ মে, ২০২৬' }
+  ]);
+
+  const [services, setServices] = useState([
+    { _id: '1', title: 'ট্রেড লাইসেন্স', path: '/service/trade-license', iconName: 'FaFileAlt', iconColor: 'text-blue-600' },
+    { _id: '2', title: 'charitrik', path: '/service/premises-license', iconName: 'FaUserCheck', iconColor: 'text-green-600' },
+    { _id: '3', title: 'নাগরিকত্ব সনদ', path: '/service/citizenship-certificate', iconName: 'FaUsers', iconColor: 'text-orange-600' },
+    { _id: '4', title: 'জন্ম ও মৃত্যু নিবন্ধন', path: '/service/death-certificate', iconName: 'FaChild', iconColor: 'text-purple-600' },
+    { _id: '5', title: 'ওয়ারিশন সনদ', path: '/service/warish-certificate', iconName: 'FaCertificate', iconColor: 'text-teal-600' },
+    { _id: '6', title: 'प्रत्ययनपत्र', path: '/service/successor-certificate', iconName: 'FaPassport', iconColor: 'text-red-600' },
+    { _id: '7', title: 'অবিবাহিত সনদ', path: '/service/power-of-attorney', iconName: 'FaHeart', iconColor: 'text-pink-600' },
+    { _id: '8', title: 'প্রতিবন্ধী ভাতা / ভূমিহীন সনদ', path: '/service/landless-certificate', iconName: 'FaHandHoldingHeart', iconColor: 'text-indigo-600' },
+  ]);
+
+  const [importantLinks, setImportantLinks] = useState([
+    { title: 'প্রধানমন্ত্রীর কার্যালয়', url: 'https://pmo.gov.bd' },
+    { title: 'জাতীয় তথ্য বাতায়ন', url: 'https://bangladesh.gov.bd' },
+    { title: 'জন্ম-মৃত্যু নিবন্ধন বাতায়ন', url: 'https://bdris.gov.bd' },
+    { title: 'স্থানীয় সরকার বিভাগ', url: 'https://lgd.gov.bd' },
+    { title: 'জেলা বাতায়ন (কুমিল্লা)', url: 'https://www.comilla.gov.bd' }
+  ]);
+
+  const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/PAtvAn0GvBw');
+
+  // ২. ইউজার ইন্টারঅ্যাকশন স্টেটসমূহ
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nidNumber, setNidNumber] = useState('');
   const [dob, setDob] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [verifiedData, setVerifiedData] = useState(null);
 
-  // আবেদন ট্র্যাকিং স্টেট
   const [trackingId, setTrackingId] = useState('');
   const [trackingResult, setTrackingResult] = useState(null);
   const [isTrackingLoading, setIsTrackingLoading] = useState(false);
 
-  // নাগরিক সেবা সমূহের ডাটা
-  const services = [
-    { id: 1, title: 'ট্রেড লাইসেন্স', path: '/service/trade-license', icon: <FaFileAlt className="text-blue-600 text-2xl" /> },
-    { id: 2, title: 'চারিত্রিক সনদ', path: '/service/premises-license', icon: <FaUserCheck className="text-green-600 text-2xl" /> },
-    { id: 3, title: 'নাগরিকত্ব সনদ', path: '/service/citizenship-certificate', icon: <FaUsers className="text-orange-600 text-2xl" /> },
-    { id: 4, title: 'জন্ম ও মৃত্যু নিবন্ধন', path: '/service/death-certificate', icon: <FaChild className="text-purple-600 text-2xl" /> },
-    { id: 5, title: 'ওয়ারিশন সনদ', path: '/service/warish-certificate', icon: <FaCertificate className="text-teal-600 text-2xl" /> },
-    { id: 6, title: 'প্রত্যয়নপত্র', path: '/service/successor-certificate', icon: <FaPassport className="text-red-600 text-2xl" /> },
-    { id: 7, title: 'অবিবাহিত সনদ', path: '/service/power-of-attorney', icon: <FaHeart className="text-pink-600 text-2xl" /> },
-    { id: 8, title: 'প্রতিবন্ধী ভাতা / ভূমিহীন সনদ', path: '/service/landless-certificate', icon: <FaHandHoldingHeart className="text-indigo-600 text-2xl" /> },
-  ];
+  // ----------------------------------------------------
+  // ৩. ডাটাবেজ থেকে ডাটা লোড করার মেকানিজম (সুরক্ষিত চেক সহ)
+  // ----------------------------------------------------
+  useEffect(() => {
+    const loadDatabaseData = async () => {
+      try {
+        const infoRes = await axios.get('/api/union-info').catch(() => null);
+        const noticeRes = await axios.get('/api/notices').catch(() => null);
+        const serviceRes = await axios.get('/api/services').catch(() => null);
+        const linkRes = await axios.get('/api/important-links').catch(() => null);
+        
+        if (infoRes && infoRes.data) setUnionInfo(infoRes.data);
+        if (noticeRes && noticeRes.data) {
+          if (noticeRes.data.scrolling) setScrollingNotice(noticeRes.data.scrolling);
+          if (Array.isArray(noticeRes.data.list)) setNotices(noticeRes.data.list);
+        }
+        if (serviceRes && Array.isArray(serviceRes.data)) setServices(serviceRes.data);
+        if (linkRes && Array.isArray(linkRes.data)) setImportantLinks(linkRes.data);
+      } catch (error) {
+        console.log("কোড সুরক্ষিত আছে, ডিফল্ট ডেটা প্রদর্শিত হচ্ছে।");
+      }
+    };
 
-  // গুরুত্বপূর্ণ লিংক সমূহের রিয়েল ডাটা
-  const importantLinks = [
-    { title: 'প্রধানমন্ত্রীর কার্যালয়', url: 'https://pmo.gov.bd' },
-    { title: 'জাতীয় তথ্য বাতায়ন', url: 'https://bangladesh.gov.bd' },
-    { title: 'জন্ম-মৃত্যু নিবন্ধন বাতায়ন', url: 'https://bdris.gov.bd' },
-    { title: 'স্থানীয় সরকার বিভাগ', url: 'https://lgd.gov.bd' },
-    { title: 'জেলা বাতায়ন (কুমিল্লা)', url: 'https://www.comilla.gov.bd' }
-  ];
+    loadDatabaseData();
+  }, []);
 
-  // ভোটার আইডি ভেরিফাই সাবমিট হ্যান্ডলার
+  // আইকন জেনারেটর ফাংশন
+  const renderDynamicIcon = (iconName, colorClass) => {
+    const SelectedIcon = FaIcons[iconName];
+    return SelectedIcon ? <SelectedIcon className={`${colorClass} text-2xl`} /> : <FaIcons.FaFileAlt className={`${colorClass} text-2xl`} />;
+  };
+
+  // ৪. হ্যান্ডলার ফাংশন সমূহ
   const handleVerify = (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -64,7 +111,6 @@ const Home = () => {
     }, 1500);
   };
 
-  // আবেদন ট্র্যাকিং হ্যান্ডলার
   const handleTracking = (e) => {
     e.preventDefault();
     if (!trackingId.trim()) return;
@@ -84,7 +130,6 @@ const Home = () => {
     }, 1200);
   };
 
-  // মডাল বন্ধ করার ফাংশন
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setVerifiedData(null);
@@ -101,18 +146,18 @@ const Home = () => {
           <div className="flex items-center gap-4 mx-auto md:mx-0">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden">
               <img
-                src={logo}
-                alt="Amar Union Logo"
+                src={unionInfo.logoUrl}
+                alt="Union Logo"
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="text-left">
-              <h1 className="text-2xl md:text-3xl font-bold">১৬ নং মোহনপুর ইউনিয়ন পরিষদ</h1>
-              <p className="text-sm text-gray-200">দেবিদ্বার, কুমিল্লা</p>
+              <h1 className="text-2xl md:text-3xl font-bold">{unionInfo.name}</h1>
+              <p className="text-sm text-gray-200">{unionInfo.subTitle}</p>
             </div>
           </div>
           <div className="hidden lg:block bg-white/10 px-4 py-2 rounded-lg text-sm backdrop-blur-sm">
-            স্মার্ট ইউনিয়ন, SMART বাংলাদেশ
+            {unionInfo.tagline}
           </div>
         </div>
       </header>
@@ -121,35 +166,33 @@ const Home = () => {
       <div className="bg-amber-500 text-white py-2 px-4 shadow-inner flex items-center">
         <span className="bg-amber-700 text-xs uppercase font-bold px-3 py-1 rounded mr-3 whitespace-nowrap">নোটিশ:</span>
         <marquee className="text-sm font-medium" behavior="scroll" direction="left">
-          ১৬ নং মোহনপুর ইউনিয়ন পরিষদ অনলাইন সেবা কার্যক্রমে আপনাকে স্বাগতম। যেকোনো সনদের জন্য অনলাইনে আবেদন করুন।
+          {scrollingNotice}
         </marquee>
       </div>
 
-      {/* ৩. মেইন থ্রি-কলাম লেআউট */}
+      {/* ৩. মেইন লেআউট */}
       <main className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* --- বাম সাইডবার (Left Sidebar) --- */}
+        {/* --- বাম সাইডবার --- */}
         <aside className="lg:col-span-3 space-y-6">
           {/* নোটিশ বোর্ড */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">নোটিশ বোর্ড</h3>
             <div className="p-4 space-y-3 text-sm">
-              <div className="border-b pb-2 hover:text-blue-600 cursor-pointer transition">
-                <p className="font-medium">ভিজিডি চক্রের চাল বিতরণ সংক্রান্ত নোটিশ</p>
-                <span className="text-xs text-gray-400">২৬ মে, ২০২৬</span>
-              </div>
-              <div className="border-b pb-2 hover:text-blue-600 cursor-pointer transition">
-                <p className="font-medium">২০২৬-২৭ অর্থ বছরের বাজেট ঘোষণা</p>
-                <span className="text-xs text-gray-400">২০ মে, ২০২৬</span>
-              </div>
+              {Array.isArray(notices) && notices.map((notice) => (
+                <div key={notice._id} className="border-b pb-2 hover:text-blue-600 cursor-pointer transition">
+                  <p className="font-medium">{notice.title}</p>
+                  <span className="text-xs text-gray-400">{notice.date}</span>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* ভোটার আইডি কার্ড যাচাই সেকশন */}
+          {/* ভোটার আইডি কার্ড যাচাই */}
           <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl shadow-sm border border-blue-100 overflow-hidden p-4 text-center">
             <div className="flex justify-center mb-2">
               <div className="p-3 bg-blue-600 text-white rounded-full shadow-md">
-                <FaIdCard className="text-2xl" />
+                <FaIcons.FaIdCard className="text-2xl" />
               </div>
             </div>
             <h4 className="font-bold text-gray-800 text-base mb-1">ভোটার আইডি কার্ড যাচাই</h4>
@@ -158,7 +201,7 @@ const Home = () => {
               onClick={() => setIsModalOpen(true)}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2.5 px-4 rounded-lg transition-all duration-300 transform hover:scale-[1.02] shadow-sm flex items-center justify-center gap-2"
             >
-              <FaCheckCircle /> এনআইডি ভেরিফাই করুন
+              <FaIcons.FaCheckCircle /> এনআইডি ভেরিফাই করুন
             </button>
           </div>
 
@@ -167,12 +210,12 @@ const Home = () => {
             <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">জাতীয় হেল্পলাইন</h3>
             <div className="p-4 grid grid-cols-2 gap-3 text-center text-xs font-bold text-gray-700">
               <div className="bg-red-50 p-3 rounded-lg border border-red-100 flex flex-col items-center gap-1">
-                <FaPhoneAlt className="text-red-500 text-lg" />
+                <FaIcons.FaPhoneAlt className="text-red-500 text-lg" />
                 <span>জরুরী সেবা</span>
                 <span className="text-red-600 text-sm">৯৯৯</span>
               </div>
               <div className="bg-green-50 p-3 rounded-lg border border-green-100 flex flex-col items-center gap-1">
-                <FaPhoneAlt className="text-green-500 text-lg" />
+                <FaIcons.FaPhoneAlt className="text-green-500 text-lg" />
                 <span>তথ্য সেবা</span>
                 <span className="text-green-600 text-sm">৩৩৩</span>
               </div>
@@ -194,14 +237,14 @@ const Home = () => {
 
             {/* সেবাসমূহের গ্রিড */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {services.map((service) => (
+              {Array.isArray(services) && services.map((service) => (
                 <Link 
                   to={service.path}
-                  key={service.id} 
+                  key={service._id} 
                   className="group bg-gray-50 hover:bg-blue-50 p-4 rounded-xl text-center border border-gray-100 hover:border-blue-200 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-3"
                 >
                   <div className="p-3 bg-white rounded-lg shadow-sm group-hover:scale-110 transition-transform duration-300">
-                    {service.icon}
+                    {renderDynamicIcon(service.iconName, service.iconColor)}
                   </div>
                   <span className="text-sm font-semibold text-gray-700 group-hover:text-blue-900 line-clamp-2">
                     {service.title}
@@ -211,13 +254,13 @@ const Home = () => {
             </div>
           </div>
 
-          {/* ভিডিও গ্যালারি - এখানে বৈধ ইউটিউব এমবেড প্লেয়ার সেট করা হয়েছে */}
+          {/* ভিডিও গ্যালারি */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-900 pl-2">ভিডিও চিত্রপট</h3>
             <div className="aspect-video w-full rounded-xl overflow-hidden bg-gray-200 shadow-md">
               <iframe 
                 className="w-full h-full border-0"
-                src="https://www.youtube.com/embed/PAtvAn0GvBw" 
+                src={videoUrl} 
                 title="Smart Bangladesh Documentary" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                 allowFullScreen
@@ -226,10 +269,9 @@ const Home = () => {
           </div>
         </section>
 
-        {/* --- ডান সাইডবার (Right Sidebar) --- */}
+        {/* --- ডান সাইডবার --- */}
         <aside className="lg:col-span-3 space-y-6">
-          
-          {/* আবেদন ভেরিফাই বা ট্র্যাকিং সেকশন */}
+          {/* আবেদন ট্র্যাকিং সেকশন */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
             <h3 className="bg-blue-900 text-white px-4 py-2 font-semibold text-center rounded-lg text-sm">আবেদন ট্র্যাকিং</h3>
             <form onSubmit={handleTracking} className="space-y-2">
@@ -246,13 +288,12 @@ const Home = () => {
                 disabled={isTrackingLoading}
                 className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium py-2 rounded-lg transition shadow-sm flex items-center justify-center gap-2"
               >
-                <FaSearch size={12} /> {isTrackingLoading ? 'অনুসন্ধান করা হচ্ছে...' : 'খুঁজুন'}
+                <FaIcons.FaSearch size={12} /> {isTrackingLoading ? 'অনুসন্ধান করা হচ্ছে...' : 'খুঁজুন'}
               </button>
             </form>
 
-            {/* ট্র্যাকিং এর ফলাফল ডিসপ্লে */}
             {trackingResult && (
-              <div className="p-3 bg-slate-50 border rounded-lg text-xs space-y-1.5 animate-in fade-in duration-200">
+              <div className="p-3 bg-slate-50 border rounded-lg text-xs space-y-1.5">
                 <p><span className="font-bold text-gray-600">সেবা:</span> {trackingResult.serviceName}</p>
                 <p>
                   <span className="font-bold text-gray-600">অবস্থা:</span> 
@@ -268,9 +309,9 @@ const Home = () => {
 
           {/* গুরুত্বপূর্ণ লিংক সমূহ */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">গুরুত্বपूर्ण লিংক</h3>
+            <h3 className="bg-blue-900 text-white px-4 py-3 font-semibold text-center">গুরুত্বপূর্ণ লিংক</h3>
             <div className="p-2 divide-y text-xs text-gray-700">
-              {importantLinks.map((link, index) => (
+              {Array.isArray(importantLinks) && importantLinks.map((link, index) => (
                 <a 
                   key={index} 
                   href={link.url}
@@ -279,10 +320,10 @@ const Home = () => {
                   className="flex items-center justify-between px-3 py-2.5 hover:bg-gray-50 hover:text-blue-600 transition"
                 >
                   <span className="flex items-center gap-2">
-                    <FaLink className="text-gray-400" />
+                    <FaIcons.FaLink className="text-gray-400" />
                     {link.title}
                   </span>
-                  <FaExternalLinkAlt className="text-gray-300 text-[10px]" />
+                  <FaIcons.FaExternalLinkAlt className="text-gray-300 text-[10px]" />
                 </a>
               ))}
             </div>
@@ -295,14 +336,13 @@ const Home = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-lg overflow-hidden transform transition-all scale-100 my-8">
-            
             <div className="bg-blue-900 text-white px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2 font-semibold">
-                <FaIdCard className="text-xl text-amber-400" />
+                <FaIcons.FaIdCard className="text-xl text-amber-400" />
                 <span>জাতীয় পরিচয়পত্র অনলাইন যাচাইকরণ</span>
               </div>
               <button onClick={handleCloseModal} className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10 transition">
-                <FaTimes className="text-lg" />
+                <FaIcons.FaTimes className="text-lg" />
               </button>
             </div>
 
@@ -341,9 +381,9 @@ const Home = () => {
               )}
 
               {verifiedData && !isLoading && (
-                <div className="border-2 border-emerald-500 rounded-2xl p-4 bg-emerald-50/30 shadow-md space-y-4 animate-in fade-in zoom-in-95 duration-300">
+                <div className="border-2 border-emerald-500 rounded-2xl p-4 bg-emerald-50/30 shadow-md space-y-4">
                   <div className="flex items-center gap-2 text-emerald-700 font-bold text-sm border-b border-emerald-200 pb-2">
-                    <FaCheckCircle className="text-lg" />
+                    <FaIcons.FaCheckCircle className="text-lg" />
                     <span>সফলভাবে যাচাইকৃত পরিচয়পত্র (অনলাইন কপি)</span>
                   </div>
 
@@ -361,7 +401,7 @@ const Home = () => {
                   </div>
 
                   <div className="text-[11px] text-gray-600 bg-white p-2 rounded-lg border flex items-start gap-2">
-                    <FaMapMarkerAlt className="text-gray-400 mt-0.5 shrink-0" />
+                    <FaIcons.FaMapMarkerAlt className="text-gray-400 mt-0.5 shrink-0" />
                     <p><span className="font-bold text-gray-700">ঠিকানা:</span> {verifiedData.address}</p>
                   </div>
                 </div>
@@ -374,9 +414,9 @@ const Home = () => {
       {/* ৫. ফুটার সেকশন */}
       <footer className="bg-slate-950 text-gray-400 text-xs py-6 text-center border-t border-slate-900 mt-12">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© ২০২৬ ১৬ নং মোহনপুর ইউনিয়ন পরিষদ। সর্বস্বত্ব সংরক্ষিত।</p>
+          <p>{unionInfo.copyright}</p>
           <p>
-            কারিগরি সহযোগিতায়: <span className="text-gray-300 hover:text-emerald-400 font-medium cursor-pointer">Sohidul Islam</span>
+            কারিগরি সহযোগিতায়: <span className="text-gray-300 hover:text-emerald-400 font-medium cursor-pointer">{unionInfo.developer}</span>
           </p>
         </div>
       </footer>

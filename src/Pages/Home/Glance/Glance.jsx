@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { 
   Users, 
   MapPin, 
@@ -6,20 +7,49 @@ import {
   Activity, 
   Briefcase, 
   Calendar 
-} from 'lucide-react'; // Ekta sundor icon library (optional, install na thakle bad dite paren)
+} from 'lucide-react';
 
 const Glance = () => {
-  // Demo Data: Apnar union er tottho ekhane boshate parben
+  // ডায়নামিক ডাটা স্টেট
+  const [liveStats, setLiveStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGlanceData = async () => {
+      try {
+        // আপনার এপিআই থেকে ডেটা আনা হচ্ছে
+        const response = await axios.get('/api/glance');
+        if (response.data && Object.keys(response.data).length > 0) {
+          setLiveStats(response.data);
+        }
+      } catch (error) {
+        console.error("Glance API Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGlanceData();
+  }, []);
+
+  // ব্যাকআপ/ডিফল্ট ডাটা (ডাটাবেজে কিছু না থাকলে এটি দেখাবে)
   const stats = [
-    { id: 1, label: 'মোট জনসংখ্যা', value: '৪৫,২৫০ জন', icon: Users, color: 'bg-blue-500' },
-    { id: 2, label: 'মোট ভোটার', value: '২৮,২০০ জন', icon: Briefcase, color: 'bg-green-500' },
-    { id: 3, label: 'আয়তন', value: '২৫.৪ বর্গ কি.মি.', icon: MapPin, color: 'bg-amber-500' },
-    { id: 4, label: 'শিক্ষার হার', value: '৭২.৫%', icon: School, color: 'bg-purple-500' },
-    { id: 5, label: 'গ্রামের সংখ্যা', value: '১৮ টি', icon: MapPin, color: 'bg-rose-500' },
-    { id: 6, label: 'সরকারি প্রাথমিক বিদ্যালয়', value: '১২ টি', icon: School, color: 'bg-indigo-500' },
-    { id: 7, label: 'স্বাস্থ্য কেন্দ্র', value: '২ টি', icon: Activity, color: 'bg-emerald-500' },
-    { id: 8, label: 'স্থাপিত', value: '১৯৬০ খ্রিস্টাব্দ', icon: Calendar, color: 'bg-teal-500' },
+    { id: 1, label: 'মোট জনসংখ্যা', value: liveStats?.totalPopulation || '৪৫,২৫০ জন', icon: Users, color: 'bg-blue-500' },
+    { id: 2, label: 'মোট ভোটার', value: liveStats?.totalVoters || '২৮,২০০ জন', icon: Briefcase, color: 'bg-green-500' },
+    { id: 3, label: 'আয়তন', value: liveStats?.area || '২৫.৪ বর্গ কি.মি.', icon: MapPin, color: 'bg-amber-500' },
+    { id: 4, label: 'শিক্ষার হার', value: liveStats?.literacyRate || '৭২.৫%', icon: School, color: 'bg-purple-500' },
+    { id: 5, label: 'গ্রামের সংখ্যা', value: liveStats?.totalVillages || '১৮ টি', icon: MapPin, color: 'bg-rose-500' },
+    { id: 6, label: 'সরকারি প্রাথমিক বিদ্যালয়', value: liveStats?.primarySchools || '১২ টি', icon: School, color: 'bg-indigo-500' },
+    { id: 7, label: 'স্বাস্থ্য কেন্দ্র', value: liveStats?.healthCenters || '২ টি', icon: Activity, color: 'bg-emerald-500' },
+    { id: 8, label: 'স্থাপিত', value: liveStats?.established || '১৯৬০ খ্রিস্টাব্দ', icon: Calendar, color: 'bg-teal-500' },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
@@ -37,7 +67,6 @@ const Glance = () => {
         </div>
 
         {/* Responsive Grid Layout */}
-        {/* Mobile-e 1টা, Tablet-e 2টা, Laptop-e 3টা, Desktop-e 4টা card dekhabe */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {stats.map((item) => {
             const IconComponent = item.icon;
@@ -48,11 +77,9 @@ const Glance = () => {
               >
                 <div className="p-5">
                   <div className="flex items-center">
-                    {/* Icon Container */}
                     <div className={`p-3 rounded-lg ${item.color} text-white`}>
                       <IconComponent className="h-6 w-6" aria-hidden="true" />
                     </div>
-                    {/* Content */}
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
@@ -65,8 +92,6 @@ const Glance = () => {
                     </div>
                   </div>
                 </div>
-                
-                {/* Card Footer Accent Line */}
                 <div className={`h-1 w-full ${item.color} opacity-70`} />
               </div>
             );
@@ -80,7 +105,7 @@ const Glance = () => {
             ইউনিয়ন পরিচিতি
           </h3>
           <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-            আমাদের ইউনিয়ন একটি ঐতিহ্যবাহী এবং আদর্শ ইউনিয়ন হিসেবে পরিচিত। কৃষি, শিক্ষা এবং সংস্কৃতির দিক থেকে এই ইউনিয়ন অনন্য অবদান রেখে চলেছে। ডিজিটাল বাংলাদেশ বিনির্মাণের অংশ হিসেবে আমরা আমাদের সব নাগরিক সেবা অনলাইনের মাধ্যমে জনগণের দোরগোড়ায় পৌঁছে দিতে বদ্ধপরিকর।
+            আমাদের ইউনিয়ন একটি ঐতিহ্যবাহী এবং আদেশ ইউনিয়ন হিসেবে পরিচিত। কৃষি, শিক্ষা এবং সংস্কৃতির দিক থেকে এই ইউনিয়ন অনন্য অবদান রেখে চলেছে। ডিজিটাল বাংলাদেশ বিনির্মাণের অংশ হিসেবে আমরা আমাদের সব নাগরিক সেবা অনলাইনের মাধ্যমে জনগণের দোরগোড়ায় পৌঁছে দিতে বদ্ধপরিকর।
           </p>
         </div>
 

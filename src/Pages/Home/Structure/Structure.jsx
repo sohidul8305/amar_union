@@ -1,13 +1,33 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Structure = () => {
-  // ইউনিয়ন পরিষদের চেয়ারম্যান ও সচিব (Top Management)
-  const topManagement = [
+  const [liveStructure, setLiveStructure] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStructureData = async () => {
+      try {
+        const response = await axios.get('/api/structure');
+        if (response.data && Object.keys(response.data).length > 0) {
+          setLiveStructure(response.data);
+        }
+      } catch (error) {
+        console.error("Structure API Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStructureData();
+  }, []);
+
+  // ব্যাকআপ/ডিফল্ট প্রধান কর্তৃপক্ষ ডাটা
+  const topManagement = liveStructure?.topManagement || [
     {
       id: 1,
       name: 'মোঃ আবদুর রহমান',
       role: 'ইউনিয়ন পরিষদ চেয়ারম্যান',
-      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400', // ডেমো ছবি
+      image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400',
       phone: '+৮৮০ ১৭১১-২২৩৩৪৪',
       email: 'chairman@union.gov.bd'
     },
@@ -15,14 +35,14 @@ const Structure = () => {
       id: 2,
       name: 'জনাব সুকোমল বড়ুয়া',
       role: 'ইউনিয়ন পরিষদ সচিব',
-      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400', // ডেমো ছবি
+      image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400',
       phone: '+৮৮০ ১৭১২-৫৫৬৬৭৭',
       email: 'secretary@union.gov.bd'
     }
   ];
 
-  // ইউনিয়ন পরিষদের মেম্বারবৃন্দ (Ward Members)
-  const members = [
+  // ব্যাকআপ/ডিফল্ট মেম্বারদের ডাটা
+  const members = liveStructure?.members || [
     { id: 1, ward: '১ নং ওয়ার্ড', name: 'মোঃ রফিকুল ইসলাম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০১_ _ _ _' },
     { id: 2, ward: '২ নং ওয়ার্ড', name: 'আব্দুল কুদ্দুস', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০২_ _ _ _' },
     { id: 3, ward: '৩ নং ওয়ার্ড', name: 'মোঃ জয়নাল আবেদীন', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০৩_ _ _ _' },
@@ -37,6 +57,14 @@ const Structure = () => {
     { id: 12, ward: '৭, ৮ ও ৯ নং ওয়ার্ড', name: 'মোছাঃ পারভীন সুলতানা', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-১২_ _ _ _' },
   ];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -47,7 +75,7 @@ const Structure = () => {
             সাংগঠনিক কাঠামো
           </h1>
           <p className="mt-3 max-w-2xl mx-auto text-base sm:text-lg text-gray-500">
-            জনগণের সেবায় নিয়োজিত আমাদের ইউনিয়ন পরিষদের সম্মানিত জনপ্রতিনিধি এবং কর্মকর্তাবৃন্দের তালিকা।
+            জনগণের সেবায় নিয়োজিত আমাদের ইউনিয়ন পরিষদের সম্মানিত জনপ্রতিনিধি এবং কর্মকর্তাবৃন্দের তালিকা।
           </p>
           <div className="mt-4 h-1 w-24 bg-green-600 mx-auto rounded-full"></div>
         </div>
@@ -66,10 +94,9 @@ const Structure = () => {
                 className="w-full max-w-sm bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
               >
                 <div className="p-6 text-center">
-                  {/* Profile Image Area */}
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden ring-4 ring-green-500/20 mb-4">
                     <img 
-                      src={person.image} 
+                      src={person.image || 'https://via.placeholder.com/150'} 
                       alt={person.name} 
                       className="w-full h-full object-cover"
                     />
@@ -77,14 +104,15 @@ const Structure = () => {
                   <h3 className="text-xl font-bold text-gray-900">{person.name}</h3>
                   <p className="text-sm font-semibold text-green-600 mt-1">{person.role}</p>
                   
-                  {/* Contact Info */}
                   <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-600 space-y-2">
                     <p className="flex items-center justify-center gap-2">
                       <span className="font-medium text-gray-800">মোবাইল:</span> {person.phone}
                     </p>
-                    <p className="flex items-center justify-center gap-2">
-                      <span className="font-medium text-gray-800">ইমেইল:</span> {person.email}
-                    </p>
+                    {person.email && (
+                      <p className="flex items-center justify-center gap-2">
+                        <span className="font-medium text-gray-800">ইমেইল:</span> {person.email}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -99,14 +127,12 @@ const Structure = () => {
             ইউপি সদস্য ও সংরক্ষিত মহিলা সদস্যবৃন্দ
           </h2>
 
-          {/* Grid Layout: Mobile-e 1টা, Tablet-e 2টা, Desktop-e 3টা/4টা card */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {members.map((member) => (
               <div 
                 key={member.id} 
                 className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:border-green-200 transition-colors duration-300"
               >
-                {/* Ward Badge */}
                 <span className="inline-block text-xs font-bold px-2.5 py-1 rounded-md bg-green-50 text-green-700 mb-3">
                   {member.ward}
                 </span>

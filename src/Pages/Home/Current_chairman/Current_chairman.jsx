@@ -1,24 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Current_chairman = () => {
-  // চেয়ারম্যানের তথ্য (প্রয়োজন অনুযায়ী পরিবর্তন করে নেবেন)
-  const chairmanData = {
+  const [liveChairman, setLiveChairman] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchChairmanData = async () => {
+      try {
+        const response = await axios.get('/api/chairman');
+        // ডাটাবেজে ডাটা পাওয়া গেলে স্টেট সেট হবে
+        if (response.data && Object.keys(response.data).length > 0) {
+          setLiveChairman(response.data);
+        }
+      } catch (error) {
+        console.error("Chairman API Error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchChairmanData();
+  }, []);
+
+  // ব্যাকআপ এবং ডিফল্ট চেয়ারম্যান তথ্য
+  const chairmanData = liveChairman || {
     name: 'মোঃ আবদুর রহমান',
-    title: 'সম্মানিত চেয়ারম্যান',
-    union: '৫ নং মডেল ইউনিয়ন পরিষদ',
-    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=600', // চেয়ারম্যানের ছবি
-    joiningDate: '১০ জানুয়ারি, ২০২২',
+    title: 'সম্মানিত চেয়ারম্যান',
+    union: '৫ নং মডেল ইউনিয়ন পরিষদ',
+    image: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=600',
+    joiningDate: '১০ জানুয়ারি, ২০২২',
     phone: '+৮৮০ ১৭১১-২২৩৩৪৪',
     email: 'chairman@union.gov.bd',
-    address: 'চেয়ারম্যান বাসভবন, ইউনিয়ন পরিষদ কমপ্লেক্স।',
-    message: 'আসসালামু আলাইকুম। আমাদের ইউনিয়নকে একটি আদর্শ, ডিজিটাল এবং দুর্নীতিমুক্ত ইউনিয়ন হিসেবে গড়ে তোলাই আমার প্রধান লক্ষ্য। ইউনিয়ন পরিষদের সকল সেবা জনগণের দোরগোড়ায় সহজে ও স্বচ্ছতার সাথে পৌঁছে দিতে আমরা নিরলসভাবে কাজ করে যাচ্ছি। আপনাদের যেকোনো মতামত বা সুপরামর্শ আমাদের এই পথচলাকে আরও বেগবান করবে। ধন্যবাদ।',
+    address: 'চেয়ারম্যান বাসভবন, ইউনিয়ন পরিষদ কমপ্লেক্স।',
+    message: 'আসসালামু আলাইকুম। আমাদের ইউনিয়নকে একটি আদর্শ, ডিজিটাল এবং দুর্নীতিমুক্ত ইউনিয়ন হিসেবে গড়ে তোলাই আমার প্রধান লক্ষ্য। ইউনিয়ন পরিষদের সকল সেবা জনগণের দোরগোড়ায় সহজে ও স্বচ্ছতার সাথে পৌঁছে দিতে আমরা নিরলসভাবে কাজ করে যাচ্ছি। আপনাদের যেকোনো মতামত বা সুপরামর্শ আমাদের এই পথচলাকে আরও বেগবান করবে। ধন্যবাদ।',
     bio: [
       { label: 'পিতার নাম', value: 'মরহুম আলহাজ্ব আলী আহমেদ' },
       { label: 'শিক্ষাগত যোগ্যতা', value: 'স্নাতকোত্তর (এম.এ)' },
-      { label: 'রাজনৈতিক পদবী', value: 'সভাপতি, ইউনিয়ন আওয়ামী লীগ / বিএনপি / স্বতন্ত্র' },
-      { label: 'সামাজিক অবদান', value: 'প্রধান উপদেষ্টা, স্থানীয় আলহাজ্ব আলী আহমেদ এতিমখানা ও সমাজকল্যাণ সংস্থা।' }
+      { label: 'রাজনৈতিক পদবী', value: 'সভাপতি, ইউনিয়ন আওয়ামী লীগ / বিএনপি / স্বতন্ত্র' },
+      { label: 'সামাজিক অবদান', value: 'প্রধান উপদেষ্টা, স্থানীয় আলহাজ্ব আলী আহমেদ এতিমখানা ও সমাজকল্যাণ সংস্থা।' }
     ]
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8 font-sans">
@@ -27,20 +56,19 @@ const Current_chairman = () => {
         {/* Top Header Section */}
         <div className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            বর্তমান চেয়ারম্যান প্রোফাইল
+            বর্তমান চেয়ারম্যান প্রোফাইল
           </h1>
           <div className="mt-3 h-1 w-24 bg-green-600 mx-auto rounded-full"></div>
         </div>
 
         {/* Main Profile Grid */}
-        {/* মোবাইলে নিচে নিচে আসবে (1 column), ল্যাপটপ/ডেস্কটপে পাশাপাশি (3 columns - 1:2 ratio) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Left Column: Image & Direct Contacts */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center h-fit">
             <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden ring-4 ring-green-500/10 mb-6 shadow-inner">
               <img 
-                src={chairmanData.image} 
+                src={chairmanData.image || 'https://via.placeholder.com/300'} 
                 alt={chairmanData.name} 
                 className="w-full h-full object-cover object-top"
               />
@@ -53,19 +81,21 @@ const Current_chairman = () => {
             {/* Quick Contact Info */}
             <div className="w-full mt-6 pt-6 border-t border-gray-100 space-y-3 text-left text-sm text-gray-600">
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">দায়িত্ব গ্রহণ</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">দায়িত্ব গ্রহণ</span>
                 <span className="text-gray-800 font-medium">{chairmanData.joiningDate}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">মোবাইল নম্বর</span>
                 <span className="text-gray-800 font-medium">{chairmanData.phone}</span>
               </div>
+              {chairmanData.email && (
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">ইমেইল ঠিকানা</span>
+                  <span className="text-gray-800 font-medium break-all">{chairmanData.email}</span>
+                </div>
+              )}
               <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">ইমেইল ঠিকানা</span>
-                <span className="text-gray-800 font-medium break-all">{chairmanData.email}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">কার্যালয়</span>
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">কার্যালয়</span>
                 <span className="text-gray-800 font-medium">{chairmanData.address}</span>
               </div>
             </div>
@@ -76,12 +106,11 @@ const Current_chairman = () => {
             
             {/* Chairman's Message Box */}
             <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 relative overflow-hidden">
-              {/* Decorative Quotation Mark Graphic */}
               <span className="absolute -top-2 -right-2 text-9xl text-green-100 font-serif select-none pointer-events-none leading-none">“</span>
               
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2 relative z-10">
                 <span className="w-2 h-6 bg-green-600 rounded-full inline-block"></span>
-                চেয়ারম্যানের বাণী
+                চেয়ারম্যানের বাণী
               </h3>
               <p className="text-gray-600 leading-relaxed text-sm sm:text-base italic relative z-10">
                 "{chairmanData.message}"
@@ -95,9 +124,8 @@ const Current_chairman = () => {
                 ব্যক্তিগত ও সামাজিক পরিচিতি
               </h3>
               
-              {/* Biography Table/List */}
               <div className="divide-y divide-gray-100">
-                {chairmanData.bio.map((info, index) => (
+                {chairmanData.bio && chairmanData.bio.map((info, index) => (
                   <div key={index} className="py-4 first:pt-0 last:pb-0 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                     <span className="text-sm font-bold text-gray-500 sm:col-span-1">
                       {info.label}

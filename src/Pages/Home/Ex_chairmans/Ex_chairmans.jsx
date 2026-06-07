@@ -1,45 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Ex_chairmans = () => {
-  // সাবেক চেয়ারম্যানদের ডাটাবেজ (মেয়াদকাল ও ছবির ডেমোসহ)
-  const exChairmansList = [
-    {
-      id: 1,
-      name: 'আলহাজ্ব মোঃ শামসুল হক',
-      title: 'সাবেক চেয়ারম্যান',
-      duration: '২০১৬ - ২০২২',
-      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300',
-      status: 'জীবিত',
-      village: 'উত্তর পাড়া'
-    },
-    {
-      id: 2,
-      name: 'মরহুম আলতাф আলী মিয়া',
-      title: 'সাবেক চেয়ারম্যান',
-      duration: '২০১১ - ২০১৬',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
-      status: 'প্রয়াত',
-      village: 'দক্ষিণ বাজার'
-    },
-    {
-      id: 3,
-      name: 'মোঃ দেলোয়ার হোসেন (বিএ)',
-      title: 'সাবেক চেয়ারম্যান',
-      duration: '২০০৩ - ২০১১',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
-      status: 'জীবিত',
-      village: 'পূর্ব ধলপুর'
-    },
-    {
-      id: 4,
-      name: 'মরহুম আলহাজ্ব মফিজ উদ্দিন',
-      title: 'সাবেক চেয়ারম্যান',
-      duration: '১৯৯৮ - ২০০৩',
-      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300',
-      status: 'প্রয়াত',
-      village: 'পশ্চিম পাড়া'
-    }
-  ];
+  // সাবেক চেয়ারম্যানদের ডাটাবেজ স্টেট (ডিফল্ট ব্যাকআপ সহ)
+  const [exChairmansList, setExChairmansList] = useState([
+    { id: 1, name: 'আলহাজ্ব মোঃ শামসুল হক', title: 'সাবেক চেয়ারম্যান', duration: '২০১৬ - ২০২২', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'উত্তর পাড়া' },
+    { id: 2, name: 'মরহুম আলতাফ আলী মিয়া', title: 'সাবেক চেয়ারম্যান', duration: '২০১১ - ২০১৬', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'দক্ষিণ বাজার' },
+    { id: 3, name: 'মোঃ দেলোয়ার হোসেন (বিএ)', title: 'সাবেক চেয়ারম্যান', duration: '২০০৩ - ২০১১', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'পূর্ব ধলপুর' },
+    { id: 4, name: 'মরহুম আলহাজ্ব মফিজ উদ্দিন', title: 'সাবেক চেয়ারম্যান', duration: '১৯稳৮ - ২০০৩', image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'পশ্চিম পাড়া' }
+  ]);
+  
+  const [loading, setLoading] = useState(true);
+
+  // লাইভ ডাটাবেজ থেকে সাবেক চেয়ারম্যানদের তালিকা রিড করা
+  useEffect(() => {
+    const fetchExChairmans = async () => {
+      try {
+        const res = await axios.get('/api/ex-chairmans');
+        if (res.data && res.data.chairmans) {
+          setExChairmansList(res.data.chairmans);
+        }
+      } catch (err) {
+        console.error("সাবেক চেয়ারম্যান ডেটা লোড করতে ব্যর্থ:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExChairmans();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8 font-sans">
@@ -48,16 +44,15 @@ const Ex_chairmans = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            পূর্বতন চেয়ারম্যানবৃন্দ (Ex-Chairmen)
+            পূর্বতন চেয়ারম্যানবৃন্দ (Ex-Chairmen)
           </h1>
           <p className="mt-3 max-w-2xl mx-auto text-base sm:text-lg text-gray-500">
-            যাঁদের বলিষ্ঠ নেতৃত্ব ও অক্লান্ত পরিশ্রমে আমাদের ইউনিয়ন আজ একটি আদর্শ ইউনিয়ন হিসেবে রূপ লাভ করেছে।
+            যাঁদের বলিষ্ঠ নেতৃত্ব ও অক্লান্ত পরিশ্রমে আমাদের ইউনিয়ন আজ একটি আদেশ ইউনিয়ন হিসেবে রূপ লাভ করেছে।
           </p>
           <div className="mt-4 h-1 w-24 bg-green-600 mx-auto rounded-full"></div>
         </div>
 
         {/* Responsive Grid Layout */}
-        {/* Mobile: 1 col, Tablet: 2 cols, Laptop: 3 cols, Desktop: 4 cols */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {exChairmansList.map((chairman, index) => (
             <div 
@@ -66,7 +61,7 @@ const Ex_chairmans = () => {
             >
               {/* Badge: Order/Chronology */}
               <span className="absolute top-4 left-4 z-10 bg-black/60 text-white text-xs font-bold px-2.5 py-1 rounded-md backdrop-blur-sm">
-                {index + 1} ম চেয়ারম্যান
+                {index + 1} ম চেয়ারম্যান
               </span>
 
               {/* Status Badge (Living/Deceased) */}
@@ -110,7 +105,7 @@ const Ex_chairmans = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-400 font-semibold">গ্রাম:</span>
                     <span className="text-xs text-gray-700 font-medium truncate max-w-[150px]">
-                      {chairman.village}
+                      {chairman.village || 'উল্লেখ নেই'}
                     </span>
                   </div>
                 </div>
@@ -124,7 +119,7 @@ const Ex_chairmans = () => {
 
         {/* Footer Info */}
         <div className="mt-12 text-center text-xs text-gray-400 italic">
-          * এই তালিকাটি পরিষদের কার্যবিবরণী পঞ্জিকা অনুযায়ী ধারাবাহিকভাবে সাজানো হয়েছে।
+          * এই তালিকাটি পরিষদের কার্যবিবরণী পঞ্জিকা অনুযায়ী ধারাবাহিকভাবে সাজানো হয়েছে।
         </div>
 
       </div>

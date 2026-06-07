@@ -1,13 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const Councillors = () => {
-  // কাউন্সিলর/সদস্যদের ডেমো ডাটা (ওয়ার্ড ভিত্তিক)
-  const councillorsList = [
+  // কাউন্সিলর/সদস্যদের ডেমো ডাটা (ডাটাবেজে ডাটা না থাকলে এটি দেখাবে)
+  const defaultCouncillors = [
     {
       id: 1,
       name: 'মোঃ রফিকুল ইসলাম',
       role: 'ইউপি সদস্য / কাউন্সিলর',
-      ward: '১ নং ওয়ার্ড',
+      ward: '১ নং ওয়ার্ড',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
       phone: '+৮৮০ ১৭১৩-০১_ _ _ _',
       email: 'ward1@union.gov.bd'
@@ -16,16 +16,16 @@ const Councillors = () => {
       id: 2,
       name: 'আব্দুল কুদ্দুস',
       role: 'ইউপি সদস্য / কাউন্সিলর',
-      ward: '২ নং ওয়ার্ড',
+      ward: '২ নং ওয়ার্ড',
       image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
       phone: '+৮৮০ ১৭১৩-০২_ _ _ _',
       email: 'ward2@union.gov.bd'
     },
     {
       id: 3,
-      name: 'মোঃ জয়নাল আবেদীন',
+      name: 'মোঃ জয়নাল আবেদীন',
       role: 'ইউপি সদস্য / কাউন্সিলর',
-      ward: '৩ নং ওয়ার্ড',
+      ward: '৩ নং ওয়ার্ড',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300',
       phone: '+৮৮০ ১৭১৩-০৩_ _ _ _',
       email: 'ward3@union.gov.bd'
@@ -34,16 +34,16 @@ const Councillors = () => {
       id: 4,
       name: 'মোছাঃ ফাতেমা বেগম',
       role: 'সংরক্ষিত মহিলা সদস্য',
-      ward: '১, ২ ও ৩ নং ওয়ার্ড',
+      ward: '১, ২ ও ৩ নং ওয়ার্ড',
       image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300',
       phone: '+৮৮০ ১৭১৩-০৪_ _ _ _',
       email: 'female.ward1@union.gov.bd'
     },
     {
       id: 5,
-      name: 'মোঃ আনোয়ার হোসেন',
+      name: 'মোঃ আনোয়ার হোসেন',
       role: 'ইউপি সদস্য / কাউন্সিলর',
-      ward: '৪ নং ওয়ার্ড',
+      ward: '৪ নং ওয়ার্ড',
       image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300',
       phone: '+৮৮০ ১৭১৩-০৫_ _ _ _',
       email: 'ward4@union.gov.bd'
@@ -52,12 +52,39 @@ const Councillors = () => {
       id: 6,
       name: 'মোঃ মোস্তফা কামাল',
       role: 'ইউপি সদস্য / কাউন্সিলর',
-      ward: '৫ নং ওয়ার্ড',
+      ward: '৫ নং ওয়ার্ড',
       image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=300',
       phone: '+৮৮০ ১৭১৩-০৬_ _ _ _',
       email: 'ward5@union.gov.bd'
     },
   ];
+
+  const [councillorsList, setCouncillorsList] = useState(defaultCouncillors);
+  const [loading, setLoading] = useState(true);
+
+  // API থেকে ডাটা ফেচ করা
+  useEffect(() => {
+    fetch('http://localhost:5000/api/councillors')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.councillors && data.councillors.length > 0) {
+          setCouncillorsList(data.councillors);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error fetching councillors:', err);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8 font-sans">
@@ -69,17 +96,16 @@ const Councillors = () => {
             কাউন্সিলর / সদস্যবৃন্দ
           </h1>
           <p className="mt-3 max-w-2xl mx-auto text-base sm:text-lg text-gray-500">
-            আপনাদের স্ব-স্ব ওয়ার্ডের উন্নয়ন ও নাগরিক সেবা নিশ্চিতকরণে নিয়োজিত জনপ্রতিনিধিবৃন্দ।
+            আপনাদের স্ব-স্ব ওয়ার্ডের উন্নয়ন ও নাগরিক সেবা নিশ্চিতকরণে নিয়োজিত জনপ্রতিনিধিবৃন্দ।
           </p>
           <div className="mt-4 h-1 w-24 bg-green-600 mx-auto rounded-full"></div>
         </div>
 
         {/* Responsive Grid Layout */}
-        {/* Mobile: 1 col, Tablet: 2 cols, Desktop: 3 cols, Large Desktop: 4 cols */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {councillorsList.map((member) => (
+          {councillorsList.map((member, index) => (
             <div 
-              key={member.id} 
+              key={member._id || member.id || index} 
               className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 group"
             >
               {/* Image Box */}

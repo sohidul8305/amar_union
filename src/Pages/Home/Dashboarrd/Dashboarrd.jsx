@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FaPlusCircle, FaBullhorn, FaCogs, FaArrowLeft, FaInfoCircle, FaSave, FaListAlt } from 'react-icons/fa';
+import { FaPlusCircle, FaBullhorn, FaCogs, FaArrowLeft, FaInfoCircle, FaSave, FaListAlt, FaUsers, FaUserTie, FaHistory, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
+  // গ্লোবাল মেসেজ ও লোডিং স্টেট
+  const [message, setMessage] = useState({ text: '', isError: false });
+  const [loading, setLoading] = useState(false);
+
   // ১. নোটিশ ও নাগরিক সেবা স্টেটসমূহ
   const [noticeTitle, setNoticeTitle] = useState('');
   const [noticeDate, setNoticeDate] = useState('');
@@ -27,7 +31,7 @@ const Dashboard = () => {
   const [madrasah, setMadrasah] = useState('');
   const [landmarks, setLandmarks] = useState('');
 
-  // 🌟 ৩. এক নজরে ইউনিয়ন (Glance) স্টেটসমূহ
+  // ৩. এক নজরে ইউনিয়ন (Glance) স্টেটসমূহ
   const [glancePop, setGlancePop] = useState('');
   const [glanceVoters, setGlanceVoters] = useState('');
   const [glanceArea, setGlanceArea] = useState('');
@@ -37,9 +41,81 @@ const Dashboard = () => {
   const [glanceHealth, setGlanceHealth] = useState('');
   const [glanceEst, setGlanceEst] = useState('');
 
-  // গ্লোবাল মেসেজ ও লোডিং স্টেট
-  const [message, setMessage] = useState({ text: '', isError: false });
-  const [loading, setLoading] = useState(false);
+  // ৪. সাংগঠনিক কাঠামো (Structure) স্টেটসমূহ
+  const [chairmanName, setChairmanName] = useState('মোঃ আবদুর রহমান');
+  const [chairmanPhone, setChairmanPhone] = useState('+৮৮০ ১৭১১-২২৩৩৪৪');
+  const [chairmanEmail, setChairmanEmail] = useState('chairman@union.gov.bd');
+  const [chairmanImg, setChairmanImg] = useState('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400');
+
+  const [secretaryName, setSecretaryName] = useState('নাব সুকোমল বড়ুয়া');
+  const [secretaryPhone, setSecretaryPhone] = useState('+৮৮০ ১৭১২-৫৫৬৬৭৭');
+  const [secretaryEmail, setSecretaryEmail] = useState('secretary@union.gov.bd');
+  const [secretaryImg, setSecretaryImg] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400');
+
+  // ৫. বর্তমান চেয়ারম্যান প্রোফাইল স্টেটসমূহ
+  const [chTitle, setChTitle] = useState('সম্মানিত চেয়ারম্যান');
+  const [chUnion, setChUnion] = useState('১৬ নং মোহনপুর ইউনিয়ন পরিষদ');
+  const [chJoinDate, setChJoinDate] = useState('১০ জানুয়ারি, २०२२');
+  const [chAddress, setChAddress] = useState('চেয়ারম্যান বাসভবন, ইউনিয়ন পরিষদ কমপ্লেক্স।');
+  const [chMessage, setChMessage] = useState('আসসালামু আলাইকুম। আমাদের ইউনিয়নকে একটি আদর্শ, ডিজিটাল এবং দুর্নীতিমুক্ত ইউনিয়ন হিসেবে গড়ে তোলাই আমার প্রধান লক্ষ্য...');
+  const [fatherName, setFatherName] = useState('মরহুম আলহাজ্ব আলী আহমেদ');
+  const [education, setEducation] = useState('স্নাতকোত্তর (এম.এ)');
+  const [politicalRole, setPoliticalRole] = useState('সভাপতি, ইউনিয়ন আওয়ামী লীগ / বিএনপি / স্বতন্ত্র');
+  const [socialContribution, setSocialContribution] = useState('প্রধান উপদেষ্টা, স্থানীয় সমাজকল্যাণ সংস্থা।');
+
+  // 🌟 ৬. নতুন যুক্ত করা সাবেক চেয়ারম্যান (Ex-Chairman) স্টেটসমূহ
+  const [exChairmansList, setExChairmansList] = useState([
+    { id: 1, name: 'আলহাজ্ব মোঃ শামসুল হক', title: 'সাবেক চেয়ারম্যান', duration: '২০১৬ - ২০২২', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'উত্তর পাড়া' },
+    { id: 2, name: 'মরহুম আলতাফ আলী মিয়া', title: 'সাবেক চেয়ারম্যান', duration: '২০১১ - ২০১৬', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'দক্ষিণ বাজার' },
+    { id: 3, name: 'মোঃ দেলোয়ার হোসেন (বিএ)', title: 'সাবেক চেয়ারম্যান', duration: '২০০৩ - ২০১১', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'পূর্ব ধলপুর' },
+    { id: 4, name: 'মরহুম আলহাজ্ব মফিজ উদ্দিন', title: 'সাবেক চেয়ারম্যান', duration: '১৯৯৮ - ২০০৩', image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'পশ্চিম পাড়া' }
+  ]);
+  const [exName, setExName] = useState('');
+  const [exDuration, setExDuration] = useState('');
+  const [exImage, setExImage] = useState('');
+  const [exStatus, setExStatus] = useState('জীবিত');
+  const [exVillage, setExVillage] = useState('');
+  const [editingExId, setEditingExId] = useState(null);
+
+
+
+  // ১২ জন মেম্বারের জন্য ডিফল্ট স্টেট অ্যারে
+  const [membersList, setMembersList] = useState([
+    { id: 1, ward: '১ নং ওয়ার্ড', name: 'মোঃ রফিকুল ইসলাম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০১_ _ _ _' },
+    { id: 2, ward: '২ নং ওয়ার্ড', name: 'আব্দুল কুদ্দুস', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০২_ _ _ _' },
+    { id: 3, ward: '৩ নং ওয়ার্ড', name: 'মোঃ জয়নাল আবেদীন', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০৩_ _ _ _' },
+    { id: 4, ward: '১, ২ ও ৩ নং ওয়ার্ড', name: 'মোছাঃ ফাতেমা বেগম', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-০৪_ _ _ _' },
+    { id: 5, ward: '৪ নং ওয়ার্ড', name: 'মোঃ আনোয়ার হোসেন', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০৫_ _ _ _' },
+    { id: 6, ward: '৫ নং ওয়ার্ড', name: 'মোঃ মোস্তফা কামাল', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০৬_ _ _ _' },
+    { id: 7, ward: '৬ নং ওয়ার্ড', name: 'মোঃ সিরাজুল ইসলাম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০৭_ _ _ _' },
+    { id: 8, ward: '৪, ৫ ও ২৬ নং ওয়ার্ড', name: 'মোছাঃ রাশেদা আক্তার', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-০৮_ _ _ _' },
+    { id: 9, ward: '৭ নং ওয়ার্ড', name: 'মোঃ আবুল কাশেম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০৯_ _ _ _' },
+    { id: 10, ward: '৮ নং ওয়ার্ড', name: 'মোঃ আলী আকবর', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-১০_ _ _ _' },
+    { id: 11, ward: '৯ নং ওয়ার্ড', name: 'মোঃ সফিকুল ইসলাম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-১১_ _ _ _' },
+    { id: 12, ward: '৭, ৮ ও ৯ নং ওয়ার্ড', name: 'মোছাঃ পারভীন সুলতানা', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-১২_ _ _ _' },
+  ]);
+
+  const updatedList = [
+  { name: "নতুন মেম্বার", role: "ইউপি সদস্য", ward: "১ নং ওয়ার্ড", phone: "০১৭...", email: "...", image: "..." },
+  { name: "আরেক মেম্বার", role: "ইউপি সদস্য", ward: "২ নং ওয়ার্ড", phone: "০১৮...", email: "...", image: "..." }
+];
+
+
+
+fetch('http://localhost:5000/api/councillors', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ councillors: updatedList })
+})
+.then(res => res.json())
+.then(data => alert(data.message));
+
+
+  // মেম্বারদের ইনপুট চেঞ্জ হ্যান্ডলার
+  const handleMemberChange = (id, field, val) => {
+    const updated = membersList.map(m => m.id === id ? { ...m, [field]: val } : m);
+    setMembersList(updated);
+  };
 
   // নোটিশ সাবমিট হ্যান্ডলার
   const handleNoticeSubmit = async (e) => {
@@ -47,9 +123,9 @@ const Dashboard = () => {
     setLoading(true); setMessage({ text: '', isError: false });
     try {
       const res = await axios.post('/api/notices', { title: noticeTitle, date: noticeDate });
-      setMessage({ text: res.data.message || 'নোটিশ সফলভাবে যোগ হয়েছে!', isError: false });
+      setMessage({ text: res.data.message || 'নোটিশ সফলভাবে যোগ হয়েছে!', isError: false });
       setNoticeTitle(''); setNoticeDate('');
-    } catch (err) { setMessage({ text: 'নোটিশ যোগ করতে সমস্যা হয়েছে!', isError: true }); }
+    } catch (err) { setMessage({ text: 'নোটিশ যোগ করতে সমস্যা হয়েছে!', isError: true }); }
     finally { setLoading(false); }
   };
 
@@ -59,9 +135,9 @@ const Dashboard = () => {
     setLoading(true); setMessage({ text: '', isError: false });
     try {
       const res = await axios.post('/api/services', { title: serviceTitle, path: servicePath, iconName, iconColor });
-      setMessage({ text: res.data.message || 'সেবাটি সফলভাবে যোগ হয়েছে!', isError: false });
+      setMessage({ text: res.data.message || 'সেবাটি সফলভাবে যোগ হয়েছে!', isError: false });
       setServiceTitle(''); setServicePath('');
-    } catch (err) { setMessage({ text: 'সেবা যোগ করতে সমস্যা হয়েছে!', isError: true }); }
+    } catch (err) { setMessage({ text: 'সেবা যোগ করতে সমস্যা হয়েছে!', isError: true }); }
     finally { setLoading(false); }
   };
 
@@ -81,31 +157,99 @@ const Dashboard = () => {
     finally { setLoading(false); }
   };
 
-  // 🌟 এক নজরে ইউনিয়ন (Glance) সাবমিট হ্যান্ডলার
+  // glance সাবমিট হ্যান্ডলার
   const handleGlanceSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setMessage({ text: '', isError: false });
+    const finalGlanceData = {
+      totalPopulation: glancePop, totalVoters: glanceVoters, area: glanceArea, literacyRate: glanceLiteracy,
+      totalVillages: glanceVillages, primarySchools: glanceSchools, healthCenters: glanceHealth, established: glanceEst
+    };
+    try {
+      const response = await axios.post('/api/glance', finalGlanceData);
+      setMessage({ text: response.data.message || 'এক নজরে ইউনিয়নের তথ্য আপডেট হয়েছে!', isError: false });
+    } catch (error) { setMessage({ text: 'এক নজরে তথ্য আপডেট করতে ব্যর্থ!', isError: true }); }
+    finally { setLoading(false); }
+  };
+
+  // সাংগঠনিক কাঠামো (Structure) সাবমিট হ্যান্ডলার
+  const handleStructureSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ text: '', isError: false });
 
-    const finalGlanceData = {
-      totalPopulation: glancePop,
-      totalVoters: glanceVoters,
-      area: glanceArea,
-      literacyRate: glanceLiteracy,
-      totalVillages: glanceVillages,
-      primarySchools: glanceSchools,
-      healthCenters: glanceHealth,
-      established: glanceEst
-    };
+    const topManagement = [
+      { id: 1, name: chairmanName, role: 'ইউনিয়ন পরিষদ চেয়ারম্যান', image: chairmanImg, phone: chairmanPhone, email: chairmanEmail },
+      { id: 2, name: secretaryName, role: 'ইউনিয়ন পরিষদ সচিব', image: secretaryImg, phone: secretaryPhone, email: secretaryEmail }
+    ];
 
     try {
-      const response = await axios.post('/api/glance', finalGlanceData);
-      setMessage({ text: response.data.message || 'এক নজরে ইউনিয়নের তথ্য আপডেট হয়েছে!', isError: false });
+      const response = await axios.post('/api/structure', { topManagement, members: membersList });
+      setMessage({ text: response.data.message || 'সাংগঠনিক কাঠামোর তথ্য সফলভাবে আপডেট হয়েছে!', isError: false });
     } catch (error) {
-      setMessage({ text: 'এক নজরে তথ্য আপডেট করতে ব্যর্থ!', isError: true });
+      setMessage({ text: 'সাংগঠনিক কাঠামো আপডেট করতে ব্যর্থ!', isError: true });
     } finally {
       setLoading(false);
     }
+  };
+
+  // বর্তমান চেয়ারম্যান প্রোফাইল সাবমিট হ্যান্ডলার
+  const handleChairmanProfileSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setMessage({ text: '', isError: false });
+
+    const chairmanProfileData = {
+      name: chairmanName, title: chTitle, union: chUnion, image: chairmanImg, joiningDate: chJoinDate,
+      phone: chairmanPhone, email: chairmanEmail, address: chAddress, message: chMessage,
+      bio: [
+        { label: 'পিতার নাম', value: fatherName },
+        { label: 'শিক্ষাগত যোগ্যতা', value: education },
+        { label: 'রাজনৈতিক পদবী', value: politicalRole },
+        { label: 'সামাজিক অবদান', value: socialContribution }
+      ]
+    };
+
+    try {
+      const response = await axios.post('/api/chairman', chairmanProfileData);
+      setMessage({ text: response.data.message || 'সম্মানিত চেয়ারম্যান প্রোফাইল সফলভাবে আপডেট হয়েছে!', isError: false });
+    } catch (error) { setMessage({ text: 'চেয়ারম্যান প্রোফাইল আপডেট করতে ব্যর্থ!', isError: true }); }
+    finally { setLoading(false); }
+  };
+
+  // 🌟 সাবেক চেয়ারম্যান সাবমিট হ্যান্ডলার (যোগ এবং এডিট)
+  const handleExChairmanSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setMessage({ text: '', isError: false });
+
+    let updatedList;
+    if (editingExId) {
+      updatedList = exChairmansList.map(item => item.id === editingExId ? { ...item, name: exName, duration: exDuration, image: exImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', status: exStatus, village: exVillage } : item);
+    } else {
+      const newEx = { id: Date.now(), name: exName, title: 'সাবেক চেয়ারম্যান', duration: exDuration, image: exImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', status: exStatus, village: exVillage };
+      updatedList = [...exChairmansList, newEx];
+    }
+
+    try {
+      const response = await axios.post('/api/ex-chairmans', { chairmans: updatedList });
+      setExChairmansList(updatedList);
+      setMessage({ text: response.data.message || 'পূর্বতন চেয়ারম্যান তালিকা আপডেট হয়েছে!', isError: false });
+      setExName(''); setExDuration(''); setExImage(''); setExVillage(''); setExStatus('জীবিত'); setEditingExId(null);
+    } catch (error) { setMessage({ text: 'তালিকা সংরক্ষণ করতে সমস্যা হয়েছে!', isError: true }); }
+    finally { setLoading(false); }
+  };
+
+  const startEditEx = (item) => {
+    setEditingExId(item.id); setExName(item.name); setExDuration(item.duration); setExImage(item.image); setExVillage(item.village); setExStatus(item.status);
+  };
+
+  const deleteExChairman = async (id) => {
+    if (!window.confirm('আপনি কি নিশ্চিত যে এটি মুছে ফেলতে চান?')) return;
+    const filtered = exChairmansList.filter(item => item.id !== id);
+    try {
+      const response = await axios.post('/api/ex-chairmans', { chairmans: filtered });
+      setExChairmansList(filtered);
+      setMessage({ text: 'সফলভাবে মুছে ফেলা হয়েছে!', isError: false });
+    } catch (err) { setMessage({ text: 'মুছে ফেলতে ব্যর্থ!', isError: true }); }
   };
 
   return (
@@ -116,7 +260,7 @@ const Dashboard = () => {
           <h1 className="text-base sm:text-xl font-bold tracking-wide">ইউনিয়ন পরিষদ কন্ট্রোল প্যানেল</h1>
         </div>
         <Link to="/" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-lg border border-slate-700 transition">
-          <FaArrowLeft /> মূল ওয়েবসাইট
+          <FaArrowLeft /> মূল ওয়েবসাইট
         </Link>
       </header>
 
@@ -171,56 +315,225 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* 🌟 সেকশন ২: এক নজরে ইউনিয়ন (Glance) আপডেট ফর্ম */}
+        {/* বর্তমান চেয়ারম্যান প্রোফাইল ফরম */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
+            <FaUserTie className="text-teal-600" />
+            <h2>সম্মানিত চেয়ারম্যান প্রোফাইল পেজ আপডেট ফরম</h2>
+          </div>
+          <form onSubmit={handleChairmanProfileSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">চেয়ারম্যানের নাম</label>
+                <input type="text" value={chairmanName} onChange={(e) => setChairmanName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">পদবী</label>
+                <input type="text" value={chTitle} onChange={(e) => setChTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">ইউনিয়নের নাম</label>
+                <input type="text" value={chUnion} onChange={(e) => setChUnion(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">দায়িত্ব গ্রহণের তারিখ</label>
+                <input type="text" value={chJoinDate} onChange={(e) => setChJoinDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">কার্যালয় / বাসভবন ঠিকানা</label>
+                <input type="text" value={chAddress} onChange={(e) => setChAddress(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">ছবির লিঙ্ক (Image URL)</label>
+                <input type="text" value={chairmanImg} onChange={(e) => setChairmanImg(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+            </div>
+            <div className="bg-slate-50 p-4 rounded-xl border border-gray-100 space-y-4">
+              <h3 className="text-xs font-bold text-slate-800 border-b pb-1">ব্যক্তিগত ও সামাজিক পরিচিতি</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1">পিতার নাম</label>
+                  <input type="text" value={fatherName} onChange={(e) => setFatherName(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1">শিক্ষাগত যোগ্যতা</label>
+                  <input type="text" value={education} onChange={(e) => setEducation(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1">রাজনৈতিক পদবী</label>
+                  <input type="text" value={politicalRole} onChange={(e) => setPoliticalRole(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 mb-1">সামাজিক অবদান</label>
+                  <input type="text" value={socialContribution} onChange={(e) => setSocialContribution(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">চেয়ারম্যানের বাণী (Message)</label>
+              <textarea rows="4" value={chMessage} onChange={(e) => setChMessage(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <button type="submit" disabled={loading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+              <FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'চেয়ারম্যান প্রোফাইল পেজের তথ্য লাইভ আপডেট করুন'}
+            </button>
+          </form>
+        </div>
+
+        {/* 🌟 নতুন যুক্ত করা সেকশন: সাবেক চেয়ারম্যানদের তালিকা নিয়ন্ত্রণ ফরম */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
+            <FaHistory className="text-amber-600" />
+            <h2>পূর্বতন/সাবেক চেয়ারম্যানদের তালিকা আপডেট ফরম</h2>
+          </div>
+
+          <form onSubmit={handleExChairmanSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100 mb-6">
+            <div className="sm:col-span-2 md:col-span-3">
+              <h3 className="text-xs font-bold text-amber-800">{editingExId ? '🔒 সাবেক চেয়ারম্যান তথ্য পরিবর্তন করুন' : '➕ নতুন সাবেক চেয়ারম্যান যুক্ত করুন'}</h3>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">চেয়ারম্যানের নাম *</label>
+              <input type="text" required value={exName} onChange={(e) => setExName(e.target.value)} placeholder="যেমন: আলহাজ্ব মোঃ শামসুল হক" className="w-full px-3 py-2 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">কার্যকাল/মেয়াদকাল *</label>
+              <input type="text" required value={exDuration} onChange={(e) => setExDuration(e.target.value)} placeholder="যেমন: ২০১৬ - ২০২২" className="w-full px-3 py-2 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">গ্রাম</label>
+              <input type="text" value={exVillage} onChange={(e) => setExVillage(e.target.value)} placeholder="যেমন: উত্তর পাড়া" className="w-full px-3 py-2 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির ইউআরএল (Image URL)</label>
+              <input type="text" value={exImage} onChange={(e) => setExImage(e.target.value)} placeholder="https://images.unsplash.com/..." className="w-full px-3 py-2 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">বর্তমান অবস্থা</label>
+              <select value={exStatus} onChange={(e) => setExStatus(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="জীবিত">জীবিত</option>
+                <option value="প্রয়াত">প্রয়াত</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2 md:col-span-3 pt-2">
+              <button type="submit" disabled={loading} className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-sm">
+                {editingExId ? 'তথ্য আপডেট করুন' : 'তালিকায় সাবেক চেয়ারম্যান যুক্ত করুন'}
+              </button>
+            </div>
+          </form>
+
+          {/* বর্তমান সাবেক চেয়ারম্যানদের তালিকা টেবিল */}
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-100 text-slate-700 font-bold border-b border-gray-200">
+                  <th className="p-3 text-center">ক্রমিক</th>
+                  <th className="p-3">চেয়ারম্যানের নাম</th>
+                  <th className="p-3">কার্যকাল</th>
+                  <th className="p-3">গ্রাম</th>
+                  <th className="p-3 text-center">অবস্থা</th>
+                  <th className="p-3 text-center">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {exChairmansList.map((item, idx) => (
+                  <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="p-3 text-center font-bold text-gray-500">{idx + 1}</td>
+                    <td className="p-3 font-semibold text-gray-900">{item.name}</td>
+                    <td className="p-3 text-gray-600">{item.duration}</td>
+                    <td className="p-3 text-gray-600">{item.village || 'N/A'}</td>
+                    <td className="p-3 text-center">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.status === 'জীবিত' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-600'}`}>{item.status}</span>
+                    </td>
+                    <td className="p-3 text-center space-x-2">
+                      <button onClick={() => startEditEx(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"><FaEdit /></button>
+                      <button onClick={() => deleteExChairman(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition"><FaTrashAlt /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* সেকশন ২: সাংগঠনিক কাঠামো (Structure) ফরম */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
+            <FaUsers className="text-violet-600" />
+            <h2>ইউনিয়ন পরিষদ সাংগঠনিক কাঠামো আপডেট ফরম</h2>
+          </div>
+          <form onSubmit={handleStructureSubmit} className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-gray-100">
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-green-700 border-b pb-1">চেয়ারম্যান তথ্য</h3>
+                <input type="text" value={chairmanName} onChange={(e) => setChairmanName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+                <input type="text" value={chairmanPhone} onChange={(e) => setChairmanPhone(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+                <input type="text" value={chairmanEmail} onChange={(e) => setChairmanEmail(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+                <input type="text" value={chairmanImg} onChange={(e) => setChairmanImg(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-sm font-bold text-green-700 border-b pb-1">সচিব তথ্য</h3>
+                <input type="text" value={secretaryName} onChange={(e) => setSecretaryName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+                <input type="text" value={secretaryPhone} onChange={(e) => setSecretaryPhone(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+                <input type="text" value={secretaryEmail} onChange={(e) => setSecretaryEmail(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+                <input type="text" value={secretaryImg} onChange={(e) => setSecretaryImg(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-gray-800 mb-3">ইউপি সদস্য ও সংরক্ষিত মহিলা সদস্যবৃন্দ (১২ জন)</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-2 border rounded-xl bg-gray-50">
+                {membersList.map((member) => (
+                  <div key={member.id} className="bg-white p-3 rounded-lg border shadow-sm space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded">{member.ward}</span>
+                      <span className="text-[10px] text-gray-400 font-semibold">{member.role}</span>
+                    </div>
+                    <input type="text" value={member.name} onChange={(e) => handleMemberChange(member.id, 'name', e.target.value)} className="w-full px-2 py-1 border rounded text-xs bg-white" />
+                    <input type="text" value={member.phone} onChange={(e) => handleMemberChange(member.id, 'phone', e.target.value)} className="w-full px-2 py-1 border rounded text-xs bg-white" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button type="submit" disabled={loading} className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
+              <FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'সাংগঠনিক কাঠামোর তথ্য লাইভ আপডেট করুন'}
+            </button>
+          </form>
+        </div>
+
+
+
+        {/* সেকশন ৪: এক নজরে ইউনিয়ন ফর্ম */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
             <FaListAlt className="text-green-600" />
             <h2>"এক নজরে ইউনিয়ন" তথ্য আপডেট ফরম</h2>
           </div>
-
           <form onSubmit={handleGlanceSubmit} className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">মোট জনসংখ্যা</label>
-              <input type="text" placeholder="যেমন: ৪৫,২৫০ জন" value={glancePop} onChange={(e) => setGlancePop(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
+              <input type="text" value={glancePop} onChange={(e) => setGlancePop(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">মোট ভোটার</label>
-              <input type="text" placeholder="যেমন: ২৮,২০০ জন" value={glanceVoters} onChange={(e) => setGlanceVoters(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
+              <input type="text" value={glanceVoters} onChange={(e) => setGlanceVoters(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">আয়তন</label>
-              <input type="text" placeholder="যেমন: ২৫.৪ বর্গ কি.মি." value={glanceArea} onChange={(e) => setGlanceArea(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
+              <input type="text" value={glanceArea} onChange={(e) => setGlanceArea(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">শিক্ষার হার</label>
-              <input type="text" placeholder="যেমন: ৭২.৫%" value={glanceLiteracy} onChange={(e) => setGlanceLiteracy(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
+              <input type="text" value={glanceLiteracy} onChange={(e) => setGlanceLiteracy(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">গ্রামের সংখ্যা</label>
-              <input type="text" placeholder="যেমন: ১৮ টি" value={glanceVillages} onChange={(e) => setGlanceVillages(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">প্রাথমিক বিদ্যালয়</label>
-              <input type="text" placeholder="যেমন: ১২ টি" value={glanceSchools} onChange={(e) => setGlanceSchools(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">স্বাস্থ্য কেন্দ্র</label>
-              <input type="text" placeholder="যেমন: ২ টি" value={glanceHealth} onChange={(e) => setGlanceHealth(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-700 mb-1">স্থাপিত সাল</label>
-              <input type="text" placeholder="যেমন: ১৯৬০ খ্রিস্টাব্দ" value={glanceEst} onChange={(e) => setGlanceEst(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-green-500" />
-            </div>
-
             <div className="col-span-2 md:col-span-4 pt-2">
-              <button type="submit" disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-                <FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'এক নজরে পেজের তথ্য আপডেট করুন'}
-              </button>
+              <button type="submit" disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"><FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'এক নজরে পেজের তথ্য আপডেট করুন'}</button>
             </div>
           </form>
         </div>
 
-        {/* সেকশন ৩: ইউনিয়ন পরিচিতি (Intro) ফর্ম */}
+
+
+        {/* সেকশন ৫: ইউনিয়ন পরিচিতি (Intro) ফর্ম */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
             <FaInfoCircle className="text-blue-600" />
@@ -230,20 +543,18 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">পেইজের মূল শিরোনাম *</label>
-                <input type="text" required value={introTitle} onChange={(e) => setIntroTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" required value={introTitle} onChange={(e) => setIntroTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 mb-1">উপ-শিরোনাম *</label>
-                <input type="text" required value={introSubtitle} onChange={(e) => setIntroSubtitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="text" required value={introSubtitle} onChange={(e) => setIntroSubtitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" />
               </div>
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">Detailed History *</label>
-              <textarea required rows="4" value={introHistory} onChange={(e) => setIntroHistory(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-500" />
+              <textarea required rows="4" value={introHistory} onChange={(e) => setIntroHistory(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" />
             </div>
-            <button type="submit" disabled={loading} className="w-full bg-blue-950 hover:bg-sky-950 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-              <FaSave /> {loading ? 'তথ্য সংরক্ষণ করা হচ্ছে...' : 'ইউনিয়ন পরিচিতি পেজ আপডেট করুন'}
-            </button>
+            <button type="submit" disabled={loading} className="w-full bg-blue-950 hover:bg-sky-950 text-white font-bold py-3 rounded-xl transition shadow-md flex items-center justify-center gap-2"><FaSave /> {loading ? 'তথ্য সংরক্ষণ করা হচ্ছে...' : 'ইউনিয়ন পরিচিতি পেজ আপডেট করুন'}</button>
           </form>
         </div>
 

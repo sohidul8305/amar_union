@@ -46,7 +46,6 @@ const Dashboard = () => {
   const [chairmanPhone, setChairmanPhone] = useState('+৮৮০ ১৭১১-২২৩৩৪৪');
   const [chairmanEmail, setChairmanEmail] = useState('chairman@union.gov.bd');
   const [chairmanImg, setChairmanImg] = useState('https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=400');
-
   const [secretaryName, setSecretaryName] = useState('নাব সুকোমল বড়ুয়া');
   const [secretaryPhone, setSecretaryPhone] = useState('+৮৮০ ১৭১২-৫৫৬৬৭৭');
   const [secretaryEmail, setSecretaryEmail] = useState('secretary@union.gov.bd');
@@ -77,7 +76,7 @@ const Dashboard = () => {
   const [exVillage, setExVillage] = useState('');
   const [editingExId, setEditingExId] = useState(null);
 
-  // ৭. কাউন্সিলর / সদস্যদের জন্য স্টেট (ডায়নামিক)
+  // ৭. কাউন্সিলর / সদস্যদের জন্য স্টেট
   const [councillorsList, setCouncillorsList] = useState([]);
   const [councillorForm, setCouncillorForm] = useState({
     name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: ''
@@ -101,17 +100,29 @@ const Dashboard = () => {
     { id: 12, ward: '৭, ৮ ও ৯ নং ওয়ার্ড', name: 'মোছাঃ পারভীন সুলতানা', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-১২_ _ _ _' },
   ]);
 
-  // ==================== নতুন যোগ করা স্টেটসমূহ ====================
+  // ==================== অন্যান্য কর্মচারী স্টেট ====================
+  const [staffList, setStaffList] = useState([]);
+  const [staffForm, setStaffForm] = useState({
+    name: '',
+    role: '',
+    area: '',
+    image: '',
+    phone: ''
+  });
+  const [editingStaffId, setEditingStaffId] = useState(null);
+  const [staffLoading, setStaffLoading] = useState(false);
+
+  // ==================== নতুন স্টেটসমূহ ====================
   const [contactInfo, setContactInfo] = useState({
     addressLine1: '১নং মডেল ইউনিয়ন পরিষদ কমপ্লেক্স',
     addressLine2: 'ঢাকা, বাংলাদেশ',
     phone1: '+৮৮০ ১৭০০-XXXXXX (সচিব)',
     phone2: 'জাতীয় সেবা নং: ৩৩৩, ৯৯৯',
     email: 'info@yourunionup.gov.bd',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?...',
-    facebook: 'https://facebook.com/yourunion',
-    twitter: 'https://twitter.com/yourunion',
-    youtube: 'https://youtube.com/yourunion'
+    mapEmbedUrl: '',
+    facebook: '',
+    twitter: '',
+    youtube: ''
   });
 
   const [verificationConfig, setVerificationConfig] = useState({
@@ -163,46 +174,129 @@ const Dashboard = () => {
     { label: 'সাধারণ নোটিশ', color: 'bg-gray-500' }
   ];
 
-  // ==================== useEffect হুকসমূহ ====================
+  // সচিব প্রোফাইল স্টেট
+  const [secretaryProfile, setSecretaryProfile] = useState({
+    name: '',
+    title: '',
+    department: '',
+    image: '',
+    joiningDate: '',
+    phone: '',
+    email: '',
+    officeTime: '',
+    education: '',
+    responsibilities: []
+  });
+  const [secretaryLoading, setSecretaryLoading] = useState(false);
+
+  // একাউন্ট পেজ কনফিগারেশন স্টেট
+  const [accountConfig, setAccountConfig] = useState({
+    financialYear: '২০২৫ - ২০২৬',
+    accountStats: [
+      { id: 1, label: 'মোট বরাদ্দ / বাজেট', value: '১,২৫,৫০,০০০ টাকা', detail: 'চলতি অর্থবছর', icon: '💰' },
+      { id: 2, label: 'রাজস্ব আয় (ট্যাক্স/ফি)', value: '৪৫,২০,০০০ টাকা', detail: 'লক্ষ্যমাত্রা: ৮০%', icon: '📈' },
+      { id: 3, label: 'উন্নয়নমূলক ব্যয়', value: '৬৮,৩০,০০০ টাকা', detail: 'রাস্তা ও অবকাঠামো', icon: '🏗️' },
+      { id: 4, label: 'সংরক্ষিত তহবিল', value: '১১,৯০,০০০ টাকা', detail: 'জরুরী আপদকালীন', icon: '🏦' }
+    ],
+    budgetSectors: [
+      { id: 1, sector: 'অবকাঠামো ও রাস্তাঘাট উন্নয়ন', allocation: '৪০%', amount: '৫০,২০,০০০ টাকা', status: 'চলমান' },
+      { id: 2, sector: 'শিক্ষা, সংস্কৃতি ও ক্রীড়া', allocation: '২০%', amount: '২৫,১০,০০০ টাকা', status: 'অনুমোদিত' },
+      { id: 3, sector: 'স্বাস্থ্য ও সমাজকল্যাণ', allocation: '১৫%', amount: '১৮,৮২,৫০০ টাকা', status: 'চলমান' },
+      { id: 4, sector: 'কৃষি ও মৎস্য সম্পদ উন্নয়ন', allocation: '১৫%', amount: '১৮,৮২,৫০০ টাকা', status: 'অনুমোদিত' },
+      { id: 5, sector: 'দুর্যোগ ব্যবস্থাপনা ও ত্রাণ', allocation: '১০%', amount: '১২,৫৫,০০০ টাকা', status: 'সংরক্ষিত' }
+    ],
+    footerNotice: 'ইউনিয়ন পরিষদের যাবতীয় কর (ট্যাক্স), ট্রেড লাইসেন্স ফি এবং বিবিধ ফি ডিজিটাল ক্যাশ কাউন্টারে জমা দিয়ে রশিদ সংগ্রহ করার জন্য অনুরোধ করা হলো। অর্থ সংক্রান্ত স্বচ্ছতা রক্ষায় আমরা প্রতিশ্রুতিবদ্ধ।'
+  });
+  const [accountLoading, setAccountLoading] = useState(false);
+
+  // ==================== সব fetch/load ফাংশন ====================
   const fetchCouncillors = async () => {
     try {
       const res = await axios.get('/api/councillors');
-      if (res.data.success && res.data.councillors.length > 0) {
-        setCouncillorsList(res.data.councillors);
-      } else {
-        setCouncillorsList([
-          { id: 1, name: 'মোঃ রফিকুল ইসলাম', ward: '১ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০১_ _ _ _', email: 'ward1@union.gov.bd', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300' },
-          { id: 2, name: 'আব্দুল কুদ্দুস', ward: '২ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০২_ _ _ _', email: 'ward2@union.gov.bd', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300' },
-          { id: 3, name: 'মোঃ জয়নাল আবেদীন', ward: '৩ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০৩_ _ _ _', email: 'ward3@union.gov.bd', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300' },
-        ]);
-      }
-    } catch (err) { console.error('কাউন্সিলর লোড করতে ব্যর্থ:', err); }
+      if (res.data.success && res.data.councillors.length > 0) setCouncillorsList(res.data.councillors);
+      else setCouncillorsList([]);
+    } catch (err) { console.error(err); }
   };
-  useEffect(() => { fetchCouncillors(); }, []);
 
-  useEffect(() => {
-    const fetchContactInfo = async () => {
-      try { const res = await axios.get('/api/contact-info'); if (res.data && Object.keys(res.data).length) setContactInfo(prev => ({ ...prev, ...res.data })); } catch (err) { console.error('কন্টাক্ট তথ্য লোড ব্যর্থ:', err); }
-    };
-    fetchContactInfo();
-  }, []);
+  const fetchContactInfo = async () => {
+    try {
+      const res = await axios.get('/api/contact-info');
+      if (res.data && Object.keys(res.data).length) setContactInfo(prev => ({ ...prev, ...res.data }));
+    } catch (err) { console.error(err); }
+  };
 
-  useEffect(() => {
-    const fetchVerificationConfig = async () => {
-      try { const res = await axios.get('/api/verification-page'); if (res.data && Object.keys(res.data).length) setVerificationConfig(prev => ({ ...prev, ...res.data })); } catch (err) { console.error('ভেরিফিকেশন কনফিগ লোড ব্যর্থ:', err); }
-    };
-    fetchVerificationConfig();
-  }, []);
+  const fetchVerificationConfig = async () => {
+    try {
+      const res = await axios.get('/api/verification-page');
+      if (res.data && Object.keys(res.data).length) setVerificationConfig(prev => ({ ...prev, ...res.data }));
+    } catch (err) { console.error(err); }
+  };
 
   const fetchGallery = async () => {
-    try { const res = await axios.get('/api/gallery'); if (res.data.success) setGalleryItems(res.data.items); else setGalleryItems([]); } catch (err) { console.error('গ্যালারি লোড ব্যর্থ:', err); }
+    try {
+      const res = await axios.get('/api/gallery');
+      if (res.data.success) setGalleryItems(res.data.items);
+      else setGalleryItems([]);
+    } catch (err) { console.error(err); }
   };
-  useEffect(() => { fetchGallery(); }, []);
 
   const fetchUpdates = async () => {
-    try { const res = await axios.get('/api/updates'); if (res.data.success) setUpdatesList(res.data.updates); } catch (err) { console.error('আপডেট লোড ব্যর্থ:', err); }
+    try {
+      const res = await axios.get('/api/updates');
+      if (res.data.success) setUpdatesList(res.data.updates);
+      else setUpdatesList([]);
+    } catch (err) { console.error(err); }
   };
+
+  const fetchSecretaryProfile = async () => {
+    try {
+      const res = await axios.get('/api/secretary');
+      if (res.data && res.data.name) setSecretaryProfile(prev => ({ ...prev, ...res.data }));
+      else {
+        setSecretaryProfile({
+          name: 'জনাব সুকোমল বড়ুয়া',
+          title: 'ইউনিয়ন পরিষদ সচিব',
+          department: 'স্থানীয় সরকার বিভাগ (এলজিডি)',
+          image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600',
+          joiningDate: '১৫ মে, ২০২০',
+          phone: '+৮৮০ ১৭১২-৫৫৬৬৭৭',
+          email: 'secretary@union.gov.bd',
+          officeTime: 'সকাল ৯:০০ - বিকেল ৫:০০ (রবি - বৃহস্পতিবার)',
+          education: 'স্নাতকোত্তর (লোক প্রশাসন), ঢাকা বিশ্ববিদ্যালয়',
+          responsibilities: [
+            'ইউনিয়ন পরিষদের যাবতীয় প্রশাসনিক ও দাপ্তরিক কার্য পরিচালনা।',
+            'পরিষদের বাজেট প্রণয়ন, হিসাব সংরক্ষণ এবং আর্থিক বিবরণী প্রস্তুতকরণ।',
+            'জন্ম-মৃত্যু নিবন্ধন, নাগরিক সনদ ও বিভিন্ন লাইসেন্স ইস্যুকরণে সমন্বয়।'
+          ]
+        });
+      }
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchAccountConfig = async () => {
+    try {
+      const res = await axios.get('/api/account');
+      if (res.data && Object.keys(res.data).length) setAccountConfig(prev => ({ ...prev, ...res.data }));
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchOtherStaff = async () => {
+    try {
+      const res = await axios.get('/api/other-staff');
+      if (res.data.success) setStaffList(res.data.staff);
+      else setStaffList([]);
+    } catch (err) { console.error('স্টাফ লোড ব্যর্থ:', err); }
+  };
+
+  // ==================== useEffect ====================
+  useEffect(() => { fetchCouncillors(); }, []);
+  useEffect(() => { fetchContactInfo(); }, []);
+  useEffect(() => { fetchVerificationConfig(); }, []);
+  useEffect(() => { fetchGallery(); }, []);
   useEffect(() => { fetchUpdates(); }, []);
+  useEffect(() => { fetchSecretaryProfile(); }, []);
+  useEffect(() => { fetchAccountConfig(); }, []);
+  useEffect(() => { fetchOtherStaff(); }, []);
 
   // ==================== হ্যান্ডলার ফাংশনসমূহ ====================
   const saveAllCouncillors = async () => {
@@ -210,14 +304,15 @@ const Dashboard = () => {
     try {
       const payload = councillorsList.map(({ id, ...rest }) => rest);
       await axios.post('/api/councillors', { councillors: payload });
-      setMessage({ text: 'কাউন্সিলর তালিকা সফলভাবে সংরক্ষিত!', isError: false });
-    } catch (err) { setMessage({ text: 'সংরক্ষণ করতে ব্যর্থ!', isError: true }); } finally { setCouncillorLoading(false); }
+      setMessage({ text: 'কাউন্সিলর তালিকা সংরক্ষিত!', isError: false });
+    } catch (err) { setMessage({ text: 'সংরক্ষণ ব্যর্থ!', isError: true }); }
+    finally { setCouncillorLoading(false); }
   };
 
   const handleCouncillorSubmit = (e) => {
     e.preventDefault();
     const { name, ward, role, phone, email, image } = councillorForm;
-    if (!name || !ward) { setMessage({ text: 'নাম ও ওয়ার্ড অবশ্যই দিতে হবে', isError: true }); return; }
+    if (!name || !ward) { setMessage({ text: 'নাম ও ওয়ার্ড আবশ্যক', isError: true }); return; }
     if (editingCouncillorId) {
       setCouncillorsList(prev => prev.map(c => c.id === editingCouncillorId ? { ...c, name, ward, role, phone, email, image } : c));
       setEditingCouncillorId(null);
@@ -226,112 +321,296 @@ const Dashboard = () => {
       setCouncillorsList(prev => [...prev, { id: newId, name, ward, role, phone, email, image }]);
     }
     setCouncillorForm({ name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: '' });
-    setMessage({ text: 'তালিকা আপডেট হয়েছে, সংরক্ষণ করতে "তালিকা সংরক্ষণ করুন" বাটনে ক্লিক করুন', isError: false });
+    setMessage({ text: 'তালিকা আপডেট হয়েছে, সংরক্ষণ করুন', isError: false });
   };
 
   const startEditCouncillor = (item) => {
     setEditingCouncillorId(item.id);
     setCouncillorForm({ name: item.name, ward: item.ward, role: item.role, phone: item.phone, email: item.email, image: item.image || '' });
   };
+
   const deleteCouncillor = (id) => {
-    if (window.confirm('আপনি কি নিশ্চিত যে এই সদস্য মুছতে চান?')) {
+    if (window.confirm('মুছতে চান?')) {
       setCouncillorsList(prev => prev.filter(c => c.id !== id));
       if (editingCouncillorId === id) { setEditingCouncillorId(null); setCouncillorForm({ name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: '' }); }
     }
   };
 
   const handleMemberChange = (id, field, val) => {
-    const updated = membersList.map(m => m.id === id ? { ...m, [field]: val } : m);
-    setMembersList(updated);
+    setMembersList(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
   };
 
   const handleNoticeSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
-    try { const res = await axios.post('/api/notices', { title: noticeTitle, date: noticeDate }); setMessage({ text: res.data.message || 'নোটিশ সফলভাবে যোগ হয়েছে!', isError: false }); setNoticeTitle(''); setNoticeDate(''); } catch (err) { setMessage({ text: 'নোটিশ যোগ করতে সমস্যা হয়েছে!', isError: true }); } finally { setLoading(false); }
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/notices', { title: noticeTitle, date: noticeDate });
+      setMessage({ text: res.data.message, isError: false });
+      setNoticeTitle(''); setNoticeDate('');
+    } catch (err) { setMessage({ text: 'নোটিশ যোগ করতে সমস্যা', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleServiceSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
-    try { const res = await axios.post('/api/services', { title: serviceTitle, path: servicePath, iconName, iconColor }); setMessage({ text: res.data.message || 'সেবাটি সফলভাবে যোগ হয়েছে!', isError: false }); setServiceTitle(''); setServicePath(''); } catch (err) { setMessage({ text: 'সেবা যোগ করতে সমস্যা হয়েছে!', isError: true }); } finally { setLoading(false); }
+    setLoading(true);
+    try {
+      const res = await axios.post('/api/services', { title: serviceTitle, path: servicePath, iconName, iconColor });
+      setMessage({ text: res.data.message, isError: false });
+      setServiceTitle(''); setServicePath('');
+    } catch (err) { setMessage({ text: 'সেবা যোগ করতে সমস্যা', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleIntroSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
+    setLoading(true);
     const finalIntroData = { title: introTitle, subtitle: introSubtitle, history: introHistory, established: establishedIntro, area: areaIntro, totalVillages: totalVillagesIntro, totalPopulation: totalPopulationIntro, literacyRate: literacyRateIntro, college, highSchool, primarySchool, madrasah, landmarks };
-    try { const response = await axios.post('/api/intro', finalIntroData); setMessage({ text: response.data.message || 'ইউনিয়ন পরিচিতি সফলভাবে আপডেট করা হয়েছে!', isError: false }); } catch (error) { setMessage({ text: 'পরিচিতি তথ্য আপডেট করতে ব্যর্থ হয়েছে!', isError: true }); } finally { setLoading(false); }
+    try {
+      const response = await axios.post('/api/intro', finalIntroData);
+      setMessage({ text: response.data.message, isError: false });
+    } catch (error) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleGlanceSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
+    setLoading(true);
     const finalGlanceData = { totalPopulation: glancePop, totalVoters: glanceVoters, area: glanceArea, literacyRate: glanceLiteracy, totalVillages: glanceVillages, primarySchools: glanceSchools, healthCenters: glanceHealth, established: glanceEst };
-    try { const response = await axios.post('/api/glance', finalGlanceData); setMessage({ text: response.data.message || 'এক নজরে ইউনিয়নের তথ্য আপডেট হয়েছে!', isError: false }); } catch (error) { setMessage({ text: 'এক নজরে তথ্য আপডেট করতে ব্যর্থ!', isError: true }); } finally { setLoading(false); }
+    try {
+      const response = await axios.post('/api/glance', finalGlanceData);
+      setMessage({ text: response.data.message, isError: false });
+    } catch (error) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleStructureSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
-    const topManagement = [{ id: 1, name: chairmanName, role: 'ইউনিয়ন পরিষদ চেয়ারম্যান', image: chairmanImg, phone: chairmanPhone, email: chairmanEmail }, { id: 2, name: secretaryName, role: 'ইউনিয়ন পরিষদ সচিব', image: secretaryImg, phone: secretaryPhone, email: secretaryEmail }];
-    try { const response = await axios.post('/api/structure', { topManagement, members: membersList }); setMessage({ text: response.data.message || 'সাংগঠনিক কাঠামোর তথ্য সফলভাবে আপডেট হয়েছে!', isError: false }); } catch (error) { setMessage({ text: 'সাংগঠনিক কাঠামো আপডেট করতে ব্যর্থ!', isError: true }); } finally { setLoading(false); }
+    setLoading(true);
+    const topManagement = [{ id: 1, name: chairmanName, role: 'চেয়ারম্যান', image: chairmanImg, phone: chairmanPhone, email: chairmanEmail }, { id: 2, name: secretaryName, role: 'সচিব', image: secretaryImg, phone: secretaryPhone, email: secretaryEmail }];
+    try {
+      const response = await axios.post('/api/structure', { topManagement, members: membersList });
+      setMessage({ text: response.data.message, isError: false });
+    } catch (error) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleChairmanProfileSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
+    setLoading(true);
     const chairmanProfileData = { name: chairmanName, title: chTitle, union: chUnion, image: chairmanImg, joiningDate: chJoinDate, phone: chairmanPhone, email: chairmanEmail, address: chAddress, message: chMessage, bio: [{ label: 'পিতার নাম', value: fatherName }, { label: 'শিক্ষাগত যোগ্যতা', value: education }, { label: 'রাজনৈতিক পদবী', value: politicalRole }, { label: 'সামাজিক অবদান', value: socialContribution }] };
-    try { const response = await axios.post('/api/chairman', chairmanProfileData); setMessage({ text: response.data.message || 'সম্মানিত চেয়ারম্যান প্রোফাইল সফলভাবে আপডেট হয়েছে!', isError: false }); } catch (error) { setMessage({ text: 'চেয়ারম্যান প্রোফাইল আপডেট করতে ব্যর্থ!', isError: true }); } finally { setLoading(false); }
+    try {
+      const response = await axios.post('/api/chairman', chairmanProfileData);
+      setMessage({ text: response.data.message, isError: false });
+    } catch (error) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleContactSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setMessage({ text: '', isError: false });
-    try { await axios.post('/api/contact-info', contactInfo); setMessage({ text: 'যোগাযোগের তথ্য সফলভাবে আপডেট হয়েছে!', isError: false }); } catch (err) { setMessage({ text: 'আপডেট করতে ব্যর্থ!', isError: true }); } finally { setLoading(false); }
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post('/api/contact-info', contactInfo);
+      setMessage({ text: 'যোগাযোগের তথ্য আপডেট হয়েছে', isError: false });
+    } catch (err) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleVerificationConfigSubmit = async (e) => {
-    e.preventDefault(); setLoading(true); setMessage({ text: '', isError: false });
-    try { await axios.post('/api/verification-page', verificationConfig); setMessage({ text: 'যাচাই পৃষ্ঠার তথ্য সফলভাবে আপডেট হয়েছে!', isError: false }); } catch (err) { setMessage({ text: 'আপডেট করতে ব্যর্থ!', isError: true }); } finally { setLoading(false); }
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await axios.post('/api/verification-page', verificationConfig);
+      setMessage({ text: 'যাচাই পৃষ্ঠার তথ্য আপডেট হয়েছে', isError: false });
+    } catch (err) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
+
   const handleExChairmanSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); setMessage({ text: '', isError: false });
+    setLoading(true);
     let updatedList;
-    if (editingExId) { updatedList = exChairmansList.map(item => item.id === editingExId ? { ...item, name: exName, duration: exDuration, image: exImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', status: exStatus, village: exVillage } : item); }
-    else { const newEx = { id: Date.now(), name: exName, title: 'সাবেক চেয়ারম্যান', duration: exDuration, image: exImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', status: exStatus, village: exVillage }; updatedList = [...exChairmansList, newEx]; }
-    try { const response = await axios.post('/api/ex-chairmans', { chairmans: updatedList }); setExChairmansList(updatedList); setMessage({ text: response.data.message || 'পূর্বতন চেয়ারম্যান তালিকা আপডেট হয়েছে!', isError: false }); setExName(''); setExDuration(''); setExImage(''); setExVillage(''); setExStatus('জীবিত'); setEditingExId(null); } catch (error) { setMessage({ text: 'তালিকা সংরক্ষণ করতে সমস্যা হয়েছে!', isError: true }); } finally { setLoading(false); }
+    if (editingExId) updatedList = exChairmansList.map(item => item.id === editingExId ? { ...item, name: exName, duration: exDuration, image: exImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', status: exStatus, village: exVillage } : item);
+    else updatedList = [...exChairmansList, { id: Date.now(), name: exName, title: 'সাবেক চেয়ারম্যান', duration: exDuration, image: exImage || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb', status: exStatus, village: exVillage }];
+    try {
+      await axios.post('/api/ex-chairmans', { chairmans: updatedList });
+      setExChairmansList(updatedList);
+      setMessage({ text: 'সাবেক চেয়ারম্যান তালিকা আপডেট হয়েছে', isError: false });
+      setExName(''); setExDuration(''); setExImage(''); setExVillage(''); setExStatus('জীবিত'); setEditingExId(null);
+    } catch (error) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setLoading(false); }
   };
-  const startEditEx = (item) => { setEditingExId(item.id); setExName(item.name); setExDuration(item.duration); setExImage(item.image); setExVillage(item.village); setExStatus(item.status); };
+
+  const startEditEx = (item) => {
+    setEditingExId(item.id);
+    setExName(item.name); setExDuration(item.duration); setExImage(item.image); setExVillage(item.village); setExStatus(item.status);
+  };
+
   const deleteExChairman = async (id) => {
-    if (!window.confirm('আপনি কি নিশ্চিত যে এটি মুছে ফেলতে চান?')) return;
+    if (!window.confirm('মুছতে চান?')) return;
     const filtered = exChairmansList.filter(item => item.id !== id);
-    try { const response = await axios.post('/api/ex-chairmans', { chairmans: filtered }); setExChairmansList(filtered); setMessage({ text: 'সফলভাবে মুছে ফেলা হয়েছে!', isError: false }); } catch (err) { setMessage({ text: 'মুছে ফেলতে ব্যর্থ!', isError: true }); }
+    try {
+      await axios.post('/api/ex-chairmans', { chairmans: filtered });
+      setExChairmansList(filtered);
+      setMessage({ text: 'মুছে ফেলা হয়েছে', isError: false });
+    } catch (err) { setMessage({ text: 'মুছতে ব্যর্থ', isError: true }); }
   };
+
   const handleGallerySubmit = async (e) => {
     e.preventDefault();
     const { title, category, image, date } = galleryForm;
-    if (!title || !category || !image) { setMessage({ text: 'শিরোনাম, ক্যাটাগরি ও ছবির URL দিন', isError: true }); return; }
+    if (!title || !category || !image) { setMessage({ text: 'সব তথ্য দিন', isError: true }); return; }
     setGalleryLoading(true);
     try {
-      if (editingGalleryId) { await axios.put(`/api/gallery/${editingGalleryId}`, { title, category, image, date }); setMessage({ text: 'আইটেম আপডেট হয়েছে', isError: false }); }
-      else { await axios.post('/api/gallery', { title, category, image, date }); setMessage({ text: 'নতুন ছবি যোগ হয়েছে', isError: false }); }
-      fetchGallery(); setGalleryForm({ title: '', category: 'উন্নয়ন প্রকল্প', image: '', date: '' }); setEditingGalleryId(null);
-    } catch (err) { setMessage({ text: 'সংরক্ষণ ব্যর্থ!', isError: true }); } finally { setGalleryLoading(false); }
+      if (editingGalleryId) await axios.put(`/api/gallery/${editingGalleryId}`, { title, category, image, date });
+      else await axios.post('/api/gallery', { title, category, image, date });
+      setMessage({ text: 'সফল', isError: false });
+      fetchGallery();
+      setGalleryForm({ title: '', category: 'উন্নয়ন প্রকল্প', image: '', date: '' });
+      setEditingGalleryId(null);
+    } catch (err) { setMessage({ text: 'ব্যর্থ', isError: true }); }
+    finally { setGalleryLoading(false); }
   };
-  const startEditGallery = (item) => { setEditingGalleryId(item._id); setGalleryForm({ title: item.title, category: item.category, image: item.image, date: item.date || '' }); };
+
+  const startEditGallery = (item) => {
+    setEditingGalleryId(item._id);
+    setGalleryForm({ title: item.title, category: item.category, image: item.image, date: item.date || '' });
+  };
+
   const deleteGalleryItem = async (id) => {
-    if (!window.confirm('আপনি কি নিশ্চিত যে এই ছবিটি মুছতে চান?')) return;
-    try { await axios.delete(`/api/gallery/${id}`); setMessage({ text: 'সফলভাবে মুছে ফেলা হয়েছে', isError: false }); fetchGallery(); if (editingGalleryId === id) { setEditingGalleryId(null); setGalleryForm({ title: '', category: 'উন্নয়ন প্রকল্প', image: '', date: '' }); } } catch (err) { setMessage({ text: 'মুছতে ব্যর্থ!', isError: true }); }
+    if (!window.confirm('মুছতে চান?')) return;
+    try {
+      await axios.delete(`/api/gallery/${id}`);
+      setMessage({ text: 'মুছে ফেলা হয়েছে', isError: false });
+      fetchGallery();
+      if (editingGalleryId === id) { setEditingGalleryId(null); setGalleryForm({ title: '', category: 'উন্নয়ন প্রকল্প', image: '', date: '' }); }
+    } catch (err) { setMessage({ text: 'মুছতে ব্যর্থ', isError: true }); }
   };
+
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     const { title, description, tag, tagColor, date, link } = updateForm;
     if (!title || !description) { setMessage({ text: 'শিরোনাম ও বিবরণ দিন', isError: true }); return; }
     setUpdateLoading(true);
     try {
-      if (editingUpdateId) { await axios.put(`/api/updates/${editingUpdateId}`, { title, description, tag, tagColor, date, link }); setMessage({ text: 'আপডেট পরিবর্তিত হয়েছে', isError: false }); }
-      else { await axios.post('/api/updates', { title, description, tag, tagColor, date, link }); setMessage({ text: 'নতুন আপডেট যুক্ত হয়েছে', isError: false }); }
-      fetchUpdates(); setUpdateForm({ title: '', description: '', tag: 'সাধারণ নোটিশ', tagColor: 'bg-blue-500', date: '', link: '#' }); setEditingUpdateId(null);
-    } catch (err) { setMessage({ text: 'সংরক্ষণ ব্যর্থ!', isError: true }); } finally { setUpdateLoading(false); }
+      if (editingUpdateId) await axios.put(`/api/updates/${editingUpdateId}`, { title, description, tag, tagColor, date, link });
+      else await axios.post('/api/updates', { title, description, tag, tagColor, date, link });
+      setMessage({ text: 'সফল', isError: false });
+      fetchUpdates();
+      setUpdateForm({ title: '', description: '', tag: 'সাধারণ নোটিশ', tagColor: 'bg-blue-500', date: '', link: '#' });
+      setEditingUpdateId(null);
+    } catch (err) { setMessage({ text: 'ব্যর্থ', isError: true }); }
+    finally { setUpdateLoading(false); }
   };
-  const startEditUpdate = (item) => { setEditingUpdateId(item._id); setUpdateForm({ title: item.title, description: item.description, tag: item.tag, tagColor: item.tagColor, date: item.date || '', link: item.link || '#' }); };
+
+  const startEditUpdate = (item) => {
+    setEditingUpdateId(item._id);
+    setUpdateForm({ title: item.title, description: item.description, tag: item.tag, tagColor: item.tagColor, date: item.date || '', link: item.link || '#' });
+  };
+
   const deleteUpdate = async (id) => {
-    if (!window.confirm('আপনি কি নিশ্চিত যে এটি মুছতে চান?')) return;
-    try { await axios.delete(`/api/updates/${id}`); setMessage({ text: 'মুছে ফেলা হয়েছে', isError: false }); fetchUpdates(); if (editingUpdateId === id) { setEditingUpdateId(null); setUpdateForm({ title: '', description: '', tag: 'সাধারণ নোটিশ', tagColor: 'bg-blue-500', date: '', link: '#' }); } } catch (err) { setMessage({ text: 'মুছতে ব্যর্থ!', isError: true }); }
+    if (!window.confirm('মুছতে চান?')) return;
+    try {
+      await axios.delete(`/api/updates/${id}`);
+      setMessage({ text: 'মুছে ফেলা হয়েছে', isError: false });
+      fetchUpdates();
+      if (editingUpdateId === id) { setEditingUpdateId(null); setUpdateForm({ title: '', description: '', tag: 'সাধারণ নোটিশ', tagColor: 'bg-blue-500', date: '', link: '#' }); }
+    } catch (err) { setMessage({ text: 'মুছতে ব্যর্থ', isError: true }); }
+  };
+
+  const handleSecretarySubmit = async (e) => {
+    e.preventDefault();
+    setSecretaryLoading(true);
+    try {
+      await axios.post('/api/secretary', secretaryProfile);
+      setMessage({ text: 'সচিব প্রোফাইল আপডেট হয়েছে', isError: false });
+    } catch (err) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setSecretaryLoading(false); }
+  };
+
+  const handleResponsibilitiesChange = (text) => {
+    const lines = text.split('\n').filter(line => line.trim() !== '');
+    setSecretaryProfile({ ...secretaryProfile, responsibilities: lines });
+  };
+
+  const handleAccountSubmit = async (e) => {
+    e.preventDefault();
+    setAccountLoading(true);
+    try {
+      await axios.post('/api/account', accountConfig);
+      setMessage({ text: 'একাউন্ট পেজ আপডেট হয়েছে', isError: false });
+    } catch (err) { setMessage({ text: 'আপডেট ব্যর্থ', isError: true }); }
+    finally { setAccountLoading(false); }
+  };
+
+  const handleStatsChange = (statsJson) => {
+    try {
+      const parsed = JSON.parse(statsJson);
+      if (Array.isArray(parsed)) setAccountConfig({...accountConfig, accountStats: parsed});
+    } catch(e) {}
+  };
+
+  const handleSectorsChange = (sectorsJson) => {
+    try {
+      const parsed = JSON.parse(sectorsJson);
+      if (Array.isArray(parsed)) setAccountConfig({...accountConfig, budgetSectors: parsed});
+    } catch(e) {}
+  };
+
+  // অন্যান্য কর্মচারী হ্যান্ডলার
+  const handleStaffSubmit = async (e) => {
+    e.preventDefault();
+    const { name, role, area, image, phone } = staffForm;
+    if (!name || !role) {
+      setMessage({ text: 'নাম ও পদবি আবশ্যক', isError: true });
+      return;
+    }
+    setStaffLoading(true);
+    let updatedList;
+    if (editingStaffId) {
+      updatedList = staffList.map(item => item._id === editingStaffId ? { ...item, name, role, area, image, phone } : item);
+    } else {
+      const newStaff = { name, role, area, image, phone, createdAt: new Date() };
+      updatedList = [...staffList, newStaff];
+    }
+    try {
+      await axios.post('/api/other-staff', { staffList: updatedList });
+      setStaffList(updatedList);
+      setMessage({ text: 'তালিকা আপডেট হয়েছে', isError: false });
+      setStaffForm({ name: '', role: '', area: '', image: '', phone: '' });
+      setEditingStaffId(null);
+    } catch (err) {
+      setMessage({ text: 'সংরক্ষণ ব্যর্থ', isError: true });
+    } finally {
+      setStaffLoading(false);
+    }
+  };
+
+  const startEditStaff = (item) => {
+    setEditingStaffId(item._id);
+    setStaffForm({
+      name: item.name,
+      role: item.role,
+      area: item.area || '',
+      image: item.image || '',
+      phone: item.phone || ''
+    });
+  };
+
+  const deleteStaff = async (id) => {
+    if (!window.confirm('মুছতে চান?')) return;
+    const updatedList = staffList.filter(item => item._id !== id);
+    try {
+      await axios.post('/api/other-staff', { staffList: updatedList });
+      setStaffList(updatedList);
+      setMessage({ text: 'মুছে ফেলা হয়েছে', isError: false });
+      if (editingStaffId === id) {
+        setEditingStaffId(null);
+        setStaffForm({ name: '', role: '', area: '', image: '', phone: '' });
+      }
+    } catch (err) {
+      setMessage({ text: 'মুছতে ব্যর্থ', isError: true });
+    }
   };
 
   // ==================== JSX রিটার্ন ====================
@@ -347,116 +626,228 @@ const Dashboard = () => {
 
         {/* নোটিশ ও সার্ভিস গ্রিড */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"><div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-4"><FaBullhorn className="text-amber-500" /><h2>নতুন নোটিশ জারি করুন</h2></div><form onSubmit={handleNoticeSubmit} className="space-y-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">নোটিশের শিরোনাম *</label><textarea required rows="2" value={noticeTitle} onChange={(e) => setNoticeTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">তারিখ</label><input type="text" value={noticeDate} onChange={(e) => setNoticeDate(e.target.value)} placeholder="যেমন: ০৭ জুন, ২০২৬" className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" /></div><button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">নোটিশ আপডেট করুন</button></form></div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6"><div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-4"><FaCogs className="text-emerald-500" /><h2>নতুন নাগরিক সেবা যোগ করুন</h2></div><form onSubmit={handleServiceSubmit} className="space-y-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">সেবার নাম *</label><input type="text" required value={serviceTitle} onChange={(e) => setServiceTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">রাউট লিংক / পাথ *</label><input type="text" required value={servicePath} onChange={(e) => setServicePath(e.target.value)} placeholder="/service/trade-license" className="w-full px-3 py-2 border rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" /></div><button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg text-sm transition shadow-sm">সেবা গ্রিডে যোগ করুন</button></form></div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-4"><FaBullhorn className="text-amber-500" /><h2>নতুন নোটিশ জারি করুন</h2></div>
+            <form onSubmit={handleNoticeSubmit} className="space-y-4">
+              <div><label className="block text-xs font-bold text-gray-700 mb-1">নোটিশের শিরোনাম *</label><textarea required rows="2" value={noticeTitle} onChange={(e) => setNoticeTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
+              <div><label className="block text-xs font-bold text-gray-700 mb-1">তারিখ</label><input type="text" value={noticeDate} onChange={(e) => setNoticeDate(e.target.value)} placeholder="যেমন: ০৭ জুন, ২০২৬" className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
+              <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg">নোটিশ আপডেট করুন</button>
+            </form>
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-4"><FaCogs className="text-emerald-500" /><h2>নতুন নাগরিক সেবা যোগ করুন</h2></div>
+            <form onSubmit={handleServiceSubmit} className="space-y-4">
+              <div><label className="block text-xs font-bold text-gray-700 mb-1">সেবার নাম *</label><input type="text" required value={serviceTitle} onChange={(e) => setServiceTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
+              <div><label className="block text-xs font-bold text-gray-700 mb-1">রাউট লিংক *</label><input type="text" required value={servicePath} onChange={(e) => setServicePath(e.target.value)} placeholder="/service/trade-license" className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
+              <button type="submit" disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg">সেবা গ্রিডে যোগ করুন</button>
+            </form>
+          </div>
         </div>
 
-        {/* চেয়ারম্যান প্রোফাইল (সংক্ষেপিত) */}
+        {/* বর্তমান চেয়ারম্যান প্রোফাইল */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUserTie className="text-teal-600" /><h2>সম্মানিত চেয়ারম্যান প্রোফাইল পেজ আপডেট ফরম</h2></div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUserTie className="text-teal-600" /><h2>চেয়ারম্যান প্রোফাইল আপডেট</h2></div>
           <form onSubmit={handleChairmanProfileSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">চেয়ারম্যানের নাম</label><input type="text" value={chairmanName} onChange={(e) => setChairmanName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">পদবী</label><input type="text" value={chTitle} onChange={(e) => setChTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ইউনিয়নের নাম</label><input type="text" value={chUnion} onChange={(e) => setChUnion(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">দায়িত্ব গ্রহণের তারিখ</label><input type="text" value={chJoinDate} onChange={(e) => setChJoinDate(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">কার্যালয় / বাসভবন ঠিকানা</label><input type="text" value={chAddress} onChange={(e) => setChAddress(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ছবির লিঙ্ক (Image URL)</label><input type="text" value={chairmanImg} onChange={(e) => setChairmanImg(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div></div>
-            <div className="bg-slate-50 p-4 rounded-xl border border-gray-100 space-y-4"><h3 className="text-xs font-bold text-slate-800 border-b pb-1">ব্যক্তিগত ও সামাজিক পরিচিতি</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-[11px] font-bold text-gray-600 mb-1">পিতার নাম</label><input type="text" value={fatherName} onChange={(e) => setFatherName(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" /></div><div><label className="block text-[11px] font-bold text-gray-600 mb-1">শিক্ষাগত যোগ্যতা</label><input type="text" value={education} onChange={(e) => setEducation(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" /></div><div><label className="block text-[11px] font-bold text-gray-600 mb-1">রাজনৈতিক পদবী</label><input type="text" value={politicalRole} onChange={(e) => setPoliticalRole(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" /></div><div><label className="block text-[11px] font-bold text-gray-600 mb-1">সামাজিক অবদান</label><input type="text" value={socialContribution} onChange={(e) => setSocialContribution(e.target.value)} className="w-full px-3 py-1.5 border rounded text-xs bg-white" /></div></div></div>
-            <div><label className="block text-xs font-bold text-gray-700 mb-1">চেয়ারম্যানের বাণী (Message)</label><textarea rows="4" value={chMessage} onChange={(e) => setChMessage(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <button type="submit" disabled={loading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"><FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'চেয়ারম্যান প্রোফাইল পেজের তথ্য লাইভ আপডেট করুন'}</button>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div><label>নাম</label><input type="text" value={chairmanName} onChange={(e) => setChairmanName(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+              <div><label>পদবী</label><input type="text" value={chTitle} onChange={(e) => setChTitle(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+              <div><label>ইউনিয়নের নাম</label><input type="text" value={chUnion} onChange={(e) => setChUnion(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+              <div><label>দায়িত্ব গ্রহণের তারিখ</label><input type="text" value={chJoinDate} onChange={(e) => setChJoinDate(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+              <div><label>ঠিকানা</label><input type="text" value={chAddress} onChange={(e) => setChAddress(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+              <div><label>ছবির URL</label><input type="text" value={chairmanImg} onChange={(e) => setChairmanImg(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+            </div>
+            <div><label>চেয়ারম্যানের বাণী</label><textarea rows="4" value={chMessage} onChange={(e) => setChMessage(e.target.value)} className="w-full border rounded px-3 py-2 text-sm" /></div>
+            <button type="submit" className="w-full bg-teal-600 text-white py-2 rounded-xl">আপডেট করুন</button>
           </form>
         </div>
 
-        {/* সাবেক চেয়ারম্যান (সংক্ষেপিত) */}
+        {/* সাবেক চেয়ারম্যান */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaHistory className="text-amber-600" /><h2>পূর্বতন/সাবেক চেয়ারম্যানদের তালিকা আপডেট ফরম</h2></div>
-          <form onSubmit={handleExChairmanSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-amber-50/50 p-4 rounded-xl border border-amber-100 mb-6">
-            <div className="sm:col-span-2 md:col-span-3"><h3 className="text-xs font-bold text-amber-800">{editingExId ? '🔒 সাবেক চেয়ারম্যান তথ্য পরিবর্তন করুন' : '➕ নতুন সাবেক চেয়ারম্যান যুক্ত করুন'}</h3></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">চেয়ারম্যানের নাম *</label><input type="text" required value={exName} onChange={(e) => setExName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">কার্যকাল/মেয়াদকাল *</label><input type="text" required value={exDuration} onChange={(e) => setExDuration(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">গ্রাম</label><input type="text" value={exVillage} onChange={(e) => setExVillage(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div className="sm:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির ইউআরএল (Image URL)</label><input type="text" value={exImage} onChange={(e) => setExImage(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">বর্তমান অবস্থা</label><select value={exStatus} onChange={(e) => setExStatus(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white"><option value="জীবিত">জীবিত</option><option value="প্রয়াত">প্রয়াত</option></select></div>
-            <div className="sm:col-span-2 md:col-span-3 pt-2"><button type="submit" disabled={loading} className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-sm">{editingExId ? 'তথ্য আপডেট করুন' : 'তালিকায় সাবেক চেয়ারম্যান যুক্ত করুন'}</button></div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaHistory className="text-amber-600" /><h2>সাবেক চেয়ারম্যান</h2></div>
+          <form onSubmit={handleExChairmanSubmit} className="grid grid-cols-2 gap-4 bg-amber-50 p-4 rounded-xl mb-6">
+            <div className="col-span-2"><h3>{editingExId ? 'এডিট' : 'নতুন যোগ'}</h3></div>
+            <input type="text" placeholder="নাম" value={exName} onChange={(e)=>setExName(e.target.value)} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="কার্যকাল" value={exDuration} onChange={(e)=>setExDuration(e.target.value)} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="গ্রাম" value={exVillage} onChange={(e)=>setExVillage(e.target.value)} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="ছবি URL" value={exImage} onChange={(e)=>setExImage(e.target.value)} className="border rounded p-2 text-sm col-span-2" />
+            <select value={exStatus} onChange={(e)=>setExStatus(e.target.value)} className="border rounded p-2 text-sm"><option>জীবিত</option><option>প্রয়াত</option></select>
+            <button type="submit" className="bg-amber-600 text-white py-2 rounded">{editingExId ? 'আপডেট' : 'যোগ করুন'}</button>
           </form>
-          <div className="overflow-x-auto rounded-xl border border-gray-200"><table className="w-full text-left border-collapse text-xs"><thead><tr className="bg-slate-100 text-slate-700 font-bold border-b"><th className="p-3 text-center">ক্রমিক</th><th className="p-3">চেয়ারম্যানের নাম</th><th className="p-3">কার্যকাল</th><th className="p-3">গ্রাম</th><th className="p-3 text-center">অবস্থা</th><th className="p-3 text-center">অ্যাকশন</th></tr></thead><tbody>{exChairmansList.map((item, idx) => (<tr key={item.id}><td className="p-3 text-center">{idx+1}</td><td className="p-3">{item.name}</td><td className="p-3">{item.duration}</td><td className="p-3">{item.village||'N/A'}</td><td className="p-3 text-center"><span className={`px-2 py-0.5 rounded text-[10px] font-bold ${item.status==='জীবিত'?'bg-blue-50 text-blue-700':'bg-gray-100 text-gray-600'}`}>{item.status}</span></td><td className="p-3 text-center space-x-2"><button onClick={() => startEditEx(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded"><FaEdit /></button><button onClick={() => deleteExChairman(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded"><FaTrashAlt /></button></td></tr>))}</tbody></table></div>
+          <table className="w-full text-sm border"><thead><tr><th>ক্রম</th><th>নাম</th><th>কার্যকাল</th><th>অ্যাকশন</th></tr></thead><tbody>
+            {exChairmansList.map((item,idx)=><tr key={item.id}><td>{idx+1}</td><td>{item.name}</td><td>{item.duration}</td><td><button onClick={()=>startEditEx(item)}>✏️</button><button onClick={()=>deleteExChairman(item.id)}>🗑️</button></td></tr>)}
+          </tbody></table>
         </div>
 
-        {/* কাউন্সিলর (সংক্ষেপিত) */}
+        {/* কাউন্সিলর */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUsers className="text-indigo-600" /><h2>কাউন্সিলর / সদস্যবৃন্দ তালিকা আপডেট ফরম</h2></div>
-          <form onSubmit={handleCouncillorSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-50/30 p-4 rounded-xl border border-indigo-100 mb-6">
-            <div className="sm:col-span-2 md:col-span-3"><h3 className="text-xs font-bold text-indigo-800">{editingCouncillorId ? '✏️ সদস্য তথ্য পরিবর্তন করুন' : '➕ নতুন সদস্য যুক্ত করুন'}</h3></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">পূর্ণ নাম *</label><input type="text" required value={councillorForm.name} onChange={(e) => setCouncillorForm({...councillorForm, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ওয়ার্ড *</label><input type="text" required value={councillorForm.ward} onChange={(e) => setCouncillorForm({...councillorForm, ward: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ভূমিকা</label><input type="text" value={councillorForm.role} onChange={(e) => setCouncillorForm({...councillorForm, role: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">মোবাইল</label><input type="text" value={councillorForm.phone} onChange={(e) => setCouncillorForm({...councillorForm, phone: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ইমেইল</label><input type="email" value={councillorForm.email} onChange={(e) => setCouncillorForm({...councillorForm, email: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div className="sm:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির URL</label><input type="text" value={councillorForm.image} onChange={(e) => setCouncillorForm({...councillorForm, image: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div>
-            <div className="sm:col-span-2 md:col-span-3 pt-2"><button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg text-xs">{editingCouncillorId ? 'হালনাগাদ করুন' : 'তালিকায় যোগ করুন'}</button></div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUsers className="text-indigo-600" /><h2>কাউন্সিলর / সদস্যবৃন্দ</h2></div>
+          <form onSubmit={handleCouncillorSubmit} className="grid grid-cols-2 md:grid-cols-3 gap-3 bg-indigo-50 p-4 rounded-xl mb-6">
+            <input type="text" placeholder="নাম *" value={councillorForm.name} onChange={(e)=>setCouncillorForm({...councillorForm,name:e.target.value})} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="ওয়ার্ড *" value={councillorForm.ward} onChange={(e)=>setCouncillorForm({...councillorForm,ward:e.target.value})} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="ভূমিকা" value={councillorForm.role} onChange={(e)=>setCouncillorForm({...councillorForm,role:e.target.value})} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="মোবাইল" value={councillorForm.phone} onChange={(e)=>setCouncillorForm({...councillorForm,phone:e.target.value})} className="border rounded p-2 text-sm" />
+            <input type="email" placeholder="ইমেইল" value={councillorForm.email} onChange={(e)=>setCouncillorForm({...councillorForm,email:e.target.value})} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="ছবি URL" value={councillorForm.image} onChange={(e)=>setCouncillorForm({...councillorForm,image:e.target.value})} className="border rounded p-2 text-sm" />
+            <button type="submit" className="col-span-3 bg-indigo-600 text-white py-2 rounded">{editingCouncillorId ? 'আপডেট' : 'যোগ করুন'}</button>
           </form>
-          <div className="overflow-x-auto rounded-xl border border-gray-200"><table className="w-full text-left border-collapse text-xs"><thead className="bg-slate-100 text-slate-700 font-bold border-b"><tr><th className="p-3 text-center">#</th><th className="p-3">নাম</th><th className="p-3">ওয়ার্ড</th><th className="p-3">ভূমিকা</th><th className="p-3">মোবাইল</th><th className="p-3 text-center">অ্যাকশন</th></tr></thead><tbody>{councillorsList.map((item,idx)=>(<tr key={item.id}><td className="p-3 text-center">{idx+1}</td><td className="p-3">{item.name}</td><td className="p-3">{item.ward}</td><td className="p-3">{item.role}</td><td className="p-3">{item.phone}</td><td className="p-3 text-center space-x-2"><button onClick={()=>startEditCouncillor(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded"><FaEdit /></button><button onClick={()=>deleteCouncillor(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded"><FaTrashAlt /></button></td></tr>))}</tbody></table></div>
-          <div className="mt-6 flex justify-end"><button onClick={saveAllCouncillors} disabled={councillorLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg text-sm shadow-md flex items-center gap-2"><FaSave /> {councillorLoading ? 'সংরক্ষণ হচ্ছে...' : 'তালিকা সংরক্ষণ করুন'}</button></div>
+          <table className="w-full text-sm border"><thead><tr><th>#</th><th>নাম</th><th>ওয়ার্ড</th><th>অ্যাকশন</th></tr></thead><tbody>
+            {councillorsList.map((item,idx)=><tr key={item.id}><td>{idx+1}</td><td>{item.name}</td><td>{item.ward}</td><td><button onClick={()=>startEditCouncillor(item)}>✏️</button><button onClick={()=>deleteCouncillor(item.id)}>🗑️</button></td></tr>)}
+          </tbody></table>
+          <div className="mt-4 flex justify-end"><button onClick={saveAllCouncillors} className="bg-emerald-600 text-white py-2 px-4 rounded">তালিকা সংরক্ষণ করুন</button></div>
         </div>
 
-        {/* সাংগঠনিক কাঠামো (সংক্ষেপিত) */}
+        {/* সাংগঠনিক কাঠামো */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUsers className="text-violet-600" /><h2>ইউনিয়ন পরিষদ সাংগঠনিক কাঠামো আপডেট ফরম</h2></div>
-          <form onSubmit={handleStructureSubmit} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-gray-100"><div className="space-y-3"><h3 className="text-sm font-bold text-green-700 border-b pb-1">চেয়ারম্যান তথ্য</h3><input type="text" value={chairmanName} onChange={(e)=>setChairmanName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /><input type="text" value={chairmanPhone} onChange={(e)=>setChairmanPhone(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /><input type="text" value={chairmanEmail} onChange={(e)=>setChairmanEmail(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /><input type="text" value={chairmanImg} onChange={(e)=>setChairmanImg(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div><div className="space-y-3"><h3 className="text-sm font-bold text-green-700 border-b pb-1">সচিব তথ্য</h3><input type="text" value={secretaryName} onChange={(e)=>setSecretaryName(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /><input type="text" value={secretaryPhone} onChange={(e)=>setSecretaryPhone(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /><input type="text" value={secretaryEmail} onChange={(e)=>setSecretaryEmail(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /><input type="text" value={secretaryImg} onChange={(e)=>setSecretaryImg(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" /></div></div>
-            <div><h3 className="text-sm font-bold text-gray-800 mb-3">ইউপি সদস্য ও সংরক্ষিত মহিলা সদস্যবৃন্দ (১২ জন)</h3><div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto p-2 border rounded-xl bg-gray-50">{membersList.map((member)=>(<div key={member.id} className="bg-white p-3 rounded-lg border shadow-sm space-y-2"><div className="flex justify-between items-center"><span className="text-[11px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded">{member.ward}</span><span className="text-[10px] text-gray-400 font-semibold">{member.role}</span></div><input type="text" value={member.name} onChange={(e)=>handleMemberChange(member.id,'name',e.target.value)} className="w-full px-2 py-1 border rounded text-xs bg-white" /><input type="text" value={member.phone} onChange={(e)=>handleMemberChange(member.id,'phone',e.target.value)} className="w-full px-2 py-1 border rounded text-xs bg-white" /></div>))}</div></div>
-            <button type="submit" disabled={loading} className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"><FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'সাংগঠনিক কাঠামোর তথ্য লাইভ আপডেট করুন'}</button>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUsers className="text-violet-600" /><h2>সাংগঠনিক কাঠামো</h2></div>
+          <form onSubmit={handleStructureSubmit} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div><h3>চেয়ারম্যান</h3><input type="text" value={chairmanName} onChange={(e)=>setChairmanName(e.target.value)} className="w-full border rounded p-2" /></div>
+              <div><h3>সচিব</h3><input type="text" value={secretaryName} onChange={(e)=>setSecretaryName(e.target.value)} className="w-full border rounded p-2" /></div>
+            </div>
+            <button type="submit" className="bg-violet-600 text-white py-2 rounded">আপডেট</button>
           </form>
         </div>
 
         {/* এক নজরে ইউনিয়ন */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaListAlt className="text-green-600" /><h2>"এক নজরে ইউনিয়ন" তথ্য আপডেট ফরম</h2></div>
-          <form onSubmit={handleGlanceSubmit} className="grid grid-cols-2 md:grid-cols-4 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">মোট জনসংখ্যা</label><input type="text" value={glancePop} onChange={(e)=>setGlancePop(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">মোট ভোটার</label><input type="text" value={glanceVoters} onChange={(e)=>setGlanceVoters(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">আয়তন</label><input type="text" value={glanceArea} onChange={(e)=>setGlanceArea(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">শিক্ষার হার</label><input type="text" value={glanceLiteracy} onChange={(e)=>setGlanceLiteracy(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div className="col-span-2 md:col-span-4 pt-2"><button type="submit" disabled={loading} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 rounded-xl"><FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'এক নজরে পেজের তথ্য আপডেট করুন'}</button></div></form>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaListAlt className="text-green-600" /><h2>এক নজরে ইউনিয়ন</h2></div>
+          <form onSubmit={handleGlanceSubmit} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <input type="text" placeholder="মোট জনসংখ্যা" value={glancePop} onChange={(e)=>setGlancePop(e.target.value)} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="মোট ভোটার" value={glanceVoters} onChange={(e)=>setGlanceVoters(e.target.value)} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="আয়তন" value={glanceArea} onChange={(e)=>setGlanceArea(e.target.value)} className="border rounded p-2 text-sm" />
+            <input type="text" placeholder="শিক্ষার হার" value={glanceLiteracy} onChange={(e)=>setGlanceLiteracy(e.target.value)} className="border rounded p-2 text-sm" />
+            <button type="submit" className="col-span-4 bg-green-600 text-white py-2 rounded">আপডেট</button>
+          </form>
         </div>
 
         {/* ইউনিয়ন পরিচিতি */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-blue-600" /><h2>ইউনিয়ন পরিচিতি ও ইতিহাস আপডেট ফরম</h2></div>
-          <form onSubmit={handleIntroSubmit} className="space-y-6"><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">পেইজের মূল শিরোনাম *</label><input type="text" required value={introTitle} onChange={(e)=>setIntroTitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">উপ-শিরোনাম *</label><input type="text" required value={introSubtitle} onChange={(e)=>setIntroSubtitle(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div></div><div><label className="block text-xs font-bold text-gray-700 mb-1">Detailed History *</label><textarea required rows="4" value={introHistory} onChange={(e)=>setIntroHistory(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><button type="submit" disabled={loading} className="w-full bg-blue-950 hover:bg-sky-950 text-white font-bold py-3 rounded-xl"><FaSave /> {loading ? 'তথ্য সংরক্ষণ করা হচ্ছে...' : 'ইউনিয়ন পরিচিতি পেজ আপডেট করুন'}</button></form>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-blue-600" /><h2>ইউনিয়ন পরিচিতি</h2></div>
+          <form onSubmit={handleIntroSubmit} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <input type="text" placeholder="শিরোনাম" value={introTitle} onChange={(e)=>setIntroTitle(e.target.value)} className="border rounded p-2" />
+              <input type="text" placeholder="উপশিরোনাম" value={introSubtitle} onChange={(e)=>setIntroSubtitle(e.target.value)} className="border rounded p-2" />
+            </div>
+            <textarea placeholder="ইতিহাস" rows="4" value={introHistory} onChange={(e)=>setIntroHistory(e.target.value)} className="border rounded p-2 w-full"></textarea>
+            <button type="submit" className="bg-blue-950 text-white py-2 rounded">আপডেট</button>
+          </form>
         </div>
 
-        {/* যোগাযোগ */}
+        {/* যোগাযোগ তথ্য */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-purple-600" /><h2>যোগাযোগ পৃষ্ঠার তথ্য আপডেট করুন</h2></div>
-          <form onSubmit={handleContactSubmit} className="space-y-5"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">ঠিকানা (লাইন ১)</label><input type="text" value={contactInfo.addressLine1} onChange={(e)=>setContactInfo({...contactInfo, addressLine1: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ঠিকানা (লাইন ২)</label><input type="text" value={contactInfo.addressLine2} onChange={(e)=>setContactInfo({...contactInfo, addressLine2: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ফোন নম্বর (হটলাইন)</label><input type="text" value={contactInfo.phone1} onChange={(e)=>setContactInfo({...contactInfo, phone1: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">অন্য ফোন/জরুরি নম্বর</label><input type="text" value={contactInfo.phone2} onChange={(e)=>setContactInfo({...contactInfo, phone2: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ইমেইল ঠিকানা</label><input type="email" value={contactInfo.email} onChange={(e)=>setContactInfo({...contactInfo, email: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div className="md:col-span-2"><label className="block text-xs font-bold text-gray-700 mb-1">গুগল ম্যাপ এম্বেড URL</label><input type="text" value={contactInfo.mapEmbedUrl} onChange={(e)=>setContactInfo({...contactInfo, mapEmbedUrl: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ফেসবুক পেজ URL</label><input type="text" value={contactInfo.facebook} onChange={(e)=>setContactInfo({...contactInfo, facebook: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">টুইটার URL</label><input type="text" value={contactInfo.twitter} onChange={(e)=>setContactInfo({...contactInfo, twitter: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ইউটিউব চ্যানেল URL</label><input type="text" value={contactInfo.youtube} onChange={(e)=>setContactInfo({...contactInfo, youtube: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div></div><button type="submit" disabled={loading} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl"><FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'যোগাযোগ পৃষ্ঠার তথ্য লাইভ আপডেট করুন'}</button></form>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-purple-600" /><h2>যোগাযোগ তথ্য</h2></div>
+          <form onSubmit={handleContactSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" placeholder="ঠিকানা লাইন ১" value={contactInfo.addressLine1} onChange={(e)=>setContactInfo({...contactInfo, addressLine1:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="ঠিকানা লাইন ২" value={contactInfo.addressLine2} onChange={(e)=>setContactInfo({...contactInfo, addressLine2:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="ফোন ১" value={contactInfo.phone1} onChange={(e)=>setContactInfo({...contactInfo, phone1:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="ফোন ২" value={contactInfo.phone2} onChange={(e)=>setContactInfo({...contactInfo, phone2:e.target.value})} className="border rounded p-2" />
+            <input type="email" placeholder="ইমেইল" value={contactInfo.email} onChange={(e)=>setContactInfo({...contactInfo, email:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="ম্যাপ URL" value={contactInfo.mapEmbedUrl} onChange={(e)=>setContactInfo({...contactInfo, mapEmbedUrl:e.target.value})} className="border rounded p-2" />
+            <button type="submit" className="col-span-2 bg-purple-600 text-white py-2 rounded">আপডেট</button>
+          </form>
         </div>
 
         {/* সনদ যাচাই কনফিগারেশন */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-blue-600" /><h2>সনদ যাচাই পৃষ্ঠার কনফিগারেশন</h2></div>
-          <form onSubmit={handleVerificationConfigSubmit} className="space-y-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">পৃষ্ঠার ব্যাজ টেক্সট</label><input type="text" value={verificationConfig.badgeText} onChange={(e)=>setVerificationConfig({...verificationConfig, badgeText: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">পৃষ্ঠার মূল শিরোনাম</label><input type="text" value={verificationConfig.pageTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageTitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div className="md:col-span-2"><label className="block text-xs font-bold text-gray-700 mb-1">উপশিরোনাম</label><textarea rows="2" value={verificationConfig.pageSubtitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageSubtitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm"></textarea></div></div><div className="border-t pt-4"><h3 className="text-sm font-bold text-gray-800 mb-3">যাচাই ফর্মের লেবেল</h3><div className="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label className="block text-xs font-bold text-gray-700 mb-1">ফর্মের শিরোনাম</label><input type="text" value={verificationConfig.formTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, formTitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">ফর্মের বিবরণ</label><input type="text" value={verificationConfig.formDescription} onChange={(e)=>setVerificationConfig({...verificationConfig, formDescription: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">সনদ নম্বর প্লেসহোল্ডার</label><input type="text" value={verificationConfig.placeholderCertNo} onChange={(e)=>setVerificationConfig({...verificationConfig, placeholderCertNo: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">এনআইডি প্লেসহোল্ডার</label><input type="text" value={verificationConfig.placeholderNid} onChange={(e)=>setVerificationConfig({...verificationConfig, placeholderNid: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">বাটনের টেক্সট</label><input type="text" value={verificationConfig.submitButtonText} onChange={(e)=>setVerificationConfig({...verificationConfig, submitButtonText: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div></div></div><div className="border-t pt-4"><label className="block text-xs font-bold text-gray-700 mb-2">সনদের ধরণের তালিকা (JSON অ্যারে)</label><textarea rows="4" value={JSON.stringify(verificationConfig.certificateTypes, null, 2)} onChange={(e)=>{ try{ const parsed=JSON.parse(e.target.value); setVerificationConfig({...verificationConfig, certificateTypes: parsed}); }catch(err){} }} className="w-full px-3 py-2 border rounded-lg text-sm font-mono"></textarea><p className="text-[10px] text-gray-400 mt-1">{'ফরম্যাট: [{"value":"id","label":"নাম"}, ...]'}</p></div><div className="border-t pt-4"><h3 className="text-sm font-bold text-gray-800 mb-3">নির্দেশনা ও হেল্পলাইন</h3><div><label className="block text-xs font-bold text-gray-700 mb-1">নির্দেশনা শিরোনাম</label><input type="text" value={verificationConfig.instructionsTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, instructionsTitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div className="mt-3"><label className="block text-xs font-bold text-gray-700 mb-1">নির্দেশনা লাইন (প্রতি লাইনে একটি)</label><textarea rows="4" value={verificationConfig.instructionsList.join('\n')} onChange={(e)=>setVerificationConfig({...verificationConfig, instructionsList: e.target.value.split('\n')})} className="w-full px-3 py-2 border rounded-lg text-sm"></textarea></div><div className="grid grid-cols-2 gap-4 mt-3"><div><label className="block text-xs font-bold text-gray-700 mb-1">হেল্পলাইন লেবেল</label><input type="text" value={verificationConfig.helplineLabel} onChange={(e)=>setVerificationConfig({...verificationConfig, helplineLabel: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div><div><label className="block text-xs font-bold text-gray-700 mb-1">হেল্পলাইন নম্বর</label><input type="text" value={verificationConfig.helplineNumber} onChange={(e)=>setVerificationConfig({...verificationConfig, helplineNumber: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div></div><div className="mt-3"><label className="block text-xs font-bold text-gray-700 mb-1">ট্রাস্ট মেসেজ (নিচের ব্যানার)</label><input type="text" value={verificationConfig.trustMessage} onChange={(e)=>setVerificationConfig({...verificationConfig, trustMessage: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div></div><button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl"><FaSave /> {loading ? 'সংরক্ষণ হচ্ছে...' : 'যাচাই পৃষ্ঠার তথ্য সংরক্ষণ করুন'}</button></form>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-blue-600" /><h2>সনদ যাচাই কনফিগ</h2></div>
+          <form onSubmit={handleVerificationConfigSubmit} className="space-y-4">
+            <input type="text" placeholder="পৃষ্ঠার ব্যাজ টেক্সট" value={verificationConfig.badgeText} onChange={(e)=>setVerificationConfig({...verificationConfig, badgeText:e.target.value})} className="w-full border rounded p-2" />
+            <input type="text" placeholder="মূল শিরোনাম" value={verificationConfig.pageTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageTitle:e.target.value})} className="w-full border rounded p-2" />
+            <textarea placeholder="উপশিরোনাম" value={verificationConfig.pageSubtitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageSubtitle:e.target.value})} className="w-full border rounded p-2"></textarea>
+            <button type="submit" className="bg-blue-600 text-white py-2 rounded">আপডেট</button>
+          </form>
         </div>
 
         {/* গ্যালারি */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaPlusCircle className="text-pink-600" /><h2>গ্যালারি ব্যবস্থাপনা (ছবি ও বিবরণ)</h2></div>
-          <form onSubmit={handleGallerySubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-pink-50/30 p-4 rounded-xl border border-pink-100 mb-6">
-            <div className="md:col-span-2"><h3 className="text-xs font-bold text-pink-800">{editingGalleryId ? '✏️ ছবির তথ্য পরিবর্তন করুন' : '➕ নতুন ছবি যুক্ত করুন'}</h3></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির শিরোনাম *</label><input type="text" required value={galleryForm.title} onChange={(e)=>setGalleryForm({...galleryForm, title: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ক্যাটাগরি *</label><select value={galleryForm.category} onChange={(e)=>setGalleryForm({...galleryForm, category: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-white">{galleryCategories.map(cat=><option key={cat} value={cat}>{cat}</option>)}</select></div>
-            <div className="md:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির URL (ইমেজ লিংক) *</label><input type="url" required value={galleryForm.image} onChange={(e)=>setGalleryForm({...galleryForm, image: e.target.value})} placeholder="https://images.unsplash.com/..." className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">তারিখ (ঐচ্ছিক)</label><input type="text" value={galleryForm.date} onChange={(e)=>setGalleryForm({...galleryForm, date: e.target.value})} placeholder="যেমন: ০৭ জুন, ২০২৬" className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
-            <div className="md:col-span-2 pt-2"><button type="submit" disabled={galleryLoading} className="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 rounded-lg text-sm">{galleryLoading ? 'সংরক্ষণ হচ্ছে...' : (editingGalleryId ? 'হালনাগাদ করুন' : 'গ্যালারিতে যোগ করুন')}</button></div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaPlusCircle className="text-pink-600" /><h2>গ্যালারি</h2></div>
+          <form onSubmit={handleGallerySubmit} className="grid grid-cols-2 gap-3 bg-pink-50 p-4 rounded-xl mb-6">
+            <input type="text" placeholder="শিরোনাম" value={galleryForm.title} onChange={(e)=>setGalleryForm({...galleryForm, title:e.target.value})} className="border rounded p-2" />
+            <select value={galleryForm.category} onChange={(e)=>setGalleryForm({...galleryForm, category:e.target.value})} className="border rounded p-2">{galleryCategories.map(c=><option key={c}>{c}</option>)}</select>
+            <input type="text" placeholder="ছবি URL" value={galleryForm.image} onChange={(e)=>setGalleryForm({...galleryForm, image:e.target.value})} className="col-span-2 border rounded p-2" />
+            <input type="text" placeholder="তারিখ" value={galleryForm.date} onChange={(e)=>setGalleryForm({...galleryForm, date:e.target.value})} className="border rounded p-2" />
+            <button type="submit" className="bg-pink-600 text-white py-2 rounded col-span-2">{editingGalleryId ? 'আপডেট' : 'যোগ করুন'}</button>
           </form>
-          <div className="overflow-x-auto rounded-xl border border-gray-200"><table className="w-full text-left border-collapse text-xs"><thead className="bg-slate-100 text-slate-700 font-bold"><tr><th className="p-3 text-center">ক্রম</th><th className="p-3">শিরোনাম</th><th className="p-3">ক্যাটাগরি</th><th className="p-3">তারিখ</th><th className="p-3">ছবি</th><th className="p-3 text-center">অ্যাকশন</th></tr></thead><tbody>{galleryItems.map((item,idx)=>(<tr key={item._id}><td className="p-3 text-center">{idx+1}</td><td className="p-3">{item.title}</td><td className="p-3">{item.category}</td><td className="p-3">{item.date||'N/A'}</td><td className="p-3"><img src={item.image} alt={item.title} className="w-12 h-12 rounded object-cover shadow-sm" /></td><td className="p-3 text-center"><button onClick={()=>startEditGallery(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded"><FaEdit /></button><button onClick={()=>deleteGalleryItem(item._id)} className="p-1.5 bg-red-50 text-red-600 rounded"><FaTrashAlt /></button></td></tr>))}</tbody></table></div>
+          <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr><th>শিরোনাম</th><th>ক্যাটাগরি</th><th>ছবি</th><th>অ্যাকশন</th></tr></thead><tbody>{galleryItems.map(item=><tr key={item._id}><td>{item.title}</td><td>{item.category}</td><td><img src={item.image} className="w-12 h-12 object-cover" /></td><td><button onClick={()=>startEditGallery(item)}>✏️</button><button onClick={()=>deleteGalleryItem(item._id)}>🗑️</button></td></tr>)}</tbody></table></div>
         </div>
 
         {/* আপডেট/নোটিশ */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaBullhorn className="text-orange-500" /><h2>আপডেট ও নোটিশ ব্যবস্থাপনা</h2></div>
-          <form onSubmit={handleUpdateSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-orange-50/30 p-4 rounded-xl border border-orange-100 mb-6">
-            <div className="md:col-span-2"><h3 className="text-xs font-bold text-orange-800">{editingUpdateId ? '✏️ আপডেট তথ্য পরিবর্তন করুন' : '➕ নতুন আপডেট যুক্ত করুন'}</h3></div>
-            <div className="md:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">শিরোনাম *</label><input type="text" required value={updateForm.title} onChange={(e)=>setUpdateForm({...updateForm, title: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
-            <div className="md:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">বিবরণ *</label><textarea rows="3" required value={updateForm.description} onChange={(e)=>setUpdateForm({...updateForm, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm bg-white"></textarea></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ট্যাগ/ক্যাটাগরি</label><select value={updateForm.tag} onChange={(e)=>{ const selected=tagOptions.find(opt=>opt.label===e.target.value); setUpdateForm({...updateForm, tag: e.target.value, tagColor: selected.color}); }} className="w-full px-3 py-2 border rounded-lg text-sm bg-white">{tagOptions.map(opt=><option key={opt.label} value={opt.label}>{opt.label}</option>)}</select></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">ট্যাগ রং (প্রি-সেট)</label><input type="text" value={updateForm.tagColor} disabled className="w-full px-3 py-2 border rounded-lg text-sm bg-gray-100" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">তারিখ (ঐচ্ছিক)</label><input type="text" value={updateForm.date} onChange={(e)=>setUpdateForm({...updateForm, date: e.target.value})} placeholder="যেমন: ০৭ জুন, ২০২৬" className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
-            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">লিংক (ঐচ্ছিক)</label><input type="text" value={updateForm.link} onChange={(e)=>setUpdateForm({...updateForm, link: e.target.value})} placeholder="#" className="w-full px-3 py-2 border rounded-lg text-sm bg-white" /></div>
-            <div className="md:col-span-2 pt-2"><button type="submit" disabled={updateLoading} className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 rounded-lg text-sm">{updateLoading ? 'সংরক্ষণ হচ্ছে...' : (editingUpdateId ? 'হালনাগাদ করুন' : 'তালিকায় যোগ করুন')}</button></div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaBullhorn className="text-orange-500" /><h2>আপডেট ও নোটিশ</h2></div>
+          <form onSubmit={handleUpdateSubmit} className="grid grid-cols-2 gap-3 bg-orange-50 p-4 rounded-xl mb-6">
+            <input type="text" placeholder="শিরোনাম" value={updateForm.title} onChange={(e)=>setUpdateForm({...updateForm, title:e.target.value})} className="col-span-2 border rounded p-2" />
+            <textarea placeholder="বিবরণ" rows="3" value={updateForm.description} onChange={(e)=>setUpdateForm({...updateForm, description:e.target.value})} className="col-span-2 border rounded p-2"></textarea>
+            <select value={updateForm.tag} onChange={(e)=>{const sel=tagOptions.find(opt=>opt.label===e.target.value); setUpdateForm({...updateForm, tag:e.target.value, tagColor:sel.color})}} className="border rounded p-2">{tagOptions.map(opt=><option key={opt.label}>{opt.label}</option>)}</select>
+            <input type="text" placeholder="তারিখ" value={updateForm.date} onChange={(e)=>setUpdateForm({...updateForm, date:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="লিংক" value={updateForm.link} onChange={(e)=>setUpdateForm({...updateForm, link:e.target.value})} className="border rounded p-2" />
+            <button type="submit" className="col-span-2 bg-orange-600 text-white py-2 rounded">{editingUpdateId ? 'আপডেট' : 'যোগ করুন'}</button>
           </form>
-          <div className="overflow-x-auto rounded-xl border border-gray-200"><table className="w-full text-left border-collapse text-xs"><thead className="bg-slate-100 text-slate-700 font-bold"><tr><th className="p-3 text-center">ক্রম</th><th className="p-3">শিরোনাম</th><th className="p-3">ট্যাগ</th><th className="p-3">তারিখ</th><th className="p-3 text-center">অ্যাকশন</th></tr></thead><tbody>{updatesList.map((item,idx)=>(<tr key={item._id}><td className="p-3 text-center">{idx+1}</td><td className="p-3 font-semibold max-w-[300px] truncate">{item.title}</td><td className="p-3"><span className={`${item.tagColor} text-white text-[10px] px-2 py-0.5 rounded`}>{item.tag}</span></td><td className="p-3">{item.date||'N/A'}</td><td className="p-3 text-center"><button onClick={()=>startEditUpdate(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded"><FaEdit /></button><button onClick={()=>deleteUpdate(item._id)} className="p-1.5 bg-red-50 text-red-600 rounded"><FaTrashAlt /></button></td></tr>))}</tbody></table></div>
+          <table className="w-full text-sm"><thead><tr><th>শিরোনাম</th><th>ট্যাগ</th><th>অ্যাকশন</th></tr></thead><tbody>{updatesList.map(item=><tr key={item._id}><td>{item.title}</td><td><span className={`${item.tagColor} text-white px-2 py-0.5 rounded text-xs`}>{item.tag}</span></td><td><button onClick={()=>startEditUpdate(item)}>✏️</button><button onClick={()=>deleteUpdate(item._id)}>🗑️</button></td></tr>)}</tbody></table>
+        </div>
+
+        {/* ইউপি সচিব প্রোফাইল */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUserTie className="text-cyan-600" /><h2>সচিব প্রোফাইল</h2></div>
+          <form onSubmit={handleSecretarySubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" placeholder="নাম" value={secretaryProfile.name} onChange={(e)=>setSecretaryProfile({...secretaryProfile, name:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="পদবী" value={secretaryProfile.title} onChange={(e)=>setSecretaryProfile({...secretaryProfile, title:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="বিভাগ" value={secretaryProfile.department} onChange={(e)=>setSecretaryProfile({...secretaryProfile, department:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="ছবি URL" value={secretaryProfile.image} onChange={(e)=>setSecretaryProfile({...secretaryProfile, image:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="যোগদানের তারিখ" value={secretaryProfile.joiningDate} onChange={(e)=>setSecretaryProfile({...secretaryProfile, joiningDate:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="মোবাইল" value={secretaryProfile.phone} onChange={(e)=>setSecretaryProfile({...secretaryProfile, phone:e.target.value})} className="border rounded p-2" />
+            <input type="email" placeholder="ইমেইল" value={secretaryProfile.email} onChange={(e)=>setSecretaryProfile({...secretaryProfile, email:e.target.value})} className="border rounded p-2" />
+            <input type="text" placeholder="অফিস সময়" value={secretaryProfile.officeTime} onChange={(e)=>setSecretaryProfile({...secretaryProfile, officeTime:e.target.value})} className="border rounded p-2" />
+            <div className="md:col-span-2"><label className="block text-xs">শিক্ষাগত যোগ্যতা</label><textarea rows="2" value={secretaryProfile.education} onChange={(e)=>setSecretaryProfile({...secretaryProfile, education:e.target.value})} className="w-full border rounded p-2"></textarea></div>
+            <div className="md:col-span-2"><label className="block text-xs">দায়িত্বসমূহ (প্রতি লাইনে একটি)</label><textarea rows="4" value={secretaryProfile.responsibilities?.join('\n') || ''} onChange={(e)=>handleResponsibilitiesChange(e.target.value)} className="w-full border rounded p-2" placeholder="প্রতি লাইনে একটি দায়িত্ব"></textarea></div>
+            <button type="submit" className="col-span-2 bg-cyan-600 text-white py-2 rounded">প্রোফাইল আপডেট করুন</button>
+          </form>
+        </div>
+
+        {/* একাউন্ট পেজ কনফিগারেশন */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-yellow-600" /><h2>অর্থ ও হিসাব পৃষ্ঠার তথ্য আপডেট</h2></div>
+          <form onSubmit={handleAccountSubmit} className="space-y-5">
+            <div><label className="block text-xs font-bold">আর্থিক বছর</label><input type="text" value={accountConfig.financialYear} onChange={(e)=>setAccountConfig({...accountConfig, financialYear:e.target.value})} className="w-full border rounded p-2" /></div>
+            <div><label className="block text-xs font-bold">পরিসংখ্যান কার্ড (JSON)</label><textarea rows="6" value={JSON.stringify(accountConfig.accountStats, null, 2)} onChange={(e)=>handleStatsChange(e.target.value)} className="w-full border rounded p-2 font-mono text-sm"></textarea><p className="text-[10px] text-gray-400">প্রতিটি অবজেক্ট: id, label, value, detail, icon</p></div>
+            <div><label className="block text-xs font-bold">বাজেট সেক্টর তালিকা (JSON)</label><textarea rows="8" value={JSON.stringify(accountConfig.budgetSectors, null, 2)} onChange={(e)=>handleSectorsChange(e.target.value)} className="w-full border rounded p-2 font-mono text-sm"></textarea><p className="text-[10px] text-gray-400">প্রতিটি: id, sector, allocation, amount, status</p></div>
+            <div><label className="block text-xs font-bold">ফুটার নোটিশ</label><textarea rows="2" value={accountConfig.footerNotice} onChange={(e)=>setAccountConfig({...accountConfig, footerNotice:e.target.value})} className="w-full border rounded p-2"></textarea></div>
+            <button type="submit" className="w-full bg-yellow-600 text-white py-2 rounded-xl">একাউন্ট পেজ আপডেট করুন</button>
+          </form>
+        </div>
+
+        {/* অন্যান্য কর্মচারী ব্যবস্থাপনা */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUsers className="text-cyan-600" /><h2>অন্যান্য কর্মচারী ব্যবস্থাপনা (পুলিশ, সহায়ক, পরিচ্ছন্নতা)</h2></div>
+          <form onSubmit={handleStaffSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-cyan-50/30 p-4 rounded-xl border border-cyan-100 mb-6">
+            <div className="md:col-span-2"><h3 className="text-xs font-bold text-cyan-800">{editingStaffId ? '✏️ কর্মচারী তথ্য পরিবর্তন করুন' : '➕ নতুন কর্মচারী যুক্ত করুন'}</h3></div>
+            <div className="md:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">নাম *</label><input type="text" required value={staffForm.name} onChange={(e) => setStaffForm({...staffForm, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">পদবী *</label><input type="text" required value={staffForm.role} onChange={(e) => setStaffForm({...staffForm, role: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">এলাকা/ওয়ার্ড</label><input type="text" value={staffForm.area} onChange={(e) => setStaffForm({...staffForm, area: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="যেমন: ১ নং ওয়ার্ড" /></div>
+            <div className="md:col-span-2"><label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির URL</label><input type="text" value={staffForm.image} onChange={(e) => setStaffForm({...staffForm, image: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="https://..." /></div>
+            <div><label className="block text-[11px] font-bold text-gray-700 mb-1">মোবাইল</label><input type="text" value={staffForm.phone} onChange={(e) => setStaffForm({...staffForm, phone: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+            <div className="md:col-span-2 pt-2"><button type="submit" disabled={staffLoading} className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 rounded-lg text-sm">{staffLoading ? 'সংরক্ষণ হচ্ছে...' : (editingStaffId ? 'হালনাগাদ করুন' : 'তালিকায় যোগ করুন')}</button></div>
+          </form>
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-100 text-slate-700 font-bold"><tr><th className="p-3 text-center">ক্রম</th><th className="p-3">নাম</th><th className="p-3">পদবী</th><th className="p-3">এলাকা</th><th className="p-3">ফোন</th><th className="p-3 text-center">অ্যাকশন</th></tr></thead>
+              <tbody>
+                {staffList.map((item, idx) => (
+                  <tr key={item._id}>
+                    <td className="p-3 text-center">{idx+1}</td>
+                    <td className="p-3 font-semibold">{item.name}</td>
+                    <td className="p-3">{item.role}</td>
+                    <td className="p-3">{item.area || '—'}</td>
+                    <td className="p-3">{item.phone || '—'}</td>
+                    <td className="p-3 text-center space-x-2">
+                      <button onClick={() => startEditStaff(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded"><FaEdit /></button>
+                      <button onClick={() => deleteStaff(item._id)} className="p-1.5 bg-red-50 text-red-600 rounded"><FaTrashAlt /></button>
+                    </td>
+                  </tr>
+                ))}
+                {staffList.length === 0 && <tr><td colSpan="6" className="p-6 text-center text-gray-400">কোনো কর্মচারী যোগ করা হয়নি</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
       </main>
     </div>

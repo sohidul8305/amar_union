@@ -12,10 +12,7 @@ import { auth } from "../firebase/firebase.config.js";
 
 export const AuthContext = createContext(null);
 const googleProvider = new GoogleAuthProvider();
-
-googleProvider.setCustomParameters({
-  prompt: 'select_account'
-});
+googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -24,23 +21,20 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      loading && setLoading(false); // লোডিং ট্র্যাকিং ফিক্স
+      setLoading(false); // লোডিং শেষ
     });
-
     return () => unsubscribe();
   }, []);
 
-  // প্রোফাইল আপডেট করার পর রিয়েক্ট স্টেট সিঙ্ক করার জন্য ইন্টারনাল ফাংশন
-  const updateUserProfile = async (currentUser, profile) => {
+  // প্রোফাইল আপডেট করার পর React state ও Firebase সিঙ্ক
+const updateUserProfile = async (currentUser, profile) => {
     await updateProfile(currentUser, profile);
-    // 💡 ফিক্স: প্রোফাইল আপডেটের পর লোকাল স্টেট আপডেট করা হচ্ছে যেন রিফ্রেশ ছাড়া ইমেজ দেখায়
     setUser((prevUser) => ({
-      ...prevUser,
-      displayName: profile.displayName,
-      photoURL: profile.photoURL,
+        ...prevUser,
+        displayName: profile.displayName || prevUser.displayName,
+        photoURL: profile.photoURL || prevUser.photoURL,
     }));
-  };
-
+};
   const authInfo = {
     user,
     loading,
@@ -50,7 +44,7 @@ const AuthProvider = ({ children }) => {
       signInWithEmailAndPassword(auth, email, password),
     signInGoogle: () => signInWithPopup(auth, googleProvider),
     logOut: () => signOut(auth),
-    updateUserProfile, // আপডেট করা ফাংশনটি পাস করা হলো
+    updateUserProfile,
   };
 
   return (

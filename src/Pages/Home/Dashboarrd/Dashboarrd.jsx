@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaPlusCircle, FaBullhorn, FaCogs, FaArrowLeft, FaInfoCircle, FaSave, FaListAlt, FaUsers, FaUserTie, FaHistory, FaTrashAlt, FaEdit } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
@@ -55,7 +55,7 @@ const Dashboard = () => {
   // ৫. বর্তমান চেয়ারম্যান প্রোফাইল স্টেটসমূহ
   const [chTitle, setChTitle] = useState('সম্মানিত চেয়ারম্যান');
   const [chUnion, setChUnion] = useState('১৬ নং মোহনপুর ইউনিয়ন পরিষদ');
-  const [chJoinDate, setChJoinDate] = useState('১০ জানুয়ারি, २०२२');
+  const [chJoinDate, setChJoinDate] = useState('১০ জানুয়ারি, ২০২২');
   const [chAddress, setChAddress] = useState('চেয়ারম্যান বাসভবন, ইউনিয়ন পরিষদ কমপ্লেক্স।');
   const [chMessage, setChMessage] = useState('আসসালামু আলাইকুম। আমাদের ইউনিয়নকে একটি আদর্শ, ডিজিটাল এবং দুর্নীতিমুক্ত ইউনিয়ন হিসেবে গড়ে তোলাই আমার প্রধান লক্ষ্য...');
   const [fatherName, setFatherName] = useState('মরহুম আলহাজ্ব আলী আহমেদ');
@@ -63,7 +63,7 @@ const Dashboard = () => {
   const [politicalRole, setPoliticalRole] = useState('সভাপতি, ইউনিয়ন আওয়ামী লীগ / বিএনপি / স্বতন্ত্র');
   const [socialContribution, setSocialContribution] = useState('প্রধান উপদেষ্টা, স্থানীয় সমাজকল্যাণ সংস্থা।');
 
-  // 🌟 ৬. নতুন যুক্ত করা সাবেক চেয়ারম্যান (Ex-Chairman) স্টেটসমূহ
+  // ৬. সাবেক চেয়ারম্যান (Ex-Chairman) স্টেটসমূহ
   const [exChairmansList, setExChairmansList] = useState([
     { id: 1, name: 'আলহাজ্ব মোঃ শামসুল হক', title: 'সাবেক চেয়ারম্যান', duration: '২০১৬ - ২০২২', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'উত্তর পাড়া' },
     { id: 2, name: 'মরহুম আলতাফ আলী মিয়া', title: 'সাবেক চেয়ারম্যান', duration: '২০১১ - ২০১৬', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'দক্ষিণ বাজার' },
@@ -77,9 +77,15 @@ const Dashboard = () => {
   const [exVillage, setExVillage] = useState('');
   const [editingExId, setEditingExId] = useState(null);
 
+  // ৭. কাউন্সিলর / সদস্যদের জন্য স্টেট (ডায়নামিক)
+  const [councillorsList, setCouncillorsList] = useState([]);
+  const [councillorForm, setCouncillorForm] = useState({
+    name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: ''
+  });
+  const [editingCouncillorId, setEditingCouncillorId] = useState(null);
+  const [councillorLoading, setCouncillorLoading] = useState(false);
 
-
-  // ১২ জন মেম্বারের জন্য ডিফল্ট স্টেট অ্যারে
+  // মেম্বারদের জন্য আগের স্টেট (সাংগঠনিক কাঠামোর জন্য ১২ জন)
   const [membersList, setMembersList] = useState([
     { id: 1, ward: '১ নং ওয়ার্ড', name: 'মোঃ রফিকুল ইসলাম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০১_ _ _ _' },
     { id: 2, ward: '২ নং ওয়ার্ড', name: 'আব্দুল কুদ্দুস', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০২_ _ _ _' },
@@ -95,23 +101,89 @@ const Dashboard = () => {
     { id: 12, ward: '৭, ৮ ও ৯ নং ওয়ার্ড', name: 'মোছাঃ পারভীন সুলতানা', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-১২_ _ _ _' },
   ]);
 
-  const updatedList = [
-  { name: "নতুন মেম্বার", role: "ইউপি সদস্য", ward: "১ নং ওয়ার্ড", phone: "০১৭...", email: "...", image: "..." },
-  { name: "আরেক মেম্বার", role: "ইউপি সদস্য", ward: "২ নং ওয়ার্ড", phone: "০১৮...", email: "...", image: "..." }
-];
+  // কাউন্সিলর ডাটা API থেকে আনা
+  const fetchCouncillors = async () => {
+    try {
+      const res = await axios.get('/api/councillors');
+      if (res.data.success && res.data.councillors.length > 0) {
+        setCouncillorsList(res.data.councillors);
+      } else {
+        // ডিফল্ট ডাটা (যদি ডাটাবেজে কিছু না থাকে)
+        setCouncillorsList([
+          { id: 1, name: 'মোঃ রফিকুল ইসলাম', ward: '১ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০১_ _ _ _', email: 'ward1@union.gov.bd', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300' },
+          { id: 2, name: 'আব্দুল কুদ্দুস', ward: '২ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০২_ _ _ _', email: 'ward2@union.gov.bd', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300' },
+          { id: 3, name: 'মোঃ জয়নাল আবেদীন', ward: '৩ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০৩_ _ _ _', email: 'ward3@union.gov.bd', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300' },
+          { id: 4, name: 'মোছাঃ ফাতেমা বেগম', ward: '১, ২ ও ৩ নং ওয়ার্ড', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-০৪_ _ _ _', email: 'female.ward1@union.gov.bd', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=300' },
+          { id: 5, name: 'মোঃ আনোয়ার হোসেন', ward: '৪ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০৫_ _ _ _', email: 'ward4@union.gov.bd', image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300' },
+          { id: 6, name: 'মোঃ মোস্তফা কামাল', ward: '৫ নং ওয়ার্ড', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '+৮৮০ ১৭১৩-০৬_ _ _ _', email: 'ward5@union.gov.bd', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=300' },
+        ]);
+      }
+    } catch (err) {
+      console.error('কাউন্সিলর লোড করতে ব্যর্থ:', err);
+    }
+  };
 
+  useEffect(() => {
+    fetchCouncillors();
+  }, []);
 
+  // কাউন্সিলর তালিকা সংরক্ষণ (POST to API)
+  const saveAllCouncillors = async () => {
+    setCouncillorLoading(true);
+    try {
+      const payload = councillorsList.map(({ id, ...rest }) => rest); // id বাদ দিয়ে বাকি ডাটা পাঠানো
+      await axios.post('/api/councillors', { councillors: payload });
+      setMessage({ text: 'কাউন্সিলর তালিকা সফলভাবে সংরক্ষিত!', isError: false });
+    } catch (err) {
+      setMessage({ text: 'সংরক্ষণ করতে ব্যর্থ!', isError: true });
+    } finally {
+      setCouncillorLoading(false);
+    }
+  };
 
-fetch('http://localhost:5000/api/councillors', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ councillors: updatedList })
-})
-.then(res => res.json())
-.then(data => alert(data.message));
+  const handleCouncillorSubmit = (e) => {
+    e.preventDefault();
+    const { name, ward, role, phone, email, image } = councillorForm;
+    if (!name || !ward) {
+      setMessage({ text: 'নাম ও ওয়ার্ড অবশ্যই দিতে হবে', isError: true });
+      return;
+    }
+    if (editingCouncillorId) {
+      setCouncillorsList(prev =>
+        prev.map(c => c.id === editingCouncillorId ? { ...c, name, ward, role, phone, email, image } : c)
+      );
+      setEditingCouncillorId(null);
+    } else {
+      const newId = Date.now();
+      setCouncillorsList(prev => [...prev, { id: newId, name, ward, role, phone, email, image }]);
+    }
+    setCouncillorForm({ name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: '' });
+    setMessage({ text: 'তালিকা আপডেট হয়েছে, সংরক্ষণ করতে "তালিকা সংরক্ষণ করুন" বাটনে ক্লিক করুন', isError: false });
+  };
 
+  const startEditCouncillor = (item) => {
+    setEditingCouncillorId(item.id);
+    setCouncillorForm({
+      name: item.name,
+      ward: item.ward,
+      role: item.role,
+      phone: item.phone,
+      email: item.email,
+      image: item.image || ''
+    });
+  };
 
-  // মেম্বারদের ইনপুট চেঞ্জ হ্যান্ডলার
+  const deleteCouncillor = (id) => {
+    if (window.confirm('আপনি কি নিশ্চিত যে এই সদস্য মুছতে চান?')) {
+      setCouncillorsList(prev => prev.filter(c => c.id !== id));
+      if (editingCouncillorId === id) {
+        setEditingCouncillorId(null);
+        setCouncillorForm({ name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: '' });
+      }
+    }
+  };
+
+  // মেম্বারদের ইনপুট চেঞ্জ হ্যান্ডলার (পুরনো structure এর জন্য)
   const handleMemberChange = (id, field, val) => {
     const updated = membersList.map(m => m.id === id ? { ...m, [field]: val } : m);
     setMembersList(updated);
@@ -216,7 +288,7 @@ fetch('http://localhost:5000/api/councillors', {
     finally { setLoading(false); }
   };
 
-  // 🌟 সাবেক চেয়ারম্যান সাবমিট হ্যান্ডলার (যোগ এবং এডিট)
+  // সাবেক চেয়ারম্যান সাবমিট হ্যান্ডলার (যোগ এবং এডিট)
   const handleExChairmanSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); setMessage({ text: '', isError: false });
@@ -381,7 +453,7 @@ fetch('http://localhost:5000/api/councillors', {
           </form>
         </div>
 
-        {/* 🌟 নতুন যুক্ত করা সেকশন: সাবেক চেয়ারম্যানদের তালিকা নিয়ন্ত্রণ ফরম */}
+        {/* সাবেক চেয়ারম্যানদের তালিকা নিয়ন্ত্রণ ফরম */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
             <FaHistory className="text-amber-600" />
@@ -456,7 +528,89 @@ fetch('http://localhost:5000/api/councillors', {
           </div>
         </div>
 
-        {/* সেকশন ২: সাংগঠনিক কাঠামো (Structure) ফরম */}
+        {/* ============= নতুন সেকশন: কাউন্সিলর / সদস্যবৃন্দ (ডায়নামিক) ============= */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
+            <FaUsers className="text-indigo-600" />
+            <h2>কাউন্সিলর / সদস্যবৃন্দ তালিকা আপডেট ফরম</h2>
+          </div>
+
+          {/* ফর্ম - যোগ/এডিট */}
+          <form onSubmit={handleCouncillorSubmit} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 bg-indigo-50/30 p-4 rounded-xl border border-indigo-100 mb-6">
+            <div className="sm:col-span-2 md:col-span-3">
+              <h3 className="text-xs font-bold text-indigo-800">{editingCouncillorId ? '✏️ সদস্য তথ্য পরিবর্তন করুন' : '➕ নতুন সদস্য যুক্ত করুন'}</h3>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">পূর্ণ নাম *</label>
+              <input type="text" required value={councillorForm.name} onChange={(e) => setCouncillorForm({...councillorForm, name: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">ওয়ার্ড *</label>
+              <input type="text" required value={councillorForm.ward} onChange={(e) => setCouncillorForm({...councillorForm, ward: e.target.value})} placeholder="যেমন: ১ নং ওয়ার্ড" className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">ভূমিকা</label>
+              <input type="text" value={councillorForm.role} onChange={(e) => setCouncillorForm({...councillorForm, role: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">মোবাইল</label>
+              <input type="text" value={councillorForm.phone} onChange={(e) => setCouncillorForm({...councillorForm, phone: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">ইমেইল</label>
+              <input type="email" value={councillorForm.email} onChange={(e) => setCouncillorForm({...councillorForm, email: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-[11px] font-bold text-gray-700 mb-1">ছবির URL</label>
+              <input type="text" value={councillorForm.image} onChange={(e) => setCouncillorForm({...councillorForm, image: e.target.value})} placeholder="https://..." className="w-full px-3 py-2 border rounded-lg text-xs bg-white" />
+            </div>
+            <div className="sm:col-span-2 md:col-span-3 pt-2">
+              <button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-sm">
+                {editingCouncillorId ? 'হালনাগাদ করুন' : 'তালিকায় যোগ করুন'}
+              </button>
+            </div>
+          </form>
+
+          {/* তালিকা টেবিল */}
+          <div className="overflow-x-auto rounded-xl border border-gray-200">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead className="bg-slate-100 text-slate-700 font-bold border-b border-gray-200">
+                <tr>
+                  <th className="p-3 text-center">#</th>
+                  <th className="p-3">নাম</th>
+                  <th className="p-3">ওয়ার্ড</th>
+                  <th className="p-3">ভূমিকা</th>
+                  <th className="p-3">মোবাইল</th>
+                  <th className="p-3 text-center">অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {councillorsList.map((item, idx) => (
+                  <tr key={item.id} className="hover:bg-slate-50">
+                    <td className="p-3 text-center font-bold text-gray-500">{idx+1}</td>
+                    <td className="p-3 font-semibold text-gray-900">{item.name}</td>
+                    <td className="p-3 text-gray-600">{item.ward}</td>
+                    <td className="p-3 text-gray-600">{item.role}</td>
+                    <td className="p-3 text-gray-600">{item.phone}</td>
+                    <td className="p-3 text-center space-x-2">
+                      <button onClick={() => startEditCouncillor(item)} className="p-1.5 bg-blue-50 text-blue-600 rounded hover:bg-blue-100 transition"><FaEdit /></button>
+                      <button onClick={() => deleteCouncillor(item.id)} className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100 transition"><FaTrashAlt /></button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* সংরক্ষণ বাটন */}
+          <div className="mt-6 flex justify-end">
+            <button onClick={saveAllCouncillors} disabled={councillorLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg text-sm shadow-md flex items-center gap-2">
+              <FaSave /> {councillorLoading ? 'সংরক্ষণ হচ্ছে...' : 'তালিকা সংরক্ষণ করুন'}
+            </button>
+          </div>
+        </div>
+
+        {/* সাংগঠনিক কাঠামো (Structure) ফরম - আগের মতো অপরিবর্তিত */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
             <FaUsers className="text-violet-600" />
@@ -500,9 +654,7 @@ fetch('http://localhost:5000/api/councillors', {
           </form>
         </div>
 
-
-
-        {/* সেকশন ৪: এক নজরে ইউনিয়ন ফর্ম */}
+        {/* এক নজরে ইউনিয়ন ফর্ম - আগের মতোই */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
             <FaListAlt className="text-green-600" />
@@ -531,9 +683,7 @@ fetch('http://localhost:5000/api/councillors', {
           </form>
         </div>
 
-
-
-        {/* সেকশন ৫: ইউনিয়ন পরিচিতি (Intro) ফর্ম */}
+        {/* ইউনিয়ন পরিচিতি (Intro) ফর্ম - আগের মতোই */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
             <FaInfoCircle className="text-blue-600" />

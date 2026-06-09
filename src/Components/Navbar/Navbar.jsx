@@ -1,5 +1,5 @@
 import React, { useState, useContext, useRef, useEffect } from 'react';
-import logo from "../../assets/image/amarunion.logo.jpeg"; 
+import logo from "../../assets/image/amarunion.logo.jpeg";
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../Provider/AuthProvider'; // 💡 আপনার সঠিক পাথ অনুযায়ী ইমপোর্ট করুন
 import toast from 'react-hot-toast'; // 💡 react-hot-toast ইমপোর্ট করা হয়েছে
@@ -97,7 +97,7 @@ const Navbar = () => {
         { 
           title: 'অন্যান্য আবেদন', 
           items: [
-            { name: 'ক্ষমতা অর্পণের প্রত্যয়ন', id: 'power-of-attorney' }, 
+            { name: 'ক্ষমতা অর্পণের প্রত্যয়ন', id: 'power-of-attorney' },
             { name: 'মৃত্যু সনদ', id: 'death-certificate' }, 
             { name: 'ভূমিহীন সনদ', id: 'landless-certificate' }
           ] 
@@ -118,10 +118,10 @@ const Navbar = () => {
         
         {/* লোগো সেকশন */}
         <Link to="/" className="flex items-center gap-3 cursor-pointer group">
-          <img 
-            src={logo} 
-            alt="Amar Union Logo" 
-            className="h-11 w-11 rounded-full object-cover border-2 border-[#000F9F] shadow-sm transform group-hover:scale-105 transition-transform duration-300" 
+          <img
+            src={logo}
+            alt="Amar Union Logo"
+            className="h-11 w-11 rounded-full object-cover border-2 border-[#000F9F] shadow-sm transform group-hover:scale-105 transition-transform duration-300"
           />
           <div className="flex flex-col">
             <span className="font-extrabold text-lg sm:text-xl tracking-wide text-[#000F9F]">

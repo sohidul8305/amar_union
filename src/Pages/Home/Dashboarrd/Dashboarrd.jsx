@@ -835,7 +835,6 @@ const handleGovLinksChange = (linksJson) => {
             </div>
             <button type="submit" disabled={loginLoading} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg">{loginLoading ? 'লগইন হচ্ছে...' : 'প্রবেশ করুন'}</button>
           </form>
-          <p className="text-center text-xs text-gray-400 mt-6">ডেমো লগইন: admin@union.gov.bd / admin123</p>
         </div>
       </div>
     );

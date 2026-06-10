@@ -45,6 +45,21 @@ const Dashboard = () => {
         }
     }, [user]);
 
+    const handleFooterSubmit = async (e) => {
+  e.preventDefault();
+  setFooterLoading(true);
+  setMessage({ text: '', isError: false });
+  try {
+    await axios.post('/api/footer', footerConfig);
+    setMessage({ text: 'ফুটারের তথ্য সফলভাবে আপডেট হয়েছে!', isError: false });
+    await fetchFooterConfig();   // 🔁 ড্যাশবোর্ডের ফর্ম রিফ্রেশ
+  } catch (err) {
+    setMessage({ text: 'আপডেট করতে ব্যর্থ!', isError: true });
+  } finally {
+    setFooterLoading(false);
+  }
+};
+
     const handleLogOut = async () => {
         try {
             await logOut();
@@ -120,7 +135,7 @@ const getUserAvatar = () => {
                             {/* <p className="text-sm text-slate-600 font-medium">📞 মোবাইল নম্বর: {getMobileNumber()}</p>
                             {userProfile?.nidOrBrd && <p className="text-sm text-slate-600 font-medium">🆔 এনআইডি / জন্ম নিবন্ধন: {userProfile.nidOrBrd}</p>}
                             <p className="text-xs text-slate-400">অ্যাকাউন্ট আইডি (UID): {user?.uid}</p> */}
-                        </div>
+                    </div>
                     </div>
                 </div>
 

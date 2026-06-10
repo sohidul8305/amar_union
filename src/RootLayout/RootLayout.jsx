@@ -1,6 +1,6 @@
 import { Outlet } from "react-router";
-import Footer from "../Components/Footer/Footer";
 import Navbar from "../Components/Navbar/Navbar";
+import Footer from "../Components/Footerr/Footer";
 
 const RootLayout = () => {
   return (
@@ -20,7 +20,7 @@ const RootLayout = () => {
       <footer className="w-full mt-auto">
         <Footer />
       </footer>
-      
+
     </div>
   );
 };

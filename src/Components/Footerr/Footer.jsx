@@ -36,7 +36,7 @@ const Footer = () => {
 
   useEffect(() => {
     fetchFooterData();
-    const interval = setInterval(fetchFooterData, 5000); // প্রতি ৫ সেকেন্ডে রিফ্রেশ
+    const interval = setInterval(fetchFooterData, 10000); // প্রতি ১০ সেকেন্ডে রিফ্রেশ
     return () => clearInterval(interval);
   }, []);
 

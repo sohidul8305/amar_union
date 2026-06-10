@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { FaPlusCircle, FaBullhorn, FaCogs, FaArrowLeft, FaInfoCircle, FaSave, FaListAlt, FaUsers, FaUserTie, FaHistory, FaTrashAlt, FaEdit } from 'react-icons/fa';
+import { FaPlusCircle, FaBullhorn, FaCogs, FaArrowLeft, FaInfoCircle, FaSave, FaListAlt, FaUsers, FaUserTie, FaHistory, FaTrashAlt, FaEdit, FaSignOutAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  // গ্লোবাল মেসেজ ও লোডিং স্টেট
+  // ==================== AUTHENTICATION STATE (FIRST) ====================
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // ==================== ALL ORIGINAL STATES ====================
   const [message, setMessage] = useState({ text: '', isError: false });
   const [loading, setLoading] = useState(false);
 
-  // ১. নোটিশ ও নাগরিক সেবা স্টেটসমূহ
   const [noticeTitle, setNoticeTitle] = useState('');
   const [noticeDate, setNoticeDate] = useState('');
   const [serviceTitle, setServiceTitle] = useState('');
@@ -16,7 +22,6 @@ const Dashboard = () => {
   const [iconName, setIconName] = useState('FaFileAlt');
   const [iconColor, setIconColor] = useState('text-blue-600');
 
-  // ২. ইউনিয়ন পরিচিতি (Intro) স্টেটসমূহ
   const [introTitle, setIntroTitle] = useState('১৬ নং মোহনপুর ইউনিয়ন পরিষদ');
   const [introSubtitle, setIntroSubtitle] = useState('এক নজরে আমাদের গৌরব ও ঐতিহ্য');
   const [introHistory, setIntroHistory] = useState('');
@@ -31,7 +36,6 @@ const Dashboard = () => {
   const [madrasah, setMadrasah] = useState('');
   const [landmarks, setLandmarks] = useState('');
 
-  // ৩. এক নজরে ইউনিয়ন (Glance) স্টেটসমূহ
   const [glancePop, setGlancePop] = useState('');
   const [glanceVoters, setGlanceVoters] = useState('');
   const [glanceArea, setGlanceArea] = useState('');
@@ -41,7 +45,6 @@ const Dashboard = () => {
   const [glanceHealth, setGlanceHealth] = useState('');
   const [glanceEst, setGlanceEst] = useState('');
 
-  // ৪. সাংগঠনিক কাঠামো (Structure) স্টেটসমূহ
   const [chairmanName, setChairmanName] = useState('মোঃ আবদুর রহমান');
   const [chairmanPhone, setChairmanPhone] = useState('+৮৮০ ১৭১১-২২৩৩৪৪');
   const [chairmanEmail, setChairmanEmail] = useState('chairman@union.gov.bd');
@@ -51,7 +54,6 @@ const Dashboard = () => {
   const [secretaryEmail, setSecretaryEmail] = useState('secretary@union.gov.bd');
   const [secretaryImg, setSecretaryImg] = useState('https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400');
 
-  // ৫. বর্তমান চেয়ারম্যান প্রোফাইল স্টেটসমূহ
   const [chTitle, setChTitle] = useState('সম্মানিত চেয়ারম্যান');
   const [chUnion, setChUnion] = useState('১৬ নং মোহনপুর ইউনিয়ন পরিষদ');
   const [chJoinDate, setChJoinDate] = useState('১০ জানুয়ারি, ২০২২');
@@ -62,13 +64,26 @@ const Dashboard = () => {
   const [politicalRole, setPoliticalRole] = useState('সভাপতি, ইউনিয়ন আওয়ামী লীগ / বিএনপি / স্বতন্ত্র');
   const [socialContribution, setSocialContribution] = useState('প্রধান উপদেষ্টা, স্থানীয় সমাজকল্যাণ সংস্থা।');
 
-  // ৬. সাবেক চেয়ারম্যান (Ex-Chairman) স্টেটসমূহ
   const [exChairmansList, setExChairmansList] = useState([
     { id: 1, name: 'আলহাজ্ব মোঃ শামসুল হক', title: 'সাবেক চেয়ারম্যান', duration: '২০১৬ - ২০২২', image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'উত্তর পাড়া' },
     { id: 2, name: 'মরহুম আলতাফ আলী মিয়া', title: 'সাবেক চেয়ারম্যান', duration: '২০১১ - ২০১৬', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'দক্ষিণ বাজার' },
     { id: 3, name: 'মোঃ দেলোয়ার হোসেন (বিএ)', title: 'সাবেক চেয়ারম্যান', duration: '২০০৩ - ২০১১', image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300', status: 'জীবিত', village: 'পূর্ব ধলপুর' },
     { id: 4, name: 'মরহুম আলহাজ্ব মফিজ উদ্দিন', title: 'সাবেক চেয়ারম্যান', duration: '১৯৯৮ - ২০০৩', image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=300', status: 'প্রয়াত', village: 'পশ্চিম পাড়া' }
   ]);
+  useEffect(() => { if (isAuthenticated) fetchProjects(); }, [isAuthenticated]);
+  const fetchProjects = async () => {
+  try {
+    const res = await axios.get('/api/projects');
+    if (res.data.success) setProjectsList(res.data.projects);
+    else setProjectsList([]);
+  } catch (err) { console.error('প্রকল্প লোড ব্যর্থ:', err); }
+};
+
+  // প্রজেক্ট স্টেট
+const [projectsList, setProjectsList] = useState([]);
+const [projectForm, setProjectForm] = useState({ name: '', budget: '', status: 'প্রক্রিয়াধীন' });
+const [editingProjectId, setEditingProjectId] = useState(null);
+const [projectLoading, setProjectLoading] = useState(false);
   const [exName, setExName] = useState('');
   const [exDuration, setExDuration] = useState('');
   const [exImage, setExImage] = useState('');
@@ -76,7 +91,6 @@ const Dashboard = () => {
   const [exVillage, setExVillage] = useState('');
   const [editingExId, setEditingExId] = useState(null);
 
-  // ৭. কাউন্সিলর / সদস্যদের জন্য স্টেট (ডায়নামিক)
   const [councillorsList, setCouncillorsList] = useState([]);
   const [councillorForm, setCouncillorForm] = useState({
     name: '', ward: '', role: 'ইউপি সদস্য / কাউন্সিলর', phone: '', email: '', image: ''
@@ -84,7 +98,6 @@ const Dashboard = () => {
   const [editingCouncillorId, setEditingCouncillorId] = useState(null);
   const [councillorLoading, setCouncillorLoading] = useState(false);
 
-  // মেম্বারদের জন্য আগের স্টেট (সাংগঠনিক কাঠামোর জন্য ১২ জন)
   const [membersList, setMembersList] = useState([
     { id: 1, ward: '১ নং ওয়ার্ড', name: 'মোঃ রফিকুল ইসলাম', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০১_ _ _ _' },
     { id: 2, ward: '২ নং ওয়ার্ড', name: 'আব্দুল কুদ্দুস', role: 'ইউপি সদস্য', phone: '+৮৮০ ১৭১৩-০২_ _ _ _' },
@@ -100,29 +113,20 @@ const Dashboard = () => {
     { id: 12, ward: '৭, ৮ ও ৯ নং ওয়ার্ড', name: 'মোছাঃ পারভীন সুলতানা', role: 'সংরক্ষিত মহিলা সদস্য', phone: '+৮৮০ ১৭১৩-১২_ _ _ _' },
   ]);
 
-  // ==================== অন্যান্য কর্মচারী স্টেট ====================
   const [staffList, setStaffList] = useState([]);
   const [staffForm, setStaffForm] = useState({
-    name: '',
-    role: '',
-    area: '',
-    image: '',
-    phone: ''
+    name: '', role: '', area: '', image: '', phone: ''
   });
   const [editingStaffId, setEditingStaffId] = useState(null);
   const [staffLoading, setStaffLoading] = useState(false);
 
-  // ==================== নতুন স্টেটসমূহ ====================
   const [contactInfo, setContactInfo] = useState({
     addressLine1: '১নং মডেল ইউনিয়ন পরিষদ কমপ্লেক্স',
     addressLine2: 'ঢাকা, বাংলাদেশ',
     phone1: '+৮৮০ ১৭০০-XXXXXX (সচিব)',
     phone2: 'জাতীয় সেবা নং: ৩৩৩, ৯৯৯',
     email: 'info@yourunionup.gov.bd',
-    mapEmbedUrl: '',
-    facebook: '',
-    twitter: '',
-    youtube: ''
+    mapEmbedUrl: '', facebook: '', twitter: '', youtube: ''
   });
 
   const [verificationConfig, setVerificationConfig] = useState({
@@ -174,22 +178,11 @@ const Dashboard = () => {
     { label: 'সাধারণ নোটিশ', color: 'bg-gray-500' }
   ];
 
-  // সচিব প্রোফাইল স্টেট
   const [secretaryProfile, setSecretaryProfile] = useState({
-    name: '',
-    title: '',
-    department: '',
-    image: '',
-    joiningDate: '',
-    phone: '',
-    email: '',
-    officeTime: '',
-    education: '',
-    responsibilities: []
+    name: '', title: '', department: '', image: '', joiningDate: '', phone: '', email: '', officeTime: '', education: '', responsibilities: []
   });
   const [secretaryLoading, setSecretaryLoading] = useState(false);
 
-  // একাউন্ট পেজ কনফিগারেশন স্টেট
   const [accountConfig, setAccountConfig] = useState({
     financialYear: '২০২৫ - ২০২৬',
     accountStats: [
@@ -209,7 +202,6 @@ const Dashboard = () => {
   });
   const [accountLoading, setAccountLoading] = useState(false);
 
-  // ==================== ফুটার কনফিগারেশন স্টেট ====================
   const [footerConfig, setFooterConfig] = useState({
     logoUrl: '',
     unionName: '৪নং সুবিল ইউনিয়ন পরিষদ',
@@ -217,8 +209,7 @@ const Dashboard = () => {
     address: 'ইউনিয়ন পরিষদ ভবন, সুবিল, দেবিদ্বার, কুমিল্লা।',
     phone: '+৮৮০১XXXXXXXXX',
     email: 'info@subilup.gov.bd',
-    facebook: '',
-    youtube: '',
+    facebook: '', youtube: '',
     quickLinks: [
       { title: 'ট্রেড লাইসেন্স আবেদন', path: '/service/trade-license' },
       { title: 'নাগরিকত্ব সনদের আবেদন', path: '/service/citizenship-certificate' },
@@ -237,16 +228,14 @@ const Dashboard = () => {
   });
   const [footerLoading, setFooterLoading] = useState(false);
 
-  // ==================== কাউন্সিলর পেজ কনফিগারেশন স্টেট ====================
   const [councillorsPageConfig, setCouncillorsPageConfig] = useState({
     pageTitle: 'কাউন্সিলর / সদস্যবৃন্দ',
     pageSubtitle: 'আপনাদের স্ব-স্ব ওয়ার্ডের উন্নয়ন ও নাগরিক সেবা নিশ্চিতকরণে নিয়োজিত জনপ্রতিনিধিবৃন্দ।',
-    showPhone: true,
-    showEmail: true
+    showPhone: true, showEmail: true
   });
   const [councillorsPageLoading, setCouncillorsPageLoading] = useState(false);
 
-  // ==================== সব fetch/load ফাংশন ====================
+  // ==================== FETCH FUNCTIONS ====================
   const fetchCouncillors = async () => {
     try {
       const res = await axios.get('/api/councillors');
@@ -297,15 +286,10 @@ const Dashboard = () => {
       if (res.data && res.data.name) setSecretaryProfile(prev => ({ ...prev, ...res.data }));
       else {
         setSecretaryProfile({
-          name: 'জনাব সুকোমল বড়ুয়া',
-          title: 'ইউনিয়ন পরিষদ সচিব',
-          department: 'স্থানীয় সরকার বিভাগ (এলজিডি)',
+          name: 'জনাব সুকোমল বড়ুয়া', title: 'ইউনিয়ন পরিষদ সচিব', department: 'স্থানীয় সরকার বিভাগ (এলজিডি)',
           image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=600',
-          joiningDate: '১৫ মে, ২০২০',
-          phone: '+৮৮০ ১৭১২-৫৫৬৬৭৭',
-          email: 'secretary@union.gov.bd',
-          officeTime: 'সকাল ৯:০০ - বিকেল ৫:০০ (রবি - বৃহস্পতিবার)',
-          education: 'স্নাতকোত্তর (লোক প্রশাসন), ঢাকা বিশ্ববিদ্যালয়',
+          joiningDate: '১৫ মে, ২০২০', phone: '+৮৮০ ১৭১২-৫৫৬৬৭৭', email: 'secretary@union.gov.bd',
+          officeTime: 'সকাল ৯:০০ - বিকেল ৫:০০ (রবি - বৃহস্পতিবার)', education: 'স্নাতকোত্তর (লোক প্রশাসন), ঢাকা বিশ্ববিদ্যালয়',
           responsibilities: [
             'ইউনিয়ন পরিষদের যাবতীয় প্রশাসনিক ও দাপ্তরিক কার্য পরিচালনা।',
             'পরিষদের বাজেট প্রণয়ন, হিসাব সংরক্ষণ এবং আর্থিক বিবরণী প্রস্তুতকরণ।',
@@ -337,43 +321,42 @@ const Dashboard = () => {
       if (res.data.success && res.data.chairmans.length > 0) {
         setExChairmansList(res.data.chairmans);
       }
-    } catch (err) {
-      console.error('সাবেক চেয়ারম্যান লোড ব্যর্থ:', err);
-    }
+    } catch (err) { console.error('সাবেক চেয়ারম্যান লোড ব্যর্থ:', err); }
   };
 
   const fetchFooterConfig = async () => {
     try {
       const res = await axios.get('/api/footer');
-      if (res.data && Object.keys(res.data).length) {
-        setFooterConfig(prev => ({ ...prev, ...res.data }));
-      }
+      if (res.data && Object.keys(res.data).length) setFooterConfig(prev => ({ ...prev, ...res.data }));
     } catch (err) { console.error('ফুটার কনফিগ লোড ব্যর্থ:', err); }
   };
 
   const fetchCouncillorsPageConfig = async () => {
     try {
       const res = await axios.get('/api/councillors-page-config');
-      if (res.data && Object.keys(res.data).length) {
-        setCouncillorsPageConfig(prev => ({ ...prev, ...res.data }));
-      }
+      if (res.data && Object.keys(res.data).length) setCouncillorsPageConfig(prev => ({ ...prev, ...res.data }));
     } catch (err) { console.error('কনফিগ লোড ব্যর্থ:', err); }
   };
 
-  // ==================== useEffect ====================
-  useEffect(() => { fetchCouncillors(); }, []);
-  useEffect(() => { fetchContactInfo(); }, []);
-  useEffect(() => { fetchVerificationConfig(); }, []);
-  useEffect(() => { fetchGallery(); }, []);
-  useEffect(() => { fetchUpdates(); }, []);
-  useEffect(() => { fetchSecretaryProfile(); }, []);
-  useEffect(() => { fetchAccountConfig(); }, []);
-  useEffect(() => { fetchOtherStaff(); }, []);
-  useEffect(() => { fetchExChairmans(); }, []);
-  useEffect(() => { fetchFooterConfig(); }, []);
-  useEffect(() => { fetchCouncillorsPageConfig(); }, []);
+  // ==================== useEffect (login check + conditional data fetch) ====================
+  useEffect(() => {
+    const auth = localStorage.getItem('adminAuth');
+    if (auth === 'true') setIsAuthenticated(true);
+  }, []);
 
-  // ==================== হ্যান্ডলার ফাংশনসমূহ ====================
+  useEffect(() => { if (isAuthenticated) fetchCouncillors(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchContactInfo(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchVerificationConfig(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchGallery(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchUpdates(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchSecretaryProfile(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchAccountConfig(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchOtherStaff(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchExChairmans(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchFooterConfig(); }, [isAuthenticated]);
+  useEffect(() => { if (isAuthenticated) fetchCouncillorsPageConfig(); }, [isAuthenticated]);
+
+  // ==================== HANDLERS (all your original handlers) ====================
   const saveAllCouncillors = async () => {
     setCouncillorLoading(true);
     try {
@@ -386,12 +369,57 @@ const Dashboard = () => {
         setMessage({ text: 'সংরক্ষণ ব্যর্থ: ' + (response.data.message || ''), isError: true });
       }
     } catch (err) {
-      console.error(err);
       setMessage({ text: 'সংরক্ষণ ব্যর্থ! সার্ভার এরর', isError: true });
     } finally {
       setCouncillorLoading(false);
     }
   };
+
+  const handleProjectSubmit = async (e) => {
+  e.preventDefault();
+  const { name, budget, status } = projectForm;
+  if (!name || !budget) {
+    setMessage({ text: 'নাম ও বাজেট আবশ্যক', isError: true });
+    return;
+  }
+  setProjectLoading(true);
+  try {
+    if (editingProjectId) {
+      await axios.put(`/api/projects/${editingProjectId}`, { name, budget, status });
+      setMessage({ text: 'প্রকল্প আপডেট হয়েছে', isError: false });
+    } else {
+      await axios.post('/api/projects', { name, budget, status });
+      setMessage({ text: 'নতুন প্রকল্প যুক্ত হয়েছে', isError: false });
+    }
+    fetchProjects();
+    setProjectForm({ name: '', budget: '', status: 'প্রক্রিয়াধীন' });
+    setEditingProjectId(null);
+  } catch (err) {
+    setMessage({ text: 'সংরক্ষণ ব্যর্থ', isError: true });
+  } finally {
+    setProjectLoading(false);
+  }
+};
+
+const startEditProject = (item) => {
+  setEditingProjectId(item._id);
+  setProjectForm({ name: item.name, budget: item.budget, status: item.status });
+};
+
+const deleteProject = async (id) => {
+  if (!window.confirm('মুছতে চান?')) return;
+  try {
+    await axios.delete(`/api/projects/${id}`);
+    setMessage({ text: 'প্রকল্প মুছে ফেলা হয়েছে', isError: false });
+    fetchProjects();
+    if (editingProjectId === id) {
+      setEditingProjectId(null);
+      setProjectForm({ name: '', budget: '', status: 'প্রক্রিয়াধীন' });
+    }
+  } catch (err) {
+    setMessage({ text: 'মুছতে ব্যর্থ', isError: true });
+  }
+};
 
   const handleCouncillorSubmit = (e) => {
     e.preventDefault();
@@ -417,12 +445,7 @@ const Dashboard = () => {
   const startEditCouncillor = (item) => {
     setEditingCouncillorId(item._id);
     setCouncillorForm({
-      name: item.name,
-      ward: item.ward,
-      role: item.role,
-      phone: item.phone,
-      email: item.email,
-      image: item.image || ''
+      name: item.name, ward: item.ward, role: item.role, phone: item.phone, email: item.email, image: item.image || ''
     });
     setMessage({ text: 'সদস্য তথ্য এডিট মোডে। পরিবর্তন করে "হালনাগাদ করুন" বাটনে ক্লিক করুন।', isError: false });
   };
@@ -648,20 +671,35 @@ const Dashboard = () => {
       setFooterLoading(false);
     }
   };
+const handleQuickLinksChange = (linksJson) => {
+  try {
+    const parsed = JSON.parse(linksJson);
+    if (Array.isArray(parsed)) {
+      setFooterConfig({...footerConfig, quickLinks: parsed});
+      setMessage({ text: 'দ্রুত লিংক ভ্যালিড JSON', isError: false });
+    } else {
+      throw new Error('অ্যারে না');
+    }
+  } catch(e) {
+    setMessage({ text: 'JSON ফরম্যাট ভুল! উদাহরণ: [{"title":"সেবা","path":"/link"}]', isError: true });
+    console.error('JSON Parse Error:', e);
+  }
+};
 
-  const handleQuickLinksChange = (linksJson) => {
-    try {
-      const parsed = JSON.parse(linksJson);
-      if (Array.isArray(parsed)) setFooterConfig({...footerConfig, quickLinks: parsed});
-    } catch(e) {}
-  };
-
-  const handleGovLinksChange = (linksJson) => {
-    try {
-      const parsed = JSON.parse(linksJson);
-      if (Array.isArray(parsed)) setFooterConfig({...footerConfig, govLinks: parsed});
-    } catch(e) {}
-  };
+const handleGovLinksChange = (linksJson) => {
+  try {
+    const parsed = JSON.parse(linksJson);
+    if (Array.isArray(parsed)) {
+      setFooterConfig({...footerConfig, govLinks: parsed});
+      setMessage({ text: 'সরকারি লিংক ভ্যালিড JSON', isError: false });
+    } else {
+      throw new Error('অ্যারে না');
+    }
+  } catch(e) {
+    setMessage({ text: 'JSON ফরম্যাট ভুল! উদাহরণ: [{"title":"বাংলাদেশ","url":"https://gov.bd"}]', isError: true });
+    console.error('JSON Parse Error:', e);
+  }
+};
 
   const handleCouncillorsPageSubmit = async (e) => {
     e.preventDefault();
@@ -732,11 +770,7 @@ const Dashboard = () => {
   const startEditStaff = (item) => {
     setEditingStaffId(item._id);
     setStaffForm({
-      name: item.name,
-      role: item.role,
-      area: item.area || '',
-      image: item.image || '',
-      phone: item.phone || ''
+      name: item.name, role: item.role, area: item.area || '', image: item.image || '', phone: item.phone || ''
     });
   };
 
@@ -756,19 +790,71 @@ const Dashboard = () => {
     }
   };
 
-  // ==================== JSX রিটার্ন ====================
+  // ==================== LOGIN / LOGOUT HANDLERS ====================
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+    const validEmail = "admin@union.gov.bd";
+    const validPassword = "admin123";
+    if (loginEmail === validEmail && loginPassword === validPassword) {
+      localStorage.setItem('adminAuth', 'true');
+      setIsAuthenticated(true);
+    } else {
+      setLoginError('ভুল ইমেইল বা পাসওয়ার্ড। অনুগ্রহ করে সঠিক তথ্য দিন।');
+    }
+    setLoginLoading(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminAuth');
+    setIsAuthenticated(false);
+    setLoginEmail('');
+    setLoginPassword('');
+  };
+
+  // ==================== RENDER ====================
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 border border-gray-200">
+          <div className="text-center mb-6">
+            <div className="bg-blue-900 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto text-2xl font-bold shadow-md">UP</div>
+            <h2 className="text-2xl font-bold text-gray-800 mt-4">প্রশাসক লগইন</h2>
+            <p className="text-gray-500 text-sm mt-1">ইউনিয়ন পরিষদ কন্ট্রোল প্যানেলে প্রবেশ করুন</p>
+          </div>
+          {loginError && <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{loginError}</div>}
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ইমেইল</label>
+              <input type="email" required value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="admin@union.gov.bd" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">পাসওয়ার্ড</label>
+              <input type="password" required value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="••••••" />
+            </div>
+            <button type="submit" disabled={loginLoading} className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-2.5 rounded-lg">{loginLoading ? 'লগইন হচ্ছে...' : 'প্রবেশ করুন'}</button>
+          </form>
+          <p className="text-center text-xs text-gray-400 mt-6">ডেমো লগইন: admin@union.gov.bd / admin123</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ==================== AUTHENTICATED DASHBOARD ====================
   return (
     <div className="min-h-screen bg-gray-100 font-sans antialiased">
       <header className="bg-slate-900 text-white py-5 px-6 shadow-md flex justify-between items-center">
         <div className="flex items-center gap-3"><div className="bg-amber-500 p-2 rounded text-slate-900 font-bold text-xs sm:text-sm">ADMIN</div><h1 className="text-base sm:text-xl font-bold tracking-wide">ইউনিয়ন পরিষদ কন্ট্রোল প্যানেল</h1></div>
-        <Link to="/" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-lg border border-slate-700 transition"><FaArrowLeft /> মূল ওয়েবসাইট</Link>
+        <div className="flex items-center gap-3">
+          <Link to="/" className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-xs px-4 py-2 rounded-lg border border-slate-700 transition"><FaArrowLeft /> মূল ওয়েবসাইট</Link>
+          <button onClick={handleLogout} className="flex items-center gap-2 bg-red-700 hover:bg-red-800 text-xs px-4 py-2 rounded-lg transition"><FaSignOutAlt /> লগআউট</button>
+        </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {message.text && (
-          <div className={`p-4 rounded-xl text-sm font-semibold text-center border shadow-sm ${
-            message.isError ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
-          }`}>
+          <div className={`p-4 rounded-xl text-sm font-semibold text-center border shadow-sm ${message.isError ? 'bg-red-50 border-red-200 text-red-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
             {message.text}
           </div>
         )}
@@ -1028,14 +1114,7 @@ const Dashboard = () => {
           <div className="overflow-x-auto rounded-xl border border-gray-200">
             <table className="w-full text-left border-collapse text-xs">
               <thead className="bg-slate-100">
-                <tr>
-                  <th className="p-3 text-center">ক্রম</th>
-                  <th className="p-3">নাম</th>
-                  <th className="p-3">পদবী</th>
-                  <th className="p-3">এলাকা</th>
-                  <th className="p-3">ফোন</th>
-                  <th className="p-3 text-center">অ্যাকশন</th>
-                </tr>
+                <tr><th className="p-3 text-center">ক্রম</th><th className="p-3">নাম</th><th className="p-3">পদবী</th><th className="p-3">এলাকা</th><th className="p-3">ফোন</th><th className="p-3 text-center">অ্যাকশন</th></tr>
               </thead>
               <tbody>
                 {staffList.map((item, idx) => (
@@ -1051,20 +1130,15 @@ const Dashboard = () => {
                     </td>
                   </tr>
                 ))}
-                {staffList.length === 0 && (
-                  <tr><td colSpan="6" className="p-6 text-center text-gray-400">কোনো কর্মচারী যোগ করা হয়নি</td></tr>
-                )}
+                {staffList.length === 0 && (<tr><td colSpan="6" className="p-6 text-center text-gray-400">কোনো কর্মচারী যোগ করা হয়নি</td></tr>)}
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* ========== ফুটার পৃষ্ঠার তথ্য আপডেট ========== */}
+        {/* ফুটার পৃষ্ঠার তথ্য আপডেট */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
-            <FaInfoCircle className="text-emerald-600" />
-            <h2>ফুটার তথ্য আপডেট করুন</h2>
-          </div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-emerald-600" /><h2>ফুটার তথ্য আপডেট করুন</h2></div>
           <form onSubmit={handleFooterSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><label className="block text-xs font-bold text-gray-700 mb-1">লোগো URL</label><input type="text" value={footerConfig.logoUrl} onChange={(e) => setFooterConfig({...footerConfig, logoUrl: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="লোগো ছবির লিংক দিন" /></div>
@@ -1080,40 +1154,85 @@ const Dashboard = () => {
               <div><label className="block text-xs font-bold text-gray-700 mb-1">কপিরাইট টেক্সট</label><input type="text" value={footerConfig.copyrightText} onChange={(e) => setFooterConfig({...footerConfig, copyrightText: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div><label className="block text-xs font-bold text-gray-700 mb-1">ডেভেলপারের নাম</label><input type="text" value={footerConfig.developerCredit} onChange={(e) => setFooterConfig({...footerConfig, developerCredit: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
             </div>
-            <button type="submit" disabled={footerLoading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-              <FaSave /> {footerLoading ? 'সংরক্ষণ হচ্ছে...' : 'ফুটার তথ্য আপডেট করুন'}
-            </button>
+            <button type="submit" disabled={footerLoading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"><FaSave /> {footerLoading ? 'সংরক্ষণ হচ্ছে...' : 'ফুটার তথ্য আপডেট করুন'}</button>
           </form>
         </div>
 
-        {/* ========== কাউন্সিলর পেজ কনফিগারেশন ========== */}
+        {/* কাউন্সিলর পেজ কনফিগারেশন */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
-            <FaUsers className="text-indigo-600" />
-            <h2>কাউন্সিলর পেজ কনফিগারেশন</h2>
-          </div>
+          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaUsers className="text-indigo-600" /><h2>কাউন্সিলর পেজ কনফিগারেশন</h2></div>
           <form onSubmit={handleCouncillorsPageSubmit} className="space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div><label className="block text-xs font-bold text-gray-700 mb-1">পৃষ্ঠার শিরোনাম</label><input type="text" value={councillorsPageConfig.pageTitle} onChange={(e) => setCouncillorsPageConfig({...councillorsPageConfig, pageTitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div><label className="block text-xs font-bold text-gray-700 mb-1">পৃষ্ঠার উপশিরোনাম</label><input type="text" value={councillorsPageConfig.pageSubtitle} onChange={(e) => setCouncillorsPageConfig({...councillorsPageConfig, pageSubtitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div className="md:col-span-2">
                 <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-700">
-                    <input type="checkbox" checked={councillorsPageConfig.showPhone} onChange={(e) => setCouncillorsPageConfig({...councillorsPageConfig, showPhone: e.target.checked})} className="w-4 h-4" />
-                    ফোন নম্বর দেখান
-                  </label>
-                  <label className="flex items-center gap-2 text-xs font-bold text-gray-700">
-                    <input type="checkbox" checked={councillorsPageConfig.showEmail} onChange={(e) => setCouncillorsPageConfig({...councillorsPageConfig, showEmail: e.target.checked})} className="w-4 h-4" />
-                    ইমেইল দেখান
-                  </label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-gray-700"><input type="checkbox" checked={councillorsPageConfig.showPhone} onChange={(e) => setCouncillorsPageConfig({...councillorsPageConfig, showPhone: e.target.checked})} className="w-4 h-4" /> ফোন নম্বর দেখান</label>
+                  <label className="flex items-center gap-2 text-xs font-bold text-gray-700"><input type="checkbox" checked={councillorsPageConfig.showEmail} onChange={(e) => setCouncillorsPageConfig({...councillorsPageConfig, showEmail: e.target.checked})} className="w-4 h-4" /> ইমেইল দেখান</label>
                 </div>
               </div>
             </div>
-            <button type="submit" disabled={councillorsPageLoading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2">
-              <FaSave /> {councillorsPageLoading ? 'সংরক্ষণ হচ্ছে...' : 'পেজ কনফিগারেশন আপডেট করুন'}
-            </button>
+            <button type="submit" disabled={councillorsPageLoading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl transition shadow-md flex items-center justify-center gap-2"><FaSave /> {councillorsPageLoading ? 'সংরক্ষণ হচ্ছে...' : 'পেজ কনফিগারেশন আপডেট করুন'}</button>
           </form>
         </div>
+
+        {/* উন্নয়ন প্রকল্প ব্যবস্থাপনা */}
+<div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+  <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
+    <FaListAlt className="text-teal-600" />
+    <h2>উন্নয়ন প্রকল্প ব্যবস্থাপনা</h2>
+  </div>
+
+  {/* ফর্ম */}
+  <form onSubmit={handleProjectSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-teal-50 p-4 rounded-xl mb-6">
+    <input type="text" placeholder="প্রকল্পের নাম *" value={projectForm.name} onChange={(e) => setProjectForm({...projectForm, name: e.target.value})} className="border rounded p-2 text-sm" />
+    <input type="text" placeholder="বাজেট * (যেমন: ৫,০০,০০০ টাকা)" value={projectForm.budget} onChange={(e) => setProjectForm({...projectForm, budget: e.target.value})} className="border rounded p-2 text-sm" />
+    <select value={projectForm.status} onChange={(e) => setProjectForm({...projectForm, status: e.target.value})} className="border rounded p-2 text-sm">
+      <option>প্রক্রিয়াধীন</option>
+      <option>চলমান</option>
+      <option>সম্পন্ন</option>
+    </select>
+    <div className="md:col-span-3">
+      <button type="submit" disabled={projectLoading} className="w-full bg-teal-600 text-white py-2 rounded">
+        {projectLoading ? 'সংরক্ষণ হচ্ছে...' : (editingProjectId ? 'আপডেট করুন' : 'যোগ করুন')}
+      </button>
+    </div>
+  </form>
+
+  {/* টেবিল */}
+  <div className="overflow-x-auto rounded-xl border border-gray-200">
+    <table className="w-full text-left text-sm">
+      <thead className="bg-slate-100">
+        <tr>
+          <th className="p-3">ক্রম</th><th>প্রকল্পের নাম</th><th>বাজেট</th><th>অবস্থা</th><th>অ্যাকশন</th>
+        </tr>
+      </thead>
+      <tbody>
+        {projectsList.map((item, idx) => (
+          <tr key={item._id} className="border-b">
+            <td className="p-3">{idx+1}</td>
+            <td className="p-3 font-medium">{item.name}</td>
+            <td className="p-3">{item.budget}</td>
+            <td className="p-3">
+              <span className={`px-2 py-1 rounded-full text-xs ${
+                item.status === 'সম্পন্ন' ? 'bg-green-100 text-green-700' :
+                item.status === 'চলমান' ? 'bg-yellow-100 text-yellow-700' :
+                'bg-blue-100 text-blue-700'
+              }`}>{item.status}</span>
+            </td>
+            <td className="p-3 space-x-2">
+              <button onClick={() => startEditProject(item)} className="text-blue-600"><FaEdit /></button>
+              <button onClick={() => deleteProject(item._id)} className="text-red-600"><FaTrashAlt /></button>
+            </td>
+          </tr>
+        ))}
+        {projectsList.length === 0 && (
+          <tr><td colSpan="5" className="p-6 text-center text-gray-400">কোনো প্রকল্প যোগ করা হয়নি</td></tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
       </main>
     </div>
   );

@@ -32,6 +32,7 @@ import Gellary from "../Pages/Home/Gellary/Gellary";
 import Check from "../Pages/Home/Check/Check";
 import Contact from "../Pages/Home/Contact/Contact";
 import Dashboarrd from "../Pages/Home/Dashboarrd/Dashboarrd";
+import Plan from "../Pages/Home/Plan/Plan";
 
 const router = createBrowserRouter([
   {
@@ -64,6 +65,7 @@ const router = createBrowserRouter([
       { path: "/gellary", element: <Gellary/> },
       { path: "/check", element: <Check/> },
       { path: "/contact", element: <Contact/> },
+      { path: "/service/plan", element: <Plan/> },
     ],
   },
   // 🆕 অ্যাডমিন রাউট (লেআউট ছাড়া)

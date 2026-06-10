@@ -61,10 +61,10 @@ const Navbar = () => {
       submenu: [
         { name: 'বর্তমান চেয়ারম্যান', id: 'current-chairman' },
         { name: 'সাবেক চেয়ারম্যানবৃন্দ', id: 'ex-chairmans' },
-        { name: 'কাউন্সিলর তালিকা', id: 'councillors' }
+        { name: 'বাজেট ও উন্নয়ন পরিকল্পনা', id: 'plan' }
       ]
     },
-    { 
+    {
       name: 'কর্মকর্তা-কর্মচারী', 
       hasDropdown: true,
       submenu: [

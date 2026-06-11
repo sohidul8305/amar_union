@@ -1015,7 +1015,7 @@ const handleGovLinksChange = (linksJson) => {
     <input type="text" placeholder="ব্যাজ টেক্সট" value={verificationConfig.badgeText} onChange={(e)=>setVerificationConfig({...verificationConfig, badgeText:e.target.value})} className="w-full border rounded p-2" />
     <input type="text" placeholder="মূল শিরোনাম" value={verificationConfig.pageTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageTitle:e.target.value})} className="w-full border rounded p-2" />
     <textarea placeholder="উপশিরোনাম" value={verificationConfig.pageSubtitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageSubtitle:e.target.value})} className="w-full border rounded p-2" />
-    
+
     {/* সনদের ধরণ - JSON অ্যারে */}
     <div>
       <label className="block text-xs font-bold text-gray-700 mb-1">সনদের ধরণ (JSON)</label>

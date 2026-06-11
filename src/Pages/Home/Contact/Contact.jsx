@@ -35,11 +35,16 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await axios.post('/api/contact-message', formData);
     alert(`ধন্যবাদ ${formData.name}! আপনার বার্তাটি সফলভাবে পাঠানো হয়েছে।`);
     setFormData({ name: '', email: '', subject: '', message: '' });
-  };
+  } catch (error) {
+    alert('বার্তা পাঠাতে ব্যর্থ। পরে আবার চেষ্টা করুন।');
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8 font-sans">

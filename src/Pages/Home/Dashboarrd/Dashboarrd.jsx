@@ -1005,16 +1005,51 @@ const handleGovLinksChange = (linksJson) => {
           </form>
         </div>
 
-        {/* সনদ যাচাই কনফিগারেশন */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6"><FaInfoCircle className="text-blue-600" /><h2>সনদ যাচাই কনফিগ</h2></div>
-          <form onSubmit={handleVerificationConfigSubmit} className="space-y-4">
-            <input type="text" placeholder="পৃষ্ঠার ব্যাজ টেক্সট" value={verificationConfig.badgeText} onChange={(e)=>setVerificationConfig({...verificationConfig, badgeText:e.target.value})} className="w-full border rounded p-2" />
-            <input type="text" placeholder="মূল শিরোনাম" value={verificationConfig.pageTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageTitle:e.target.value})} className="w-full border rounded p-2" />
-            <textarea placeholder="উপশিরোনাম" value={verificationConfig.pageSubtitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageSubtitle:e.target.value})} className="w-full border rounded p-2"></textarea>
-            <button type="submit" className="bg-blue-600 text-white py-2 rounded">আপডেট</button>
-          </form>
-        </div>
+  {/* সনদ যাচাই কনফিগারেশন */}
+<div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+  <div className="flex items-center gap-2 text-blue-900 font-bold text-lg border-b pb-3 mb-6">
+    <FaInfoCircle className="text-blue-600" />
+    <h2>সনদ যাচাই কনফিগ</h2>
+  </div>
+  <form onSubmit={handleVerificationConfigSubmit} className="space-y-4">
+    <input type="text" placeholder="ব্যাজ টেক্সট" value={verificationConfig.badgeText} onChange={(e)=>setVerificationConfig({...verificationConfig, badgeText:e.target.value})} className="w-full border rounded p-2" />
+    <input type="text" placeholder="মূল শিরোনাম" value={verificationConfig.pageTitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageTitle:e.target.value})} className="w-full border rounded p-2" />
+    <textarea placeholder="উপশিরোনাম" value={verificationConfig.pageSubtitle} onChange={(e)=>setVerificationConfig({...verificationConfig, pageSubtitle:e.target.value})} className="w-full border rounded p-2" />
+    
+    {/* সনদের ধরণ - JSON অ্যারে */}
+    <div>
+      <label className="block text-xs font-bold text-gray-700 mb-1">সনদের ধরণ (JSON)</label>
+      <textarea rows="4"
+        value={JSON.stringify(verificationConfig.certificateTypes || [], null, 2)}
+        onChange={(e) => {
+          try {
+            const val = JSON.parse(e.target.value);
+            if (Array.isArray(val)) setVerificationConfig({...verificationConfig, certificateTypes: val});
+          } catch(err) {}
+        }}
+        className="w-full border rounded p-2 font-mono text-sm"
+      />
+    </div>
+
+    {/* নির্দেশনাবলী - JSON অ্যারে */}
+    <div>
+      <label className="block text-xs font-bold text-gray-700 mb-1">নির্দেশনাবলী (JSON)</label>
+      <textarea rows="4"
+        value={JSON.stringify(verificationConfig.instructionsList || [], null, 2)}
+        onChange={(e) => {
+          try {
+            const val = JSON.parse(e.target.value);
+            if (Array.isArray(val)) setVerificationConfig({...verificationConfig, instructionsList: val});
+          } catch(err) {}
+        }}
+        className="w-full border rounded p-2 font-mono text-sm"
+      />
+    </div>
+
+    <input type="text" placeholder="হেল্পলাইন নম্বর" value={verificationConfig.helplineNumber} onChange={(e)=>setVerificationConfig({...verificationConfig, helplineNumber:e.target.value})} className="w-full border rounded p-2" />
+    <button type="submit" className="bg-blue-600 text-white py-2 rounded w-full">কনফিগ আপডেট করুন</button>
+  </form>
+</div>
 
         {/* গ্যালারি */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">

@@ -5,40 +5,35 @@ import {
   FaHistory, FaGlobe, FaAward, FaChartLine 
 } from 'react-icons/fa';
 
-// 🔥 Vite এবং CRA দুই জায়গাতেই কাজ করবে এমনভাবে API বেস URL নির্ধারণ
 const getApiBaseUrl = () => {
-  // প্রোডাকশনে (Netlify, Vercel) আপনি .env এ ভেরিয়েবল সেট করবেন
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL; // Vite
+    return import.meta.env.VITE_API_URL;
   }
   if (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL; // Create React App
+    return process.env.REACT_APP_API_URL;
   }
-  return 'http://localhost:5000'; // ডিফল্ট লোকাল
+  return 'http://localhost:5000';
 };
 
 const Intro = () => {
   const [introData, setIntroData] = useState({
     title: "১৬ নং মোহনপুর ইউনিয়ন পরিষদ",
     subtitle: "এক নজরে আমাদের গৌরব ও ঐতিহ্য",
-    history: "১৬ নং মোহনপুর ইউনিয়ন পরিষদটি কুমিল্লা জেলার দেবিদ্বার উপজেলায় অবস্থিত। এটি একটি ঐতিহ্যবাহী ও আদর্শ ইউনিয়ন। গোমতী নদীর তীরে গড়ে ওঠা এই ইউনিয়ন শিক্ষা, সংস্কৃতি ও কৃষিতে অগ্রণী।",
+    history: "...",
     established: "১৯৬০ খ্রিঃ",
-    area: "১৮.৫০ বর্গ কিলোমিটার",
-    totalVillages: "১৪ টি",
+    educationalInstitutions: { college: "১ টি", highSchool: "৪ টি", primarySchool: "১২ টি", madrasah: "৬ টি" },
+    landmarks: []
+  });
+
+  const [glanceData, setGlanceData] = useState({
     totalPopulation: "৪৫,২৫০ জন (প্রায়)",
+    totalVoters: "",
+    area: "১৮.৫০ বর্গ কিলোমিটার",
     literacyRate: "৬৫.৫%",
-    educationalInstitutions: {
-      college: "১ টি",
-      highSchool: "৪ টি",
-      primarySchool: "১২ টি",
-      madrasah: "৬ টি"
-    },
-    landmarks: [
-      "মোহনপুর কেন্দ্রীয় শাহী জামে মসজিদ",
-      "ঐতিহাসিক মোহনপুর খেলার মাঠ",
-      "গোমতী নদীর মনোরম পাড়",
-      "মোহনপুর আদর্শ উচ্চ বিদ্যালয়"
-    ]
+    totalVillages: "১৪ টি",
+    primarySchools: "",
+    healthCenters: "",
+    established: ""
   });
 
   const [loading, setLoading] = useState(true);
@@ -46,17 +41,28 @@ const Intro = () => {
 
   useEffect(() => {
     let isMounted = true;
+    const baseUrl = getApiBaseUrl();
 
     const fetchData = async () => {
       try {
-        const baseUrl = getApiBaseUrl();
-        const response = await axios.get(`${baseUrl}/api/intro`);
-        
-        if (isMounted && response.data) {
-          const fetchedData = Array.isArray(response.data) && response.data.length > 0
-            ? response.data[0]
-            : response.data;
-          setIntroData(prev => ({ ...prev, ...fetchedData }));
+        // একই সাথে দুইটি API কল
+        const [introRes, glanceRes] = await Promise.all([
+          axios.get(`${baseUrl}/api/intro`),
+          axios.get(`${baseUrl}/api/glance`)
+        ]);
+
+        if (isMounted) {
+          // Intro ডাটা সেট করুন
+          if (introRes.data) {
+            const fetchedIntro = Array.isArray(introRes.data) && introRes.data.length > 0
+              ? introRes.data[0]
+              : introRes.data;
+            setIntroData(prev => ({ ...prev, ...fetchedIntro }));
+          }
+          // Glance ডাটা সেট করুন
+          if (glanceRes.data && Object.keys(glanceRes.data).length) {
+            setGlanceData(prev => ({ ...prev, ...glanceRes.data }));
+          }
           setError(null);
         }
       } catch (err) {
@@ -99,15 +105,15 @@ const Intro = () => {
           <p className="text-gray-600 leading-relaxed text-justify">{introData.history}</p>
         </div>
 
-        {/* পরিসংখ্যান গ্রিড */}
+        {/* 🔥 এক নজরে ইউনিয়ন – Glance ডাটা ব্যবহার করে */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon={<FaBuilding />} bg="emerald" label="মোট আয়তন" value={introData.area} />
-          <StatCard icon={<FaUsers />} bg="blue" label="মোট জনসংখ্যা" value={introData.totalPopulation} />
-          <StatCard icon={<FaMapMarkerAlt />} bg="amber" label="গ্রামের সংখ্যা" value={introData.totalVillages} />
-          <StatCard icon={<FaGraduationCap />} bg="purple" label="শিক্ষার হার" value={introData.literacyRate} />
+          <StatCard icon={<FaBuilding />} bg="emerald" label="মোট আয়তন" value={glanceData.area || "—"} />
+          <StatCard icon={<FaUsers />} bg="blue" label="মোট জনসংখ্যা" value={glanceData.totalPopulation || "—"} />
+          <StatCard icon={<FaMapMarkerAlt />} bg="amber" label="গ্রামের সংখ্যা" value={glanceData.totalVillages || "—"} />
+          <StatCard icon={<FaGraduationCap />} bg="purple" label="শিক্ষার হার" value={glanceData.literacyRate || "—"} />
         </div>
 
-        {/* দুই কলাম */}
+        {/* দুই কলাম – শিক্ষা ও দর্শনীয় স্থান */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* শিক্ষা প্রতিষ্ঠান */}
           <div className="bg-white p-6 rounded-2xl shadow-sm">
@@ -157,7 +163,7 @@ const Intro = () => {
   );
 };
 
-// হেল্পার কম্পোনেন্ট
+// StatCard ও InfoTile কম্পোনেন্ট আগের মতোই থাকবে...
 const StatCard = ({ icon, bg, label, value }) => {
   const bgColors = {
     emerald: 'bg-emerald-50 text-emerald-600',

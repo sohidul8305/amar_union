@@ -17,7 +17,7 @@ const Death_certificate = () => {
                 setLoading(true);
                 Swal.fire({ title: 'প্রসেস করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    const response = await fetch('http://localhost:5000/api/death-certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/death-certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
                     const data = await response.json();
                     if (data.success) { Swal.fire({ icon: 'success', title: 'মৃত্যু সনদের আবেদনটি সফল হয়েছে!', html: `<strong>আবেদন আইডি: ${data.deathCertId}</strong>`, confirmButtonColor: '#000F9F' });
                         setFormData({ deceasedName: '', fatherName: '', motherName: '', spouseName: '', gender: 'পুরুষ', deathDate: '', deathReason: '', deathPlace: 'বাসস্থান', nidOrBrn: '', village: '', ward: '', postCode: '', applicantName: '', applicantRelation: '', applicantMobile: '', applicantNid: '', email: '' });

@@ -76,7 +76,7 @@ const TradeLicense = () => {
                         tinCertificate: formData.tinCertificate ? formData.tinCertificate.name : null,
                     };
 
-                    const response = await fetch('http://localhost:5000/api/trade-license', {
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/trade-license', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(submissionData)

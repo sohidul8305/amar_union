@@ -67,7 +67,7 @@ const Premises = () => {
                     };
 
                     // ২. এক্সপ্রেস ব্যাকএন্ড এপিআই কল (রুট আপডেট করা হয়েছে)
-                    const response = await fetch('http://localhost:5000/api/premises', {
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/premises', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

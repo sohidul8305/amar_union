@@ -15,7 +15,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (user?.email) {
             setLoadingProfile(true);
-            fetch(`http://localhost:5000/api/users/${user.email}`)
+            fetch(`https://amar-union-backend.vercel.app/api/users/${user.email}`)
                 .then(res => {
                     if (!res.ok) throw new Error('Profile not found');
                     return res.json();
@@ -35,7 +35,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (user?.email) {
             setLoadingApps(true);
-            fetch(`http://localhost:5000/api/my-applications/${user.email}`)
+            fetch(`https://amar-union-backend.vercel.app/api/my-applications/${user.email}`)
                 .then(res => res.json())
                 .then(data => {
                     setApplications(data);

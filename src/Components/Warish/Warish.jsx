@@ -31,7 +31,7 @@ const Warish = () => {
                         applicantNidDocName: files.applicantNidDoc?.name || null 
                     };
                     
-                    const response = await fetch('http://localhost:5000/api/warish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(submissionData) });
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/warish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(submissionData) });
                     const data = await response.json();
                     if (data.success) {
                         Swal.fire({ icon: 'success', title: 'আবেদনটি সফলভাবে গৃহীত হয়েছে!', text: `আপনার ওয়ারিশ ট্র্যাকিং আইডি: ${data.warishId}`, confirmButtonColor: '#000F9F' });

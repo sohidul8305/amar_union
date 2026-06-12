@@ -23,8 +23,8 @@ const AdminDashboard = () => {
     setLoading(true);
     try {
       const url = filter === 'all' 
-        ? 'http://localhost:5000/api/admin/applications'
-        : `http://localhost:5000/api/admin/applications?type=${filter}`;
+        ? 'https://amar-union-backend.vercel.app/api/admin/applications'
+        : `https://amar-union-backend.vercel.app/api/admin/applications?type=${filter}`;
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
     setUpdatingId(id);
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/application/${collectionName}/${id}`,
+        `https://amar-union-backend.vercel.app/api/admin/application/${collectionName}/${id}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

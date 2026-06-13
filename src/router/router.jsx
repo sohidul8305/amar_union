@@ -69,22 +69,22 @@ const router = createBrowserRouter([
     ],
   },
   // 🆕 অ্যাডমিন রাউট (লেআউট ছাড়া)
-  {
-    path: "/admin-login",
-    element: <AdminLogin />,
-  },
+{
+  path: "/admin-login",
+  element: <AdminLogin />,
+},
   {
     path: "/admin-dashboard-secret",
     element: <Dashboarrd />,
   },
-  {
-    path: "/admin-dashboard",
-    element: (
-      <AdminProtectedRoute>
-        <AdminDashboard />
-      </AdminProtectedRoute>
-    ),
-  },
+ {
+  path: "/admin-dashboard",
+  element: (
+    <AdminProtectedRoute>
+      <AdminDashboard />
+    </AdminProtectedRoute>
+  ),
+},
 ]);
 
 export { router };

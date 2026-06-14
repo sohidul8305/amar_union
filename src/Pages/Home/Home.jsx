@@ -26,15 +26,16 @@ const Home = () => {
     { _id: '2', title: '২০২৬-২৭ অর্থ বছরের বাজেট ঘোষণা', date: '২০ মে, ২০২৬' }
   ]);
 
-  const [services, setServices] = useState([
+const [services, setServices] = useState([
     { _id: '1', title: 'ট্রেড লাইসেন্স', path: '/service/trade-license', iconName: 'FaFileAlt', iconColor: 'text-blue-600' },
-    { _id: '2', title: 'charitrik', path: '/service/premises-license', iconName: 'FaUserCheck', iconColor: 'text-green-600' },
+    { _id: '2', title: 'চারিত্রিক সনদ', path: '/service/premises-license', iconName: 'FaUserCheck', iconColor: 'text-green-600' },
     { _id: '3', title: 'নাগরিকত্ব সনদ', path: '/service/citizenship-certificate', iconName: 'FaUsers', iconColor: 'text-orange-600' },
     { _id: '4', title: 'জন্ম ও মৃত্যু নিবন্ধন', path: '/service/death-certificate', iconName: 'FaChild', iconColor: 'text-purple-600' },
     { _id: '5', title: 'ওয়ারিশন সনদ', path: '/service/warish-certificate', iconName: 'FaCertificate', iconColor: 'text-teal-600' },
-    { _id: '6', title: 'प्रत्ययनपत्र', path: '/service/successor-certificate', iconName: 'FaPassport', iconColor: 'text-red-600' },
+    { _id: '6', title: 'প্রত্যয়নপত্র', path: '/service/successor-certificate', iconName: 'FaPassport', iconColor: 'text-red-600' },
     { _id: '7', title: 'অবিবাহিত সনদ', path: '/service/power-of-attorney', iconName: 'FaHeart', iconColor: 'text-pink-600' },
     { _id: '8', title: 'প্রতিবন্ধী ভাতা / ভূমিহীন সনদ', path: '/service/landless-certificate', iconName: 'FaHandHoldingHeart', iconColor: 'text-indigo-600' },
+    { _id: '9', title: 'পারিবারিক সনদ', path: '/service/family-certificate', iconName: 'FaHome', iconColor: 'text-emerald-600' },
   ]);
 
   const [importantLinks, setImportantLinks] = useState([

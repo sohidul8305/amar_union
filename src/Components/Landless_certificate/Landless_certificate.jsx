@@ -17,7 +17,7 @@ const Landless_certificate = () => {
                 setLoading(true);
                 Swal.fire({ title: 'প্রসেস করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    const response = await fetch('https://amar-union-backend.vercel.app/api/landless-certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                    const response = await fetch('http://localhost:5000/api/landless-certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
                     const data = await response.json();
                     if (data.success) { Swal.fire({ icon: 'success', title: 'ভূমিহীন সনদের আবেদনটি সফল হয়েছে!', html: `<strong>আবেদন আইডি: ${data.landlessId}</strong>`, confirmButtonColor: '#000F9F' });
                         setFormData({ applicantName: '', fatherHusbandName: '', motherName: '', gender: 'পুরুষ', dateOfBirth: '', nidOrBrn: '', mobileNumber: '', profession: '', yearlyIncome: '', familyMembers: '', village: '', ward: '', postCode: '', currentAddress: '', email: '' });

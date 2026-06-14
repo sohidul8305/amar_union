@@ -16,7 +16,7 @@ const Citizenship_certificate = () => {
         .then((result) => {
             if (result.isConfirmed) {
                 Swal.fire({ title: 'প্রসেসিং হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                fetch('https://amar-union-backend.vercel.app/api/citizenship-certificate', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(formData) })
+                fetch('http://localhost:5000/api/citizenship-certificate', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(formData) })
                 .then(res => res.json()).then(data => {
                     if (data.success) { Swal.fire({ icon: 'success', title: 'আবেদনটি সফলভাবে জমা হয়েছে!', text: `আবেদন আইডি: ${data.citizenshipId}`, confirmButtonColor: '#000F9F' });
                         setFormData({ applicantName: '', fatherName: '', motherName: '', spouseName: '', gender: 'পুরুষ', maritalStatus: 'অবিবাহিত', dob: '', idType: 'NID', idNumber: '', mobile: '', email: '', currentVillage: '', currentWard: '', currentPostCode: '', permanentVillage: '', permanentWard: '', permanentPostCode: '', sameAsCurrent: false });

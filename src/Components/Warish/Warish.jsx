@@ -22,16 +22,20 @@ const Warish = () => {
                 Swal.fire({ title: 'আবেদন জমা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
                     // এখানে email ফিল্ডটি রুট লেভেলে যুক্ত করা হয়েছে যেন ড্যাশবোর্ড কুয়েরি ঠিকঠাক কাজ করে
-                    const submissionData = { 
+                    const submissionData = {
                         deceasedInfo, 
                         applicantInfo, 
                         heirs, 
                         email: applicantInfo.applicantEmail, 
                         deathCertificateDocName: files.deathCertificateDoc?.name || null, 
-                        applicantNidDocName: files.applicantNidDoc?.name || null 
+                        applicantNidDocName: files.applicantNidDoc?.name || null
                     };
-                    
-                    const response = await fetch('https://amar-union-backend.vercel.app/api/warish', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(submissionData) });
+
+                   const response = await fetch('http://localhost:5000/api/warish', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify(submissionData)
+});
                     const data = await response.json();
                     if (data.success) {
                         Swal.fire({ icon: 'success', title: 'আবেদনটি সফলভাবে গৃহীত হয়েছে!', text: `আপনার ওয়ারিশ ট্র্যাকিং আইডি: ${data.warishId}`, confirmButtonColor: '#000F9F' });

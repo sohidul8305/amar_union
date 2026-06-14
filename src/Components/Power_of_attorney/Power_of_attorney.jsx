@@ -18,7 +18,7 @@ const Power_of_attorney = () => {
                 setLoading(true);
                 Swal.fire({ title: 'প্রসেস করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
-                    const response = await fetch('https://amar-union-backend.vercel.app/api/power-of-attorney', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                    const response = await fetch('http://localhost:5000/api/power-of-attorney', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
                     const data = await response.json();
                     if (data.success) { Swal.fire({ icon: 'success', title: 'পাওয়ার অব অ্যাটর্নি আবেদনটি সফল হয়েছে!', html: `<strong>আবেদন আইডি: ${data.poaId}</strong>`, confirmButtonColor: '#000F9F' });
                         setFormData({ deedNumber: '', deedDate: '', registryOffice: '', propertyDetails: '', purpose: 'সম্পত্তি রক্ষণাবেক্ষণ ও বিক্রয়', grantorName: '', grantorNid: '', grantorMobile: '', attorneyName: '', attorneyNid: '', attorneyMobile: '', village: '', ward: '', postCode: '', email: '' });

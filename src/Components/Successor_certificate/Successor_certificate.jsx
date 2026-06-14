@@ -23,7 +23,7 @@ const Successor_certificate = () => {
                 Swal.fire({ title: 'প্রসেস করা হচ্ছে...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 try {
                     const applicationData = { deceasedInfo, successors, attachedFiles: files, email };
-                    const response = await fetch('https://amar-union-backend.vercel.app/api/successor-certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(applicationData) });
+                    const response = await fetch('http://localhost:5000/api/successor-certificate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(applicationData) });
                     const data = await response.json();
                     if (data.success) {
                         Swal.fire({ icon: 'success', title: 'উত্তরাধিকারী সনদের আবেদনটি সফল হয়েছে!', html: `<strong>আবেদন আইডি: ${data.successorId}</strong>`, confirmButtonColor: '#000F9F' });

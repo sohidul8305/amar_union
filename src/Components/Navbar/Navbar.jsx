@@ -49,8 +49,6 @@ const Navbar = () => {
         { name: 'পরিচিতি', id: 'intro' },
         { name: 'এক নজরে ইউনিয়ন', id: 'at-a-glance' },
         { name: 'সাংগঠনিক কাঠামো', id: 'structure' },
-        { name: 'ইতিহাস', id: 'history' },
-        { name: 'ভিশন ও মিশন', id: 'vision-mission' }
       ]
     },
     {
@@ -60,8 +58,6 @@ const Navbar = () => {
         { name: 'বর্তমান চেয়ারম্যান', id: 'current-chairman' },
         { name: 'সাবেক চেয়ারম্যানবৃন্দ', id: 'ex-chairmans' },
         { name: 'বাজেট ও উন্নয়ন পরিকল্পনা', id: 'plan' },
-        { name: 'সংরক্ষিত আসনের মেম্বার', id: 'reserved-member' },
-        { name: 'ওয়ার্ড মেম্বারবৃন্দ', id: 'ward-members' }
       ]
     },
     {
@@ -71,7 +67,6 @@ const Navbar = () => {
         { name: 'সচিব', id: 'secretary' },
         { name: 'হিসাব সহকারী', id: 'accountant' },
         { name: 'অন্যান্য কর্মচারী', id: 'other-staff' },
-        { name: 'গ্রাম পুলিশ', id: 'village-police' }
       ]
     },
     {
@@ -97,7 +92,7 @@ const Navbar = () => {
             { name: 'উত্তরাধিকারী সনদ', id: 'successor-certificate' },
             { name: 'চারিত্রিক সনদ', id: 'character-certificate' },
             { name: 'অবিবাহিত সনদ', id: 'unmarried-certificate' },
-            { name: 'জন্ম ও মৃত্যু নিবন্ধন', id: 'birth-death' },
+            { name: 'জন্ম ও মৃত্যু নিবন্ধন', id: 'death-certificate' },
             { name: 'ভূমিহীন সনদ', id: 'landless-certificate' },
             { name: 'জাতীয়তা সনদপত্র', id: 'nationality' }
           ]
@@ -134,7 +129,7 @@ const Navbar = () => {
       ]
     },
     { name: 'আপডেট', link: '/update' },
-    { name: 'গ্যালারী', link: '/gallery' },
+    { name: 'গ্যালারী', link: '/gellary' },
     { name: 'সনদ যাচাই', link: '/check' },
     { name: 'যোগাযোগ', link: '/contact' }
   ];

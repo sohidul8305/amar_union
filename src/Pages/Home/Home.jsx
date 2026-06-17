@@ -57,7 +57,7 @@ const [services, setServices] = useState([
     { _id: '28', title: 'পাসপোর্ট সংক্রান্ত প্রত্যয়ন', path: '/service/passport-cert', iconName: 'FaFileContract', iconColor: 'text-purple-700' },
     { _id: '29', title: 'অনাপত্তি সনদ', path: '/service/noc', iconName: 'FaFileMedicalAlt', iconColor: 'text-blue-500' },
     { _id: '30', title: 'ভোটার তথ্য যাচাই', path: '/service/voter-verification', iconName: 'FaAddressCard', iconColor: 'text-emerald-700' },
-    { _id: '31', title: 'ভোটার তালিকা বাদ', path: '/service/voter-list-remove', iconName: 'FaMinusCircle', iconColor: 'text-red-600' }
+
   ]);
 
   const [importantLinks, setImportantLinks] = useState([

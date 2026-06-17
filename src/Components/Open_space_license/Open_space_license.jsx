@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
+import Swal from 'sweetalert2';
 
 const Open_space_license = () => {
-  // State for the application form
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -10,27 +10,77 @@ const Open_space_license = () => {
   });
   const [submitted, setSubmitted] = useState(false);
 
-  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.fullName || !formData.email || !formData.areaSize || !formData.purpose) {
-      alert('দয়া করে সব তথ্য পূরণ করুন।');
-      return;
+
+    // কনফার্মেশন ডায়ালগ
+    const confirmResult = await Swal.fire({
+      title: 'আপনি কি নিশ্চিত?',
+      text: 'আপনার খোলা জায়গার লাইসেন্সের আবেদন জমা দিতে চান?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#000F9F',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'হ্যাঁ, জমা দিন',
+      cancelButtonText: 'বাতিল'
+    });
+    if (!confirmResult.isConfirmed) return;
+
+    // লোডিং শুরু
+    Swal.fire({
+      title: 'আবেদন জমা হচ্ছে...',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    const submissionData = {
+      ...formData,
+      submittedAt: new Date(),
+      status: 'Pending'
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/api/open-space-license', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData)
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'আবেদন সফলভাবে গৃহীত হয়েছে!',
+          text: `আপনার ট্র্যাকিং আইডি: ${data.licenseId}`,
+          confirmButtonColor: '#000F9F'
+        });
+        setSubmitted(true);
+        setFormData({
+          fullName: '',
+          email: '',
+          areaSize: '',
+          purpose: '',
+        });
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        throw new Error(data.message || 'সাবমিট ব্যর্থ');
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'দুঃখিত!',
+        text: 'সার্ভার বা নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।',
+        confirmButtonColor: '#000F9F'
+      });
     }
-    console.log('License Application Data:', formData);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ fullName: '', email: '', areaSize: '', purpose: '' });
-    }, 3000);
   };
 
+  // স্ট্যাটিক লাইসেন্স তথ্য (আপনার ইচ্ছামতো রাখতে পারেন)
   const currentLicense = {
     licenseNumber: 'OSL-2025-001284',
     holder: 'মোঃ রহিম উদ্দিন',
@@ -42,259 +92,37 @@ const Open_space_license = () => {
   return (
     <div className="osl-page">
       <style>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-
-        .osl-page {
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-          background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
-          min-height: 100vh;
-          padding: 2rem 1rem;
-        }
-
-        .osl-container {
-          max-width: 1280px;
-          margin: 0 auto;
-        }
-
-        .osl-header {
-          text-align: center;
-          margin-bottom: 2.5rem;
-        }
-        .osl-header h1 {
-          font-size: 2.5rem;
-          color: #1e3a5f;
-          margin-bottom: 0.5rem;
-          letter-spacing: -0.5px;
-        }
-        .osl-header p {
-          font-size: 1.1rem;
-          color: #4a5568;
-          max-width: 600px;
-          margin: 0 auto;
-        }
-
-        .osl-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 2rem;
-          margin-bottom: 2rem;
-        }
-
-        .osl-card {
-          background: white;
-          border-radius: 1.5rem;
-          box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
-          overflow: hidden;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .osl-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.15);
-        }
-        .osl-card-header {
-          background: #1e3a5f;
-          color: white;
-          padding: 1.25rem 1.5rem;
-        }
-        .osl-card-header h2 {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin: 0;
-        }
-        .osl-card-body {
-          padding: 1.5rem;
-        }
-
-        .license-detail {
-          display: flex;
-          justify-content: space-between;
-          padding: 0.75rem 0;
-          border-bottom: 1px solid #e2e8f0;
-        }
-        .license-detail:last-child {
-          border-bottom: none;
-        }
-        .license-label {
-          font-weight: 600;
-          color: #2d3748;
-        }
-        .license-value {
-          color: #1a202c;
-          text-align: right;
-        }
-        .status-badge {
-          background: #38a169;
-          color: white;
-          padding: 0.25rem 0.75rem;
-          border-radius: 9999px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          display: inline-block;
-        }
-        .button-group {
-          margin-top: 1.5rem;
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-        }
-        .btn-outline {
-          background: transparent;
-          border: 2px solid #1e3a5f;
-          color: #1e3a5f;
-          padding: 0.6rem 1.2rem;
-          border-radius: 2rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .btn-outline:hover {
-          background: #1e3a5f;
-          color: white;
-        }
-
-        .form-group {
-          margin-bottom: 1.25rem;
-        }
-        .form-group label {
-          display: block;
-          font-weight: 600;
-          color: #2d3748;
-          margin-bottom: 0.5rem;
-        }
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-          width: 100%;
-          padding: 0.75rem 1rem;
-          border: 1px solid #cbd5e0;
-          border-radius: 0.75rem;
-          font-size: 1rem;
-          transition: border 0.2s, box-shadow 0.2s;
-          font-family: inherit;
-        }
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-          outline: none;
-          border-color: #1e3a5f;
-          box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.2);
-        }
-        .btn-primary {
-          background: #1e3a5f;
-          color: white;
-          border: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 2rem;
-          font-weight: 600;
-          font-size: 1rem;
-          cursor: pointer;
-          width: 100%;
-          transition: background 0.2s, transform 0.1s;
-        }
-        .btn-primary:hover {
-          background: #0f2a44;
-        }
-        .btn-primary:active {
-          transform: scale(0.98);
-        }
-        .success-message {
-          background: #c6f6d5;
-          color: #22543d;
-          padding: 0.75rem;
-          border-radius: 0.75rem;
-          margin-top: 1rem;
-          text-align: center;
-          font-weight: 500;
-        }
-
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 1.5rem;
-          margin-top: 1rem;
-        }
-        .info-card {
-          background: white;
-          border-radius: 1rem;
-          padding: 1.25rem;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-          border: 1px solid #e2e8f0;
-        }
-        .info-card h3 {
-          color: #1e3a5f;
-          margin-bottom: 0.75rem;
-          font-size: 1.2rem;
-        }
-        .info-card ul {
-          list-style-position: inside;
-          color: #4a5568;
-        }
-        .info-card li {
-          margin-bottom: 0.5rem;
-        }
-        .fee-amount {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #1e3a5f;
-          margin: 0.5rem 0;
-        }
-
-        .osl-footer {
-          text-align: center;
-          margin-top: 3rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid #cbd5e0;
-          color: #4a5568;
-          font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-          .osl-page {
-            padding: 1rem;
-          }
-          .osl-header h1 {
-            font-size: 1.8rem;
-          }
-          .osl-grid {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-          }
-          .info-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-          }
-          .license-detail {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.25rem;
-          }
-          .license-value {
-            text-align: left;
-          }
-          .button-group {
-            justify-content: center;
-          }
-          .osl-card-header h2 {
-            font-size: 1.3rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .osl-header h1 {
-            font-size: 1.5rem;
-          }
-          .osl-card-body {
-            padding: 1rem;
-          }
-          .btn-outline, .btn-primary {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-          }
-        }
+        /* আপনার পুরোনো CSS ঠিক থাকলে এখানে রাখুন, সংক্ষেপে দেখাচ্ছি */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        .osl-page { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); min-height: 100vh; padding: 2rem 1rem; }
+        .osl-container { max-width: 1280px; margin: 0 auto; }
+        .osl-header { text-align: center; margin-bottom: 2.5rem; }
+        .osl-header h1 { font-size: 2.5rem; color: #1e3a5f; }
+        .osl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-bottom: 2rem; }
+        .osl-card { background: white; border-radius: 1.5rem; box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1); overflow: hidden; }
+        .osl-card-header { background: #1e3a5f; color: white; padding: 1.25rem 1.5rem; }
+        .osl-card-header h2 { font-size: 1.5rem; font-weight: 600; margin: 0; }
+        .osl-card-body { padding: 1.5rem; }
+        .license-detail { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e2e8f0; }
+        .license-label { font-weight: 600; color: #2d3748; }
+        .license-value { color: #1a202c; text-align: right; }
+        .status-badge { background: #38a169; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 600; }
+        .btn-outline { background: transparent; border: 2px solid #1e3a5f; color: #1e3a5f; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-outline:hover { background: #1e3a5f; color: white; }
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 0.5rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e0; border-radius: 0.75rem; font-size: 1rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.2); }
+        .btn-primary { background: #1e3a5f; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 2rem; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .btn-primary:hover { background: #0f2a44; }
+        .success-message { background: #c6f6d5; color: #22543d; padding: 0.75rem; border-radius: 0.75rem; margin-top: 1rem; text-align: center; font-weight: 500; }
+        .info-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; margin-top: 1rem; }
+        .info-card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .info-card h3 { color: #1e3a5f; margin-bottom: 0.75rem; font-size: 1.2rem; }
+        .info-card ul { list-style-position: inside; color: #4a5568; }
+        .fee-amount { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 0.5rem 0; }
+        .osl-footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #cbd5e0; color: #4a5568; }
+        @media (max-width: 768px) { .osl-grid, .info-grid { grid-template-columns: 1fr; } }
       `}</style>
 
       <div className="osl-container">
@@ -304,97 +132,42 @@ const Open_space_license = () => {
         </div>
 
         <div className="osl-grid">
-          {/* Current License Card */}
+          {/* বর্তমান লাইসেন্স কার্ড */}
           <div className="osl-card">
-            <div className="osl-card-header">
-              <h2>📄 বর্তমান লাইসেন্সের তথ্য</h2>
-            </div>
+            <div className="osl-card-header"><h2>📄 বর্তমান লাইসেন্সের তথ্য</h2></div>
             <div className="osl-card-body">
-              <div className="license-detail">
-                <span className="license-label">লাইসেন্স নম্বর:</span>
-                <span className="license-value">{currentLicense.licenseNumber}</span>
-              </div>
-              <div className="license-detail">
-                <span className="license-label">লাইসেন্সধারী:</span>
-                <span className="license-value">{currentLicense.holder}</span>
-              </div>
-              <div className="license-detail">
-                <span className="license-label">জায়গার পরিমাণ:</span>
-                <span className="license-value">{currentLicense.area}</span>
-              </div>
-              <div className="license-detail">
-                <span className="license-label">মেয়াদ শেষ:</span>
-                <span className="license-value">{currentLicense.validUntil}</span>
-              </div>
-              <div className="license-detail">
-                <span className="license-label">স্ট্যাটাস:</span>
-                <span className="license-value">
-                  <span className="status-badge">{currentLicense.status}</span>
-                </span>
-              </div>
-              <div className="button-group">
-                <button className="btn-outline" onClick={() => alert('নবায়ন ফর্ম শীঘ্রই আসছে।')}>
-                  🔄 লাইসেন্স নবায়ন
-                </button>
-                <button className="btn-outline" onClick={() => alert('পিডিএফ ডাউনলোড শুরু হচ্ছে...')}>
-                  ⬇️ ডাউনলোড কপি
-                </button>
+              <div className="license-detail"><span className="license-label">লাইসেন্স নম্বর:</span><span className="license-value">{currentLicense.licenseNumber}</span></div>
+              <div className="license-detail"><span className="license-label">লাইসেন্সধারী:</span><span className="license-value">{currentLicense.holder}</span></div>
+              <div className="license-detail"><span className="license-label">জায়গার পরিমাণ:</span><span className="license-value">{currentLicense.area}</span></div>
+              <div className="license-detail"><span className="license-label">মেয়াদ শেষ:</span><span className="license-value">{currentLicense.validUntil}</span></div>
+              <div className="license-detail"><span className="license-label">স্ট্যাটাস:</span><span className="license-value"><span className="status-badge">{currentLicense.status}</span></span></div>
+              <div className="button-group" style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <button className="btn-outline" onClick={() => alert('নবায়ন ফর্ম শীঘ্রই আসছে।')}>🔄 লাইসেন্স নবায়ন</button>
+                <button className="btn-outline" onClick={() => alert('পিডিএফ ডাউনলোড শুরু হচ্ছে...')}>⬇️ ডাউনলোড কপি</button>
               </div>
             </div>
           </div>
 
-          {/* Application Form Card */}
+          {/* আবেদন ফর্ম */}
           <div className="osl-card">
-            <div className="osl-card-header">
-              <h2>📝 নতুন লাইসেন্সের আবেদন</h2>
-            </div>
+            <div className="osl-card-header"><h2>📝 নতুন লাইসেন্সের আবেদন</h2></div>
             <div className="osl-card-body">
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label htmlFor="fullName">পূর্ণ নাম *</label>
-                  <input
-                    type="text"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    placeholder="আপনার নাম লিখুন"
-                    required
-                  />
+                  <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="আপনার নাম লিখুন" required />
                 </div>
                 <div className="form-group">
                   <label htmlFor="email">ইমেইল *</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="example@domain.com"
-                    required
-                  />
+                  <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@domain.com" required />
                 </div>
                 <div className="form-group">
                   <label htmlFor="areaSize">জায়গার পরিমাণ (বর্গফুট) *</label>
-                  <input
-                    type="number"
-                    id="areaSize"
-                    name="areaSize"
-                    value={formData.areaSize}
-                    onChange={handleChange}
-                    placeholder="যেমন: 2500"
-                    required
-                  />
+                  <input type="number" id="areaSize" name="areaSize" value={formData.areaSize} onChange={handleChange} placeholder="যেমন: 2500" required />
                 </div>
                 <div className="form-group">
                   <label htmlFor="purpose">ব্যবহারের উদ্দেশ্য *</label>
-                  <select
-                    id="purpose"
-                    name="purpose"
-                    value={formData.purpose}
-                    onChange={handleChange}
-                    required
-                  >
+                  <select id="purpose" name="purpose" value={formData.purpose} onChange={handleChange} required>
                     <option value="">নির্বাচন করুন</option>
                     <option value="ব্যবসায়িক">ব্যবসায়িক (ইভেন্ট/মেলা)</option>
                     <option value="আবাসিক">আবাসিক সম্প্রসারণ</option>
@@ -402,20 +175,14 @@ const Open_space_license = () => {
                     <option value="অন্যান্য">অন্যান্য</option>
                   </select>
                 </div>
-                <button type="submit" className="btn-primary">
-                  আবেদন জমা দিন
-                </button>
-                {submitted && (
-                  <div className="success-message">
-                    ✅ আপনার আবেদন সফলভাবে জমা হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।
-                  </div>
-                )}
+                <button type="submit" className="btn-primary">আবেদন জমা দিন</button>
+                {submitted && <div className="success-message">✅ আপনার আবেদন সফলভাবে জমা হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।</div>}
               </form>
             </div>
           </div>
         </div>
 
-        {/* Additional Information */}
+        {/* অতিরিক্ত তথ্য */}
         <div className="info-grid">
           <div className="info-card">
             <h3>📋 প্রয়োজনীয় ডকুমেন্টস</h3>

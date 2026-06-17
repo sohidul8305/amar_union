@@ -1,7 +1,7 @@
 // src/pages/services/Trade_renewal.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FaFileAlt, FaRupeeSign, FaClock, FaCheckCircle, FaRegListAlt, FaUpload, FaCreditCard, FaEnvelope } from 'react-icons/fa';
+import Swal from 'sweetalert2';
+import { FaFileAlt, FaRupeeSign, FaCheckCircle, FaRegListAlt, FaUpload, FaCreditCard, FaEnvelope } from 'react-icons/fa';
 
 const Trade_renewal = () => {
   const [formData, setFormData] = useState({
@@ -16,30 +16,76 @@ const Trade_renewal = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  // বিদ্যমান ডাটাগুলো আনুন অথবা খালি অ্যারে নিন
-  const existingApps = JSON.parse(localStorage.getItem('myApplications') || '[]');
-  
-  // নতুন আবেদনটি যোগ করুন
-  const newApp = {
-    id: Date.now(), // ইউনিক আইডি
-    type: 'ট্রেড লাইসেন্স নবায়ন',
-    status: 'পেন্ডিং',
-    date: new Date().toISOString(),
-    ...formData
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // ১. কনফার্মেশন ডায়ালগ
+    const confirmResult = await Swal.fire({
+      title: 'আপনি কি নিশ্চিত?',
+      text: 'আপনার ট্রেড লাইসেন্স নবায়নের আবেদন জমা দিতে চান?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#000F9F',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'হ্যাঁ, জমা দিন',
+      cancelButtonText: 'বাতিল'
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
+    // ২. লোডিং শুরু
+    Swal.fire({
+      title: 'আবেদন জমা হচ্ছে...',
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    // ৩. ডেটা প্রস্তুত (email ফিল্ডটি রুট লেভেলে রাখা জরুরি, যাতে ড্যাশবোর্ডে ইউজার শনাক্ত হয়)
+    const submissionData = {
+      ...formData,
+      submittedAt: new Date(),
+      status: 'Pending'
+    };
+
+    try {
+      const response = await fetch('http://localhost:5000/api/trade-renewal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData)
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'আবেদন সফলভাবে গৃহীত হয়েছে!',
+          text: `আপনার ট্রেড নবায়ন ট্র্যাকিং আইডি: ${data.tradeRenewalId || 'জন্য'}`,
+          confirmButtonColor: '#000F9F'
+        });
+        setSubmitted(true);
+        // ফর্ম রিসেট
+        setFormData({
+          tradeLicenseNo: '',
+          ownerName: '',
+          mobile: '',
+          email: '',
+          renewalYear: new Date().getFullYear().toString()
+        });
+        setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        throw new Error(data.message || 'সাবমিট ব্যর্থ');
+      }
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'দুঃখিত!',
+        text: 'সার্ভার বা নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।',
+        confirmButtonColor: '#000F9F'
+      });
+    }
   };
 
-  existingApps.push(newApp);
-  
-  // লোকাল স্টোরেজে সেভ করুন
-  localStorage.setItem('myApplications', JSON.stringify(existingApps));
-  
-  console.log('আবেদন সেভ হয়েছে:', newApp);
-  setSubmitted(true);
-  setTimeout(() => setSubmitted(false), 5000);
-};
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto">
@@ -83,7 +129,7 @@ const handleSubmit = (e) => {
                 <span className="font-semibold">১,৫০০ টাকা</span>
               </div>
               <div className="flex justify-between border-b pb-1">
-<span>{"বড় ব্যবসা (> ২৫ লক্ষ)"}</span>                <span className="font-semibold">৩,০০০ টাকা</span>
+<span>বড় ব্যবসা ( &gt; ২৫ লক্ষ)</span>                <span className="font-semibold">৩,০০০ টাকা</span>
               </div>
             </div>
           </div>
@@ -116,10 +162,10 @@ const handleSubmit = (e) => {
                   <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা *</label>
                   <div className="relative">
                     <span className="absolute left-3 top-2.5 text-gray-400"><FaEnvelope /></span>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@mail.com" className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@mail.com" required className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
                   </div>
                 </div>
                 <div>

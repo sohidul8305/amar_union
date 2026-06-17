@@ -101,8 +101,6 @@ const Navbar = () => {
           title: 'অন্যান্য আবেদন',
           items: [
             { name: 'ক্ষমতা অর্পণের প্রত্যয়ন', id: 'power-of-attorney' },
-            { name: 'মৃত্যু সনদ', id: 'death-certificate' },
-            { name: 'ভূমিহীন সনদ', id: 'landless-certificate' },
             { name: 'পুনঃ বিবাহ না হওয়ার সনদ', id: 'remarriage-not-happened' },
             { name: 'বার্ষিক আয়ের প্রত্যয়ন', id: 'annual-income' },
             { name: 'একই নামের প্রত্যয়ন', id: 'same-name' },

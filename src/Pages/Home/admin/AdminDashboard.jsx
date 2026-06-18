@@ -1,7 +1,10 @@
+// src/pages/AdminDashboard.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { FaCheckCircle } from 'react-icons/fa'; // চেক আইকন
+import CertificateModal from '../../../Components/CertificateModal/CertificateModal'; // নতুন মডাল
 
 const AdminDashboard = () => {
   const [applications, setApplications] = useState([]);
@@ -9,7 +12,10 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [filter, setFilter] = useState('all');
-  const [selectedApp, setSelectedApp] = useState(null); // ড্রপডাউনে সিলেক্ট করা আবেদন
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [certModalOpen, setCertModalOpen] = useState(false);
+  const [selectedAppForCert, setSelectedAppForCert] = useState(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,7 +54,7 @@ const AdminDashboard = () => {
     try {
       await axios.put(`http://localhost:5000/api/admin/application/${collectionName}/${docId}`, { status: newStatus });
       toast.success(`আবেদন ${newStatus === 'Approved' ? 'অনুমোদিত' : 'প্রত্যাখ্যাত'} হয়েছে`);
-      fetchApplications(); // রিফ্রেশ
+      fetchApplications();
     } catch (error) {
       toast.error('স্ট্যাটাস আপডেট ব্যর্থ');
     } finally {
@@ -67,7 +73,6 @@ const AdminDashboard = () => {
     return new Date(date).toLocaleDateString('bn-BD');
   };
 
-  // ড্রপডাউনে আবেদন সিলেক্ট করলে পুরো ডাটা দেখাবে
   const handleSelectApplication = (e) => {
     const appId = e.target.value;
     if (appId === '') {
@@ -78,7 +83,11 @@ const AdminDashboard = () => {
     setSelectedApp(app);
   };
 
-  // বিস্তারিত তথ্য দেখানোর জন্য কম্পোনেন্ট
+  const openCertificateModal = (app) => {
+    setSelectedAppForCert(app);
+    setCertModalOpen(true);
+  };
+
   const renderFullDetails = (app) => {
     if (!app) return null;
     const data = app.fullData;
@@ -88,7 +97,6 @@ const AdminDashboard = () => {
         <pre className="bg-gray-50 p-4 rounded-lg overflow-auto text-sm">
           {JSON.stringify(data, null, 2)}
         </pre>
-        {/* অথবা আপনি চাইলে ফরম্যাটেড ভিউ তৈরি করতে পারেন */}
       </div>
     );
   };
@@ -104,7 +112,7 @@ const AdminDashboard = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* ---------- ড্রপডাউন (সকল আবেদনের তালিকা) ---------- */}
+        {/* ড্রপডাউন */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             যেকোনো আবেদন সিলেক্ট করে বিস্তারিত দেখুন:
@@ -123,11 +131,10 @@ const AdminDashboard = () => {
           </select>
         </div>
 
-        {/* সিলেক্ট করা আবেদনের বিস্তারিত তথ্য */}
         {selectedApp && renderFullDetails(selectedApp)}
 
-        {/* ---------- ফিল্টার বাটন ও টেবিল (আগের মতো) ---------- */}
-        <div className="flex gap-3 mb-6 mt-8">
+        {/* ফিল্টার বাটন */}
+        <div className="flex gap-3 mb-6 mt-8 flex-wrap">
           {['all', 'Pending', 'Approved', 'Rejected'].map((status) => (
             <button
               key={status}
@@ -143,7 +150,7 @@ const AdminDashboard = () => {
           ))}
         </div>
 
-        {/* টেবিল (সব আবেদনের তালিকা) */}
+        {/* টেবিল */}
         {loading ? (
           <div className="text-center py-10">লোড হচ্ছে...</div>
         ) : filteredApps.length === 0 ? (
@@ -160,6 +167,7 @@ const AdminDashboard = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ধরন</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">তারিখ</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">স্ট্যাটাস</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">সনদ</th> {/* নতুন কলাম */}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">অ্যাকশন</th>
                 </tr>
               </thead>
@@ -180,6 +188,19 @@ const AdminDashboard = () => {
                       }`}>
                         {app.status === 'Pending' ? 'বিচারাধীন' : app.status === 'Approved' ? 'অনুমোদিত' : 'প্রত্যাখ্যাত'}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {app.status === 'Approved' ? (
+                        <button
+                          onClick={() => openCertificateModal(app)}
+                          className="text-green-600 hover:text-green-800 text-xl transition"
+                          title="সনদ দেখুন"
+                        >
+                          <FaCheckCircle />
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">—</span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       {app.status === 'Pending' && (
@@ -208,6 +229,14 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* সনদ মডাল */}
+      <CertificateModal
+        isOpen={certModalOpen}
+        onClose={() => setCertModalOpen(false)}
+        collectionName={selectedAppForCert?.collectionName}
+        docId={selectedAppForCert?.id}
+      />
     </div>
   );
 };

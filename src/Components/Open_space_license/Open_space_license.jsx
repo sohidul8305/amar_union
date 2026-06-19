@@ -4,6 +4,13 @@ import Swal from 'sweetalert2';
 const Open_space_license = () => {
   const [formData, setFormData] = useState({
     fullName: '',
+    fatherName: '',        // নতুন (পিতার নাম - ঐচ্ছিক, তবে রাখলাম)
+    village: '',           // নতুন
+    postOffice: '',        // নতুন
+    upazila: '',           // নতুন
+    district: '',          // নতুন
+    nid: '',               // নতুন
+    mobile: '',            // নতুন
     email: '',
     areaSize: '',
     purpose: '',
@@ -18,7 +25,6 @@ const Open_space_license = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // কনফার্মেশন ডায়ালগ
     const confirmResult = await Swal.fire({
       title: 'আপনি কি নিশ্চিত?',
       text: 'আপনার খোলা জায়গার লাইসেন্সের আবেদন জমা দিতে চান?',
@@ -31,7 +37,6 @@ const Open_space_license = () => {
     });
     if (!confirmResult.isConfirmed) return;
 
-    // লোডিং শুরু
     Swal.fire({
       title: 'আবেদন জমা হচ্ছে...',
       allowOutsideClick: false,
@@ -62,6 +67,13 @@ const Open_space_license = () => {
         setSubmitted(true);
         setFormData({
           fullName: '',
+          fatherName: '',
+          village: '',
+          postOffice: '',
+          upazila: '',
+          district: '',
+          nid: '',
+          mobile: '',
           email: '',
           areaSize: '',
           purpose: '',
@@ -92,7 +104,6 @@ const Open_space_license = () => {
   return (
     <div className="osl-page">
       <style>{`
-        /* আপনার পুরোনো CSS ঠিক থাকলে এখানে রাখুন, সংক্ষেপে দেখাচ্ছি */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         .osl-page { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%); min-height: 100vh; padding: 2rem 1rem; }
         .osl-container { max-width: 1280px; margin: 0 auto; }
@@ -148,19 +159,52 @@ const Open_space_license = () => {
             </div>
           </div>
 
-          {/* আবেদন ফর্ম */}
+          {/* আবেদন ফর্ম (নতুন ফিল্ডসহ) */}
           <div className="osl-card">
             <div className="osl-card-header"><h2>📝 নতুন লাইসেন্সের আবেদন</h2></div>
             <div className="osl-card-body">
               <form onSubmit={handleSubmit}>
+                {/* ——— ব্যক্তিগত তথ্য ——— */}
                 <div className="form-group">
                   <label htmlFor="fullName">পূর্ণ নাম *</label>
                   <input type="text" id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="আপনার নাম লিখুন" required />
                 </div>
                 <div className="form-group">
+                  <label htmlFor="fatherName">পিতার নাম</label>
+                  <input type="text" id="fatherName" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="পিতার নাম" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="nid">জাতীয় পরিচয়পত্র (NID) *</label>
+                  <input type="number" id="nid" name="nid" value={formData.nid} onChange={handleChange} placeholder="এনআইডি নম্বর" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="mobile">মোবাইল নম্বর *</label>
+                  <input type="tel" id="mobile" name="mobile" value={formData.mobile} onChange={handleChange} placeholder="01XXXXXXXXX" required />
+                </div>
+                <div className="form-group">
                   <label htmlFor="email">ইমেইল *</label>
                   <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@domain.com" required />
                 </div>
+
+                {/* ——— ঠিকানা ——— */}
+                <div className="form-group">
+                  <label htmlFor="village">গ্রাম/মহল্লা *</label>
+                  <input type="text" id="village" name="village" value={formData.village} onChange={handleChange} placeholder="গ্রাম বা মহল্লার নাম" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="postOffice">ডাকঘর *</label>
+                  <input type="text" id="postOffice" name="postOffice" value={formData.postOffice} onChange={handleChange} placeholder="ডাকঘরের নাম" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="upazila">উপজেলা *</label>
+                  <input type="text" id="upazila" name="upazila" value={formData.upazila} onChange={handleChange} placeholder="উপজেলার নাম" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="district">জেলা *</label>
+                  <input type="text" id="district" name="district" value={formData.district} onChange={handleChange} placeholder="জেলার নাম" required />
+                </div>
+
+                {/* ——— লাইসেন্স সংক্রান্ত ——— */}
                 <div className="form-group">
                   <label htmlFor="areaSize">জায়গার পরিমাণ (বর্গফুট) *</label>
                   <input type="number" id="areaSize" name="areaSize" value={formData.areaSize} onChange={handleChange} placeholder="যেমন: 2500" required />
@@ -175,6 +219,7 @@ const Open_space_license = () => {
                     <option value="অন্যান্য">অন্যান্য</option>
                   </select>
                 </div>
+
                 <button type="submit" className="btn-primary">আবেদন জমা দিন</button>
                 {submitted && <div className="success-message">✅ আপনার আবেদন সফলভাবে জমা হয়েছে! আমরা শীঘ্রই যোগাযোগ করব।</div>}
               </form>
@@ -182,7 +227,7 @@ const Open_space_license = () => {
           </div>
         </div>
 
-        {/* অতিরিক্ত তথ্য */}
+        {/* অতিরিক্ত তথ্য (অপরিবর্তিত) */}
         <div className="info-grid">
           <div className="info-card">
             <h3>📋 প্রয়োজনীয় ডকুমেন্টস</h3>

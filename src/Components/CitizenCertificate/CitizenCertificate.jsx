@@ -46,13 +46,21 @@ const CertificateModal = ({ isOpen, onClose, application }) => {
   const unionEmail = 'feromito@gmail.com';
   const unionMobile = '০১৩১৮৩৭৭৯৩৩';
 
-  // আবেদনকারীর তথ্য (আপনার ডাটা স্ট্রাকচার অনুযায়ী ম্যাপ করুন)
-  const applicantName = application.userName || 'নাম নেই';
-  const fatherName = application.fullData?.fatherName || application.fullData?.headInfo?.fatherHusbandName || 'N/A';
-  const motherName = application.fullData?.motherName || application.fullData?.headInfo?.motherName || 'N/A';
-  const village = application.fullData?.village || application.fullData?.headInfo?.village || 'N/A';
-  const ward = application.fullData?.ward || application.fullData?.headInfo?.ward || 'N/A';
-  const postCode = application.fullData?.postCode || application.fullData?.headInfo?.postCode || 'N/A';
+  // আবেদনকারীর তথ্য – সকল ফিল্ড নির্বাচন (fullData অথবা সরাসরি)
+  const fullData = application.fullData || application;
+  const applicantName = application.userName || fullData.applicantName || fullData.headName || fullData.ownerName || 'নাম নেই';
+  const fatherName = fullData.fatherName || fullData.fatherHusbandName || fullData.applicantFatherName || 'N/A';
+  const motherName = fullData.motherName || fullData.headInfo?.motherName || 'N/A';
+  const village = fullData.village || fullData.currentVillage || fullData.applicantVillage || 'N/A';
+  const ward = fullData.ward || fullData.currentWard || fullData.applicantWard || 'N/A';
+  const postCode = fullData.postCode || fullData.currentPostCode || fullData.applicantPostCode || 'N/A';
+  const postOffice = fullData.postOffice || fullData.currentPostOffice || fullData.applicantPostOffice || fullData.postOffice || 'N/A';
+  const upazila = fullData.upazila || fullData.currentUpazila || fullData.applicantUpazila || 'N/A';
+  const district = fullData.district || fullData.currentDistrict || fullData.applicantDistrict || 'N/A';
+  const nid = fullData.nid || fullData.applicantNid || fullData.idNumber || 'N/A';
+  const mobile = fullData.mobile || fullData.applicantMobile || 'N/A';
+  const email = fullData.email || fullData.applicantEmail || 'N/A';
+  const issueDate = fullData.issueDate || application.issueDate || new Date().toISOString().split('T')[0];
 
   const qrValue = `https://itvillage.gov.bd/verify?certificate=${certificateNo}`;
 
@@ -82,7 +90,7 @@ const CertificateModal = ({ isOpen, onClose, application }) => {
             <div className="flex justify-between items-start mt-6">
               <div>
                 <p><strong>সনদ নং:</strong> {certificateNo}</p>
-                <p><strong>ইস্যুর তারিখ:</strong> {new Date().toLocaleDateString('bn-BD')}</p>
+                <p><strong>ইস্যুর তারিখ:</strong> {new Date(issueDate).toLocaleDateString('bn-BD')}</p>
               </div>
               <div className="border p-2 bg-gray-50 text-center">
                 <QRCodeSVG value={qrValue} size={80} />
@@ -90,7 +98,7 @@ const CertificateModal = ({ isOpen, onClose, application }) => {
               </div>
             </div>
 
-            {/* আবেদনকারীর তথ্য */}
+            {/* আবেদনকারীর সকল তথ্য */}
             <div className="mt-8">
               <h3 className="font-bold text-lg border-b inline-block">আবেদনকারীর বিবরণ</h3>
               <table className="w-full mt-4">
@@ -99,8 +107,14 @@ const CertificateModal = ({ isOpen, onClose, application }) => {
                   <tr><td><strong>পিতার নাম</strong></td><td>: {fatherName}</td></tr>
                   <tr><td><strong>মাতার নাম</strong></td><td>: {motherName}</td></tr>
                   <tr><td><strong>গ্রাম/মহল্লা</strong></td><td>: {village}</td></tr>
+                  <tr><td><strong>ডাকঘর</strong></td><td>: {postOffice}</td></tr>
+                  <tr><td><strong>উপজেলা</strong></td><td>: {upazila}</td></tr>
+                  <tr><td><strong>জেলা</strong></td><td>: {district}</td></tr>
                   <tr><td><strong>ওয়ার্ড নং</strong></td><td>: {ward}</td></tr>
                   <tr><td><strong>পোস্ট কোড</strong></td><td>: {postCode}</td></tr>
+                  <tr><td><strong>জাতীয় পরিচয়পত্র (NID)</strong></td><td>: {nid}</td></tr>
+                  <tr><td><strong>মোবাইল নম্বর</strong></td><td>: {mobile}</td></tr>
+                  <tr><td><strong>ইমেইল ঠিকানা</strong></td><td>: {email}</td></tr>
                 </tbody>
               </table>
             </div>

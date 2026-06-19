@@ -8,10 +8,17 @@ const Remarriage = () => {
     motherName: '',
     husbandName: '',
     dateOfBirth: '',
+    // নতুন ফিল্ডসমূহ
+    village: '',
+    postOffice: '',
+    upazila: '',
+    district: '',
+    mobile: '',
     email: '',
     nid: '',
     address: '',
     maritalStatus: '',
+    issueDate: '',
     declaration: false,
   });
   const [submitted, setSubmitted] = useState(false);
@@ -30,17 +37,13 @@ const Remarriage = () => {
     e.preventDefault();
 
     // ফিল্ড ভ্যালিডেশন
-    if (
-      !formData.fullName ||
-      !formData.fatherName ||
-      !formData.motherName ||
-      !formData.dateOfBirth ||
-      !formData.email ||
-      !formData.nid ||
-      !formData.address ||
-      !formData.maritalStatus ||
-      !formData.declaration
-    ) {
+    const required = [
+      'fullName', 'fatherName', 'motherName', 'dateOfBirth',
+      'village', 'postOffice', 'upazila', 'district', 'mobile', 'email', 'nid',
+      'address', 'maritalStatus', 'issueDate', 'declaration'
+    ];
+    const missing = required.filter(f => !formData[f]);
+    if (missing.length > 0) {
       Swal.fire({
         icon: 'warning',
         title: 'তথ্য অসম্পূর্ণ!',
@@ -93,7 +96,6 @@ const Remarriage = () => {
         });
         setSubmitted(true);
         setCertificateGenerated(true);
-        // ফর্ম রিসেট করবেন না, যাতে সনদ প্রিভিউ দেখাতে পারে
         setTimeout(() => setSubmitted(false), 5000);
       } else {
         throw new Error(data.message || 'সাবমিট ব্যর্থ');
@@ -140,29 +142,50 @@ const Remarriage = () => {
         .form-group label { display: block; font-weight: 600; color: #2d3748; margin-bottom: 0.4rem; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem 1rem; border: 1px solid #cbd5e0; border-radius: 0.75rem; font-size: 1rem; transition: all 0.2s; font-family: inherit; }
         .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #1e3a5f; box-shadow: 0 0 0 3px rgba(30,58,95,0.2); }
-        .checkbox-group { display: flex; align-items: center; gap: 0.75rem; margin: 1rem 0; }
-        .checkbox-group input { width: auto; transform: scale(1.2); }
+        .checkbox-group { display: flex; align-items: flex-start; gap: 0.75rem; margin: 1rem 0; }
+        .checkbox-group input { margin-top: 0.2rem; transform: scale(1.2); flex-shrink: 0; }
+        .checkbox-group label { font-weight: normal; margin-bottom: 0; }
         .btn-primary { background: #1e3a5f; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 2rem; font-weight: 600; font-size: 1rem; cursor: pointer; width: 100%; transition: background 0.2s; }
         .btn-primary:hover { background: #0f2a44; }
         .certificate-preview { background: #fffef7; border: 2px dashed #6b9bc0; border-radius: 1rem; padding: 1.5rem; margin-top: 1rem; text-align: center; }
         .certificate-preview h3 { color: #1e3a5f; margin-bottom: 0.5rem; }
         .certificate-details { text-align: left; margin: 1rem 0; border-top: 1px solid #eee; padding-top: 1rem; }
-        .certificate-line { margin: 0.5rem 0; font-size: 0.95rem; }
-        .certificate-label { font-weight: 700; display: inline-block; width: 150px; }
+        .certificate-line { margin: 0.5rem 0; font-size: 0.95rem; display: flex; flex-wrap: wrap; }
+        .certificate-label { font-weight: 700; min-width: 150px; }
         .button-group { display: flex; gap: 1rem; justify-content: center; margin-top: 1.2rem; flex-wrap: wrap; }
-        .btn-outline { background: transparent; border: 2px solid #1e3a5f; color: #1e3a5f; padding: 0.5rem 1.2rem; border-radius: 2rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-outline { background: transparent; border: 2px solid #1e3a5f; color: #1e3a5f; padding: 0.5rem 1.2rem; border-radius: 2rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
         .btn-outline:hover { background: #1e3a5f; color: white; }
         .success-message { background: #d1ecf1; color: #0c5460; padding: 0.75rem; border-radius: 0.75rem; margin-top: 1rem; text-align: center; font-weight: 500; }
         .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1rem; }
         .info-card { background: white; border-radius: 1rem; padding: 1.25rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         .info-card h3 { color: #1e3a5f; margin-bottom: 0.75rem; font-size: 1.2rem; }
-        .info-card ul { list-style-position: inside; color: #4a5568; }
+        .info-card ul { list-style-position: inside; color: #4a5568; padding-left: 0.5rem; }
         .info-card li { margin-bottom: 0.5rem; }
         .fee-amount { font-size: 1.5rem; font-weight: 700; color: #1e3a5f; margin: 0.5rem 0; }
         .rem-footer { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #cbd5e0; color: #4a5568; font-size: 0.9rem; }
-        @media (max-width: 768px) { .rem-page { padding: 1rem; } .rem-header h1 { font-size: 1.8rem; } .rem-grid { grid-template-columns: 1fr; gap: 1.5rem; } .info-grid { grid-template-columns: 1fr; gap: 1rem; } .certificate-label { width: 100%; display: block; margin-bottom: 0.2rem; } }
-        @media (max-width: 480px) { .rem-header h1 { font-size: 1.5rem; } .rem-card-body { padding: 1rem; } .btn-primary, .btn-outline { padding: 0.5rem 1rem; font-size: 0.9rem; } }
-        @media print { .rem-page { background: white; padding: 0; } .rem-header, .form-group, .btn-primary, .button-group, .info-grid, .rem-footer, .rem-card-header { display: none; } .rem-grid { grid-template-columns: 1fr; gap: 0; } .certificate-preview { border: none; box-shadow: none; padding: 0; } .rem-card { box-shadow: none; } }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 768px) { 
+          .rem-page { padding: 1rem; } 
+          .rem-header h1 { font-size: 1.8rem; } 
+          .rem-grid { grid-template-columns: 1fr; gap: 1.5rem; } 
+          .info-grid { grid-template-columns: 1fr; gap: 1rem; } 
+          .certificate-label { min-width: 120px; } 
+          .form-row { grid-template-columns: 1fr; gap: 0.75rem; }
+        }
+        @media (max-width: 480px) { 
+          .rem-header h1 { font-size: 1.5rem; } 
+          .rem-card-body { padding: 1rem; } 
+          .btn-primary, .btn-outline { padding: 0.5rem 1rem; font-size: 0.9rem; } 
+          .certificate-label { min-width: 100px; font-size: 0.85rem; }
+        }
+        @media print { 
+          .rem-page { background: white; padding: 0; } 
+          .rem-header, .form-group, .btn-primary, .button-group, .info-grid, .rem-footer, .rem-card-header { display: none; } 
+          .rem-grid { grid-template-columns: 1fr; gap: 0; } 
+          .certificate-preview { border: none; box-shadow: none; padding: 0; } 
+          .rem-card { box-shadow: none; } 
+          .certificate-details { margin-top: 0; }
+        }
       `}</style>
 
       <div className="rem-container">
@@ -179,52 +202,100 @@ const Remarriage = () => {
             </div>
             <div className="rem-card-body">
               <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                  <label>পূর্ণ নাম *</label>
-                  <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="আপনার নাম লিখুন" required />
+                {/* নাম, পিতা, মাতা */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>পূর্ণ নাম *</label>
+                    <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="আপনার নাম" required />
+                  </div>
+                  <div className="form-group">
+                    <label>পিতার নাম *</label>
+                    <input type="text" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="পিতার নাম" required />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>পিতার নাম *</label>
-                  <input type="text" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="পিতার নাম" required />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>মাতার নাম *</label>
+                    <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="মাতার নাম" required />
+                  </div>
+                  <div className="form-group">
+                    <label>প্রাক্তন স্বামীর নাম (যদি প্রযোজ্য)</label>
+                    <input type="text" name="husbandName" value={formData.husbandName} onChange={handleChange} placeholder="স্বামীর নাম" />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>মাতার নাম *</label>
-                  <input type="text" name="motherName" value={formData.motherName} onChange={handleChange} placeholder="মাতার নাম" required />
+
+                {/* জন্ম তারিখ, এনআইডি, মোবাইল, ইমেইল */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>জন্ম তারিখ *</label>
+                    <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
+                  </div>
+                  <div className="form-group">
+                    <label>এনআইডি নম্বর *</label>
+                    <input type="text" name="nid" value={formData.nid} onChange={handleChange} placeholder="জাতীয় পরিচয়পত্র" required />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>প্রাক্তন স্বামীর নাম (যদি প্রযোজ্য)</label>
-                  <input type="text" name="husbandName" value={formData.husbandName} onChange={handleChange} placeholder="স্বামীর নাম" />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>মোবাইল নম্বর *</label>
+                    <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} placeholder="01XXXXXXXXX" required />
+                  </div>
+                  <div className="form-group">
+                    <label>ইমেইল ঠিকানা *</label>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="আপনার ইমেইল" required />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>জন্ম তারিখ *</label>
-                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} required />
+
+                {/* ঠিকানা: গ্রাম, ডাকঘর, উপজেলা, জেলা */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>গ্রাম/মহল্লা *</label>
+                    <input type="text" name="village" value={formData.village} onChange={handleChange} placeholder="গ্রাম/মহল্লা" required />
+                  </div>
+                  <div className="form-group">
+                    <label>ডাকঘর *</label>
+                    <input type="text" name="postOffice" value={formData.postOffice} onChange={handleChange} placeholder="ডাকঘর" required />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>ইমেইল ঠিকানা *</label>
-                  <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="আপনার ইমেইল" required />
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>উপজেলা *</label>
+                    <input type="text" name="upazila" value={formData.upazila} onChange={handleChange} placeholder="উপজেলা" required />
+                  </div>
+                  <div className="form-group">
+                    <label>জেলা *</label>
+                    <input type="text" name="district" value={formData.district} onChange={handleChange} placeholder="জেলা" required />
+                  </div>
                 </div>
+
                 <div className="form-group">
-                  <label>এনআইডি নম্বর *</label>
-                  <input type="text" name="nid" value={formData.nid} onChange={handleChange} placeholder="জাতীয় পরিচয়পত্র নং" required />
+                  <label>বিস্তারিত ঠিকানা (বাড়ি/রাস্তা) *</label>
+                  <textarea name="address" rows="2" value={formData.address} onChange={handleChange} placeholder="বাড়ি নম্বর, রাস্তা, প্রয়োজনীয় বিবরণ" required />
                 </div>
-                <div className="form-group">
-                  <label>ঠিকানা *</label>
-                  <textarea name="address" rows="3" value={formData.address} onChange={handleChange} placeholder="স্থায়ী ঠিকানা" required />
+
+                {/* বৈবাহিক অবস্থা ও ইস্যুর তারিখ */}
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>বর্তমান বৈবাহিক অবস্থা *</label>
+                    <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required>
+                      <option value="">নির্বাচন করুন</option>
+                      <option value="বিধবা">বিধবা</option>
+                      <option value="তালাকপ্রাপ্তা">তালাকপ্রাপ্তা</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>ইস্যুর তারিখ *</label>
+                    <input type="date" name="issueDate" value={formData.issueDate} onChange={handleChange} required />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>বর্তমান বৈবাহিক অবস্থা *</label>
-                  <select name="maritalStatus" value={formData.maritalStatus} onChange={handleChange} required>
-                    <option value="">নির্বাচন করুন</option>
-                    <option value="বিধবা">বিধবা</option>
-                    <option value="তালাকপ্রাপ্তা">তালাকপ্রাপ্তা</option>
-                  </select>
-                </div>
+
                 <div className="checkbox-group">
                   <input type="checkbox" name="declaration" checked={formData.declaration} onChange={handleChange} required />
-                  <label style={{ marginBottom: 0, fontWeight: 'normal' }}>
+                  <label>
                     আমি ঘোষণা করছি যে, আমার স্বামী/প্রাক্তন স্বামী মৃত্যুবরণ করেছেন অথবা আমাদের মধ্যে তালাক হয়েছে এবং আমি এখনও পুনরায় বিবাহ করিনি। উপরোক্ত তথ্যগুলো সম্পূর্ণ সত্য।
                   </label>
                 </div>
+
                 <button type="submit" className="btn-primary">সনদের আবেদন জমা দিন</button>
                 {submitted && (
                   <div className="success-message">
@@ -252,12 +323,17 @@ const Remarriage = () => {
                     <div className="certificate-line"><span className="certificate-label">মাতা:</span> {formData.motherName}</div>
                     {formData.husbandName && <div className="certificate-line"><span className="certificate-label">প্রাক্তন স্বামী:</span> {formData.husbandName}</div>}
                     <div className="certificate-line"><span className="certificate-label">জন্ম তারিখ:</span> {formData.dateOfBirth}</div>
-                    <div className="certificate-line"><span className="certificate-label">ইমেইল:</span> {formData.email}</div>
                     <div className="certificate-line"><span className="certificate-label">এনআইডি:</span> {formData.nid}</div>
+                    <div className="certificate-line"><span className="certificate-label">মোবাইল:</span> {formData.mobile}</div>
+                    <div className="certificate-line"><span className="certificate-label">ইমেইল:</span> {formData.email}</div>
+                    <div className="certificate-line"><span className="certificate-label">গ্রাম/মহল্লা:</span> {formData.village}</div>
+                    <div className="certificate-line"><span className="certificate-label">ডাকঘর:</span> {formData.postOffice}</div>
+                    <div className="certificate-line"><span className="certificate-label">উপজেলা:</span> {formData.upazila}</div>
+                    <div className="certificate-line"><span className="certificate-label">জেলা:</span> {formData.district}</div>
                     <div className="certificate-line"><span className="certificate-label">ঠিকানা:</span> {formData.address}</div>
                     <div className="certificate-line"><span className="certificate-label">বৈবাহিক অবস্থা:</span> {formData.maritalStatus}</div>
                     <div className="certificate-line"><span className="certificate-label">ঘোষণা:</span> আমি পুনরায় বিবাহ করিনি ও করব না (যতদিন এই সনদ বৈধ)।</div>
-                    <div className="certificate-line"><span className="certificate-label">ইস্যু তারিখ:</span> {new Date().toLocaleDateString('bn-BD')}</div>
+                    <div className="certificate-line"><span className="certificate-label">ইস্যু তারিখ:</span> {formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD') : new Date().toLocaleDateString('bn-BD')}</div>
                   </div>
                   <div className="button-group">
                     <button className="btn-outline" onClick={handleDownload}>ডাউনলোড PDF</button>

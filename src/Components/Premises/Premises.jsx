@@ -12,10 +12,14 @@ const Premises = () => {
         establishmentType: 'বাণিজ্যিক দোকান / শোরুম', 
         spaceArea: '',
         village: '',
+        postOffice: '',          // নতুন
+        upazila: '',            // নতুন
+        district: '',           // নতুন
         ward: '',
         holdingNo: '',
         postCode: '',
         tradeLicenseNo: '',
+        issueDate: '',          // নতুন
         rentDeed: null,
         nidCopy: null,
         fireSafetyDoc: null
@@ -34,7 +38,6 @@ const Premises = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         
-        // ১. কনফার্মেশন সুইট অ্যালার্ট (Sure Pop-up)
         Swal.fire({
             title: 'আপনি কি নিশ্চিত?',
             text: "প্রাঙ্গণ লাইসেন্সের জন্য আপনার দেওয়া তথ্যগুলো সঠিক আছে তো?",
@@ -46,8 +49,6 @@ const Premises = () => {
             cancelButtonText: 'বাতিল'
         }).then(async (result) => {
             if (result.isConfirmed) {
-                
-                // ব্যাকএন্ডে ডেটা পাঠানোর সময় লোডিং অ্যানিমেশন শো করা
                 Swal.fire({
                     title: 'আবেদন প্রসেস হচ্ছে...',
                     text: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।',
@@ -58,7 +59,6 @@ const Premises = () => {
                 });
 
                 try {
-                    // ফাইলগুলোকে ডেটাবেজে নাম আকারে বা ট্র্যাকিং অবজেক্ট আকারে পাঠানোর প্রস্তুতি
                     const submissionData = {
                         ...formData,
                         rentDeed: formData.rentDeed ? formData.rentDeed.name : null,
@@ -66,7 +66,6 @@ const Premises = () => {
                         fireSafetyDoc: formData.fireSafetyDoc ? formData.fireSafetyDoc.name : null,
                     };
 
-                    // ২. এক্সপ্রেস ব্যাকএন্ড এপিআই কল (রুট আপডেট করা হয়েছে)
                     const response = await fetch('http://localhost:5000/api/premises', {
                         method: 'POST',
                         headers: {
@@ -78,7 +77,6 @@ const Premises = () => {
                     const data = await response.json();
 
                     if (data.success) {
-                        // ৩. ডেটাবেজে সেভ সফল হলে সাকসেস মেসেজ ও আইডি প্রদর্শন
                         Swal.fire({
                             icon: 'success',
                             title: 'প্রিমিসেস লাইসেন্স আবেদন সফল!',
@@ -87,7 +85,6 @@ const Premises = () => {
                             confirmButtonColor: '#000F9F'
                         });
 
-                        // ফর্ম রিসেট করা
                         setFormData({
                             applicantName: '',
                             fatherHusbandName: '',
@@ -98,23 +95,25 @@ const Premises = () => {
                             establishmentType: 'বাণিজ্যিক দোকান / শোরুম',
                             spaceArea: '',
                             village: '',
+                            postOffice: '',
+                            upazila: '',
+                            district: '',
                             ward: '',
                             holdingNo: '',
                             postCode: '',
                             tradeLicenseNo: '',
+                            issueDate: '',
                             rentDeed: null,
                             nidCopy: null,
                             fireSafetyDoc: null
                         });
                         
-                        // চেকবক্স আনচেক করার জন্য
                         document.getElementById('agree').checked = false;
                     } else {
                         throw new Error('Submission Failed');
                     }
 
                 } catch (error) {
-                    // নেটওয়ার্ক বা সার্ভার এরর হলে অ্যালার্ট
                     Swal.fire({
                         icon: 'error',
                         title: 'দুঃখিত!',
@@ -131,7 +130,6 @@ const Premises = () => {
         <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
             <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
                 
-                {/* ফর্ম হেডার */}
                 <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
                     <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৯ (ক)</span>
                     <h2 className="text-2xl md:text-3xl font-extrabold">প্রিমিসেস (প্রাঙ্গণ) লাইসেন্স আবেদন</h2>
@@ -162,10 +160,14 @@ const Premises = () => {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর <span className="text-red-500">*</span></label>
                                 <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="01XXXXXXXXX" />
                             </div>
-                            {/* ইমেইল ফিল্ডটি formData-তে আছে কিন্তু ফর্মে ইনপুট ছিল না, তাই এটি যুক্ত করা হলো ড্যাশবোর্ড ট্র্যাকিং সুবিধার জন্য */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা <span className="text-red-500">*</span></label>
                                 <input required type="email" name="email" value={formData.email} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" placeholder="example@mail.com" />
+                            </div>
+                            {/* নতুন: ইস্যুর তারিখ */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইস্যুর তারিখ (দিন/মাস/বছর)</label>
+                                <input type="text" name="issueDate" value={formData.issueDate} onChange={handleChange} placeholder="যেমন: ১৯/৬/২০২৬" className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" />
                             </div>
                         </div>
                     </div>
@@ -200,15 +202,27 @@ const Premises = () => {
                         </div>
                     </div>
 
-                    {/* সেকশন ৩: প্রাঙ্গণের সঠিক ঠিকানা */}
+                    {/* সেকশন ৩: প্রাঙ্গণের সঠিক ঠিকানা (নতুন ফিল্ডসহ) */}
                     <div className="space-y-4">
                         <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
                             <span>📍</span> প্রাঙ্গণের সঠিক অবস্থান / ঠিকানা
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা <span className="text-red-500">*</span></label>
                                 <input required type="text" name="village" value={formData.village} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ডাকঘর</label>
+                                <input type="text" name="postOffice" value={formData.postOffice} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">উপজেলা</label>
+                                <input type="text" name="upazila" value={formData.upazila} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জেলা</label>
+                                <input type="text" name="district" value={formData.district} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>

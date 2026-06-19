@@ -1,205 +1,292 @@
-// src/pages/services/Trade_renewal.jsx
 import React, { useState } from 'react';
 import Swal from 'sweetalert2';
-import { FaFileAlt, FaRupeeSign, FaCheckCircle, FaRegListAlt, FaUpload, FaCreditCard, FaEnvelope } from 'react-icons/fa';
 
-const Trade_renewal = () => {
-  const [formData, setFormData] = useState({
-    tradeLicenseNo: '',
-    ownerName: '',
-    mobile: '',
-    email: '',
-    renewalYear: new Date().getFullYear().toString()
-  });
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // ১. কনফার্মেশন ডায়ালগ
-    const confirmResult = await Swal.fire({
-      title: 'আপনি কি নিশ্চিত?',
-      text: 'আপনার ট্রেড লাইসেন্স নবায়নের আবেদন জমা দিতে চান?',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#000F9F',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'হ্যাঁ, জমা দিন',
-      cancelButtonText: 'বাতিল'
+const Premises = () => {
+    const [formData, setFormData] = useState({
+        // আবেদনকারীর ব্যক্তিগত তথ্য
+        applicantName: '',
+        fatherHusbandName: '',
+        nid: '',
+        mobile: '',
+        email: '',
+        // নতুন ফিল্ড: ইস্যুর তারিখ
+        issueDate: '',
+        // প্রতিষ্ঠানের তথ্য
+        establishmentName: '',
+        establishmentType: 'বাণিজ্যিক দোকান / শোরুম',
+        spaceArea: '',
+        // ঠিকানা
+        village: '',
+        postOffice: '',      // নতুন: ডাকঘর
+        upazila: '',         // নতুন: উপজেলা
+        district: '',        // নতুন: জেলা
+        ward: '',
+        holdingNo: '',
+        postCode: '',
+        tradeLicenseNo: '',
+        // ফাইল
+        rentDeed: null,
+        nidCopy: null,
+        fireSafetyDoc: null
     });
 
-    if (!confirmResult.isConfirmed) return;
-
-    // ২. লোডিং শুরু
-    Swal.fire({
-      title: 'আবেদন জমা হচ্ছে...',
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading()
-    });
-
-    // ৩. ডেটা প্রস্তুত (email ফিল্ডটি রুট লেভেলে রাখা জরুরি, যাতে ড্যাশবোর্ডে ইউজার শনাক্ত হয়)
-    const submissionData = {
-      ...formData,
-      submittedAt: new Date(),
-      status: 'Pending'
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
     };
 
-    try {
-      const response = await fetch('http://localhost:5000/api/trade-renewal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submissionData)
-      });
-      const data = await response.json();
+    const handleFileChange = (e) => {
+        const { name, files } = e.target;
+        setFormData({ ...formData, [name]: files[0] });
+    };
 
-      if (data.success) {
+    const handleSubmit = (e) => {
+        e.preventDefault();
+
         Swal.fire({
-          icon: 'success',
-          title: 'আবেদন সফলভাবে গৃহীত হয়েছে!',
-          text: `আপনার ট্রেড নবায়ন ট্র্যাকিং আইডি: ${data.tradeRenewalId || 'জন্য'}`,
-          confirmButtonColor: '#000F9F'
+            title: 'আপনি কি নিশ্চিত?',
+            text: "প্রাঙ্গণ লাইসেন্সের জন্য আপনার দেওয়া তথ্যগুলো সঠিক আছে তো?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#000F9F',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'হ্যাঁ, সাবমিট করুন!',
+            cancelButtonText: 'বাতিল'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'আবেদন প্রসেস হচ্ছে...',
+                    text: 'অনুগ্রহ করে কিছুক্ষণ অপেক্ষা করুন।',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                try {
+                    const submissionData = {
+                        ...formData,
+                        rentDeed: formData.rentDeed ? formData.rentDeed.name : null,
+                        nidCopy: formData.nidCopy ? formData.nidCopy.name : null,
+                        fireSafetyDoc: formData.fireSafetyDoc ? formData.fireSafetyDoc.name : null,
+                    };
+
+                    const response = await fetch('http://localhost:5000/api/premises', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(submissionData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'প্রিমিসেস লাইসেন্স আবেদন সফল!',
+                            text: `আপনার প্রাঙ্গণ আইডি: ${data.premisesId}। ভেরিফিকেশনের পর ইউনিয়ন পরিষদ থেকে পরবর্তী সিদ্ধান্ত জানিয়ে দেওয়া হবে।`,
+                            confirmButtonText: 'ঠিক আছে',
+                            confirmButtonColor: '#000F9F'
+                        });
+
+                        // ফর্ম রিসেট
+                        setFormData({
+                            applicantName: '',
+                            fatherHusbandName: '',
+                            nid: '',
+                            mobile: '',
+                            email: '',
+                            issueDate: '',
+                            establishmentName: '',
+                            establishmentType: 'বাণিজ্যিক দোকান / শোরুম',
+                            spaceArea: '',
+                            village: '',
+                            postOffice: '',
+                            upazila: '',
+                            district: '',
+                            ward: '',
+                            holdingNo: '',
+                            postCode: '',
+                            tradeLicenseNo: '',
+                            rentDeed: null,
+                            nidCopy: null,
+                            fireSafetyDoc: null
+                        });
+                        document.getElementById('agree').checked = false;
+                    } else {
+                        throw new Error('Submission Failed');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'দুঃখিত!',
+                        text: 'সার্ভার ত্রুটির কারণে আবেদনটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন।',
+                        confirmButtonText: 'ঠিক আছে',
+                        confirmButtonColor: '#000F9F'
+                    });
+                }
+            }
         });
-        setSubmitted(true);
-        // ফর্ম রিসেট
-        setFormData({
-          tradeLicenseNo: '',
-          ownerName: '',
-          mobile: '',
-          email: '',
-          renewalYear: new Date().getFullYear().toString()
-        });
-        setTimeout(() => setSubmitted(false), 5000);
-      } else {
-        throw new Error(data.message || 'সাবমিট ব্যর্থ');
-      }
-    } catch (error) {
-      Swal.fire({
-        icon: 'error',
-        title: 'দুঃখিত!',
-        text: 'সার্ভার বা নেটওয়ার্ক সমস্যা, আবার চেষ্টা করুন।',
-        confirmButtonColor: '#000F9F'
-      });
-    }
-  };
+    };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-5xl mx-auto">
-        {/* হেডার সেকশন */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-blue-900 inline-block border-b-4 border-amber-500 pb-2">
-            ট্রেড লাইসেন্স নবায়ন
-          </h1>
-          <p className="text-gray-600 mt-3 text-sm md:text-base">
-            আপনার ট্রেড লাইসেন্স নির্ধারিত সময়ের মধ্যে অনলাইনে নবায়ন করুন। নিচের ধাপগুলো অনুসরণ করুন।
-          </p>
+    return (
+        <div className="min-h-screen bg-slate-50 py-8 px-4 sm:px-6 lg:px-8 font-sans">
+            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
+                {/* হেডার */}
+                <div className="bg-gradient-to-r from-[#000F9F] to-[#0015cc] text-white p-6 md:p-8 text-center space-y-2">
+                    <span className="bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">ফরম নং-৯ (ক)</span>
+                    <h2 className="text-2xl md:text-3xl font-extrabold">প্রিমিসেস (প্রাঙ্গণ) লাইসেন্স আবেদন</h2>
+                    <p className="text-sm text-blue-100 font-medium">ব্যবসা বা ফ্যাক্টরি প্রাঙ্গণ বৈধকরণের জন্য নিচের তথ্যগুলো সঠিকভাবে প্রদান করুন।</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 md:p-10 space-y-8">
+                    {/* সেকশন ১: আবেদনকারীর বিবরণ (নতুন ফিল্ডসহ) */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>👤</span> আবেদনকারীর ব্যক্তিগত বিবরণ
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">আবেদনকারীর নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="applicantName" value={formData.applicantName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">পিতা/স্বামীর নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="fatherHusbandName" value={formData.fatherHusbandName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জাতীয় পরিচয়পত্র নম্বর (NID) <span className="text-red-500">*</span></label>
+                                <input required type="number" name="nid" value={formData.nid} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর <span className="text-red-500">*</span></label>
+                                <input required type="tel" name="mobile" value={formData.mobile} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা <span className="text-red-500">*</span></label>
+                                <input required type="email" name="email" value={formData.email} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইস্যুর তারিখ (দিন/মাস/বছর)</label>
+                                <input type="text" name="issueDate" value={formData.issueDate} onChange={handleChange} placeholder="যেমন: ২০/৬/২০২৬" className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ২: প্রাঙ্গণ ও প্রতিষ্ঠানের বিবরণ */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>🏢</span> প্রাঙ্গণ ও প্রতিষ্ঠানের বিবরণ
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">প্রতিষ্ঠানের নাম <span className="text-red-500">*</span></label>
+                                <input required type="text" name="establishmentName" value={formData.establishmentName} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">প্রাঙ্গণের ধরন <span className="text-red-500">*</span></label>
+                                <select name="establishmentType" value={formData.establishmentType} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm bg-white">
+                                    <option>বাণিজ্যিক দোকান / শোরুম</option>
+                                    <option>কারখানা / ম্যানুফ্যাকচারিং প্ল্যান্ট</option>
+                                    <option>গুদামঘর / ওয়ারহাউজ</option>
+                                    <option>হোটেল / রেস্টুরেন্ট প্রাঙ্গণ</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ট্রেড লাইসেন্স নম্বর (যদি থাকে)</label>
+                                <input type="text" name="tradeLicenseNo" value={formData.tradeLicenseNo} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">মোট আয়তন (বর্গফুট) <span className="text-red-500">*</span></label>
+                                <input required type="number" name="spaceArea" value={formData.spaceArea} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* সেকশন ৩: প্রাঙ্গণের সঠিক ঠিকানা (নতুন ফিল্ডসহ) */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>📍</span> প্রাঙ্গণের সঠিক অবস্থান / ঠিকানা
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">গ্রাম/মহল্লা <span className="text-red-500">*</span></label>
+                                <input required type="text" name="village" value={formData.village} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ডাকঘর</label>
+                                <input type="text" name="postOffice" value={formData.postOffice} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">উপজেলা</label>
+                                <input type="text" name="upazila" value={formData.upazila} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জেলা</label>
+                                <input type="text" name="district" value={formData.district} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">ওয়ার্ড নং <span className="text-red-500">*</span></label>
+                                <input required type="number" name="ward" value={formData.ward} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">হোল্ডিং নং <span className="text-red-500">*</span></label>
+                                <input required type="text" name="holdingNo" value={formData.holdingNo} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">পোস্ট কোড <span className="text-red-500">*</span></label>
+                                <input required type="number" name="postCode" value={formData.postCode} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ফাইল আপলোড */}
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-bold text-[#000F9F] flex items-center gap-2 border-b pb-2 border-gray-100">
+                            <span>📎</span> প্রয়োজনীয় সংযুক্তিসমূহ (সর্বোচ্চ 2MB)
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50">
+                                <label className="cursor-pointer block space-y-2">
+                                    <span className="text-2xl">📜</span>
+                                    <p className="text-xs font-bold text-gray-700">ভাড়া চুক্তি / মালিকানার দলিল <span className="text-red-500">*</span></p>
+                                    <input required type="file" name="rentDeed" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
+                                    <p className="text-[11px] text-gray-400 truncate">{formData.rentDeed ? formData.rentDeed.name : "ফাইল সিলেক্ট করুন"}</p>
+                                </label>
+                            </div>
+                            <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50">
+                                <label className="cursor-pointer block space-y-2">
+                                    <span className="text-2xl">🪪</span>
+                                    <p className="text-xs font-bold text-gray-700">আবেদনকারীর NID কপি <span className="text-red-500">*</span></p>
+                                    <input required type="file" name="nidCopy" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
+                                    <p className="text-[11px] text-gray-400 truncate">{formData.nidCopy ? formData.nidCopy.name : "ফাইল সিলেক্ট করুন"}</p>
+                                </label>
+                            </div>
+                            <div className="border-2 border-dashed border-gray-200 p-4 rounded-2xl text-center bg-slate-50">
+                                <label className="cursor-pointer block space-y-2">
+                                    <span className="text-2xl">🧯</span>
+                                    <p className="text-xs font-bold text-gray-700">ফায়ার সার্ভিস ছাড়পত্র (যদি থাকে)</p>
+                                    <input type="file" name="fireSafetyDoc" onChange={handleFileChange} accept="image/*,application/pdf" className="hidden" />
+                                    <p className="text-[11px] text-gray-400 truncate">{formData.fireSafetyDoc ? formData.fireSafetyDoc.name : "ফাইল সিলেক্ট করুন"}</p>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* অঙ্গীকার */}
+                    <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 p-4 rounded-xl">
+                        <input required type="checkbox" id="agree" className="mt-1 h-4 w-4 text-[#000F9F] border-gray-300 rounded cursor-pointer" />
+                        <label htmlFor="agree" className="text-xs text-amber-900 font-medium leading-relaxed cursor-pointer">
+                            আমি ঘোষণা করছি যে, উক্ত প্রাঙ্গণে কোনো অবৈধ বা পরিবেশের জন্য ক্ষতিকর ব্যবসা পরিচালনা করা হবে না এবং ইউনিয়ন পরিষদের সকল নিয়ম কানুন মেনে চলা হবে।
+                        </label>
+                    </div>
+
+                    <div className="flex justify-end pt-4">
+                        <button type="submit" className="w-full sm:w-auto bg-[#000F9F] text-white font-bold px-10 py-3.5 rounded-xl hover:bg-[#0015cc] shadow-md hover:shadow-lg transition-all duration-200 text-sm cursor-pointer">
+                            লাইসেন্সের আবেদন জানাচ্ছি
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        {/* তথ্য ও নির্দেশনা গ্রিড */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
-            <div className="flex items-center gap-2 text-blue-800 border-b pb-2 mb-3">
-              <FaRegListAlt className="text-xl" />
-              <h2 className="text-lg font-bold">প্রয়োজনীয় ডকুমেন্ট</h2>
-            </div>
-            <ul className="space-y-2 text-gray-700 text-sm">
-              <li className="flex items-start gap-2">✓ পুরাতন ট্রেড লাইসেন্সের কপি</li>
-              <li className="flex items-start gap-2">✓ গত বছরের কর প্রদানের রশিদ</li>
-              <li className="flex items-start gap-2">✓ ব্যবসায় প্রতিষ্ঠানের ছবি</li>
-              <li className="flex items-start gap-2">✓ মালিকের জাতীয় পরিচয়পত্র</li>
-            </ul>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5 border border-gray-100">
-            <div className="flex items-center gap-2 text-green-700 border-b pb-2 mb-3">
-              <FaRupeeSign className="text-xl" />
-              <h2 className="text-lg font-bold">নবায়ন ফি কাঠামো</h2>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between border-b pb-1">
-                <span>ছোট ব্যবসা (≤ ৫ লক্ষ)</span>
-                <span className="font-semibold">৫০০ টাকা</span>
-              </div>
-              <div className="flex justify-between border-b pb-1">
-                <span>মাঝারি ব্যবসা (৫-২৫ লক্ষ)</span>
-                <span className="font-semibold">১,৫০০ টাকা</span>
-              </div>
-              <div className="flex justify-between border-b pb-1">
-<span>বড় ব্যবসা ( &gt; ২৫ লক্ষ)</span>                <span className="font-semibold">৩,০০০ টাকা</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* অনলাইন আবেদন ফরম */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex items-center gap-2 text-blue-800 border-b pb-2 mb-5">
-            <FaFileAlt className="text-xl" />
-            <h2 className="text-lg font-bold">অনলাইন নবায়ন আবেদন ফরম</h2>
-          </div>
-          {submitted ? (
-            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded flex items-center gap-2">
-              <FaCheckCircle className="text-green-600 text-xl" />
-              <span>আপনার আবেদন সফলভাবে জমা হয়েছে। রেফারেন্স আইডি আপনার মোবাইলে ও ইমেইলে পাঠানো হবে।</span>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">ট্রেড লাইসেন্স নম্বর *</label>
-                  <input type="text" name="tradeLicenseNo" value={formData.tradeLicenseNo} onChange={handleChange} placeholder="যেমন: ১২৩/২০২৪" required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">মালিকের নাম *</label>
-                  <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর *</label>
-                  <input type="tel" name="mobile" value={formData.mobile} onChange={handleChange} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">ইমেইল ঠিকানা *</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-gray-400"><FaEnvelope /></span>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="example@mail.com" required className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1">নবায়নের বছর *</label>
-                  <select name="renewalYear" value={formData.renewalYear} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                    <option value="2025">২০২৫</option>
-                    <option value="2026">২০২৬</option>
-                    <option value="2027">২০২৭</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                  <FaUpload className="text-blue-500" /> ডকুমেন্ট আপলোড (ঐচ্ছিক)
-                </p>
-                <input type="file" className="text-sm w-full mt-2 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-50 file:text-blue-700" />
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <FaCreditCard />
-                  <span>পরিশোধযোগ্য ফি: <strong className="text-red-600">১,৫০০ টাকা</strong></span>
-                </div>
-                <button type="submit" className="bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 px-6 rounded-lg shadow-md transition">
-                  আবেদন জমা দিন
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-export default Trade_renewal;
+export default Premises;

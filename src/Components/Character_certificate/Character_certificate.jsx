@@ -9,7 +9,10 @@ const Character_certificate = () => {
     postOffice: '',
     upazila: '',
     district: '',
-    email: ''
+    nid: '',            // নতুন
+    mobile: '',         // নতুন
+    email: '',
+    issueDate: ''       // নতুন
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -69,7 +72,10 @@ const Character_certificate = () => {
           postOffice: '',
           upazila: '',
           district: '',
-          email: ''
+          nid: '',
+          mobile: '',
+          email: '',
+          issueDate: ''
         });
         setTimeout(() => setSubmitted(false), 5000);
       } else {
@@ -103,15 +109,21 @@ const Character_certificate = () => {
               <input type="text" name="postOffice" placeholder="ডাকঘর" value={formData.postOffice} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
               <input type="text" name="upazila" placeholder="উপজেলা" value={formData.upazila} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
               <input type="text" name="district" placeholder="জেলা" value={formData.district} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
-              <input type="email" name="email" placeholder="আপনার ইমেইল" value={formData.email} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none md:col-span-2" />
+              <input type="number" name="nid" placeholder="জাতীয় পরিচয়পত্র (NID)" value={formData.nid} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="tel" name="mobile" placeholder="মোবাইল নম্বর" value={formData.mobile} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none" />
+              <input type="email" name="email" placeholder="ইমেইল ঠিকানা" value={formData.email} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none md:col-span-2" />
+              <input type="date" name="issueDate" placeholder="ইস্যুর তারিখ" value={formData.issueDate} onChange={handleChange} required className="p-3 border rounded-lg w-full focus:ring-2 focus:ring-blue-500 outline-none md:col-span-2" />
             </div>
 
-            {/* Certificate Preview */}
+            {/* Certificate Preview (আপডেটেড) */}
             <div className="text-gray-700 space-y-4 border-t pt-8">
               <p className="text-lg">
                 এই মর্মে প্রত্যয়ন করা যাচ্ছে যে, <strong>{formData.name || '........'}</strong>, পিতা: <strong>{formData.fatherName || '........'}</strong>, গ্রাম: <strong>{formData.village || '........'}</strong>, ডাকঘর: <strong>{formData.postOffice || '........'}</strong>, উপজেলা: <strong>{formData.upazila || '........'}</strong>, জেলা: <strong>{formData.district || '........'}</strong>।
               </p>
-              <p className="text-lg">ইমেইল: {formData.email || '........'}</p>
+              <p className="text-lg">জাতীয় পরিচয়পত্র নং: <strong>{formData.nid || '........'}</strong></p>
+              <p className="text-lg">মোবাইল: <strong>{formData.mobile || '........'}</strong></p>
+              <p className="text-lg">ইমেইল: <strong>{formData.email || '........'}</strong></p>
+              <p className="text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD') : '........'}</strong></p>
               <p className="text-lg">আমি তাকে ব্যক্তিগতভাবে চিনি ও জানি। আমার জানামতে তিনি অত্র এলাকার একজন স্থায়ী বাসিন্দা। তার চরিত্র ও স্বভাব ভালো।</p>
             </div>
 

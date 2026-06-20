@@ -1,4 +1,4 @@
-// src/components/CertificateModal.jsx
+// src/components/CertificateModal/CertificateModal.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { FaTimes } from 'react-icons/fa';
@@ -38,7 +38,13 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
 
     const { application, certificateNo, unionInfo } = certData;
 
-    const name = application.name || application.fullName || application.applicantName || 'N/A';
+    // ======== নাম সহ সব ফিল্ড ========
+    const name = application.ownerName ||      // TradeLicense
+                 application.name ||
+                 application.fullName ||
+                 application.applicantName ||
+                 'N/A';
+
     const father = application.fatherName || application.father || 'N/A';
     const mother = application.motherName || application.mother || null;
     const village = application.village || application.address || 'N/A';
@@ -112,7 +118,7 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
           </div>
         </div>
 
-        {/* ========== CSS ========== */}
+        {/* ========== CSS (আগের মতোই) ========== */}
         <style jsx>{`
           .certificate-wrapper {
             padding: 20px;
@@ -272,7 +278,6 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
             background: #0f2a44;
           }
 
-          /* প্রিন্ট স্টাইল */
           @media print {
             .print-hidden { display: none !important; }
             .certificate-wrapper { padding: 0; background: white; min-height: auto; }
@@ -291,7 +296,6 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
             body { background: white !important; margin: 0 !important; }
           }
 
-          /* মোবাইল */
           @media (max-width: 640px) {
             .certificate-card { padding: 20px !important; border-width: 10px !important; outline-offset: -6px !important; }
             .union-name { font-size: 20px; }

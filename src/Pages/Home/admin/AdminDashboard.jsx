@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { FaCheckCircle } from 'react-icons/fa'; // চেক আইকন
-import CertificateModal from '../../../Components/CertificateModal/CertificateModal'; // নতুন মডাল
+import { FaCheckCircle } from 'react-icons/fa';
+import CertificateModal from '../../../Components/CertificateModal/CertificateModal';
 
 const AdminDashboard = () => {
   const [applications, setApplications] = useState([]);
@@ -17,6 +17,33 @@ const AdminDashboard = () => {
   const [selectedAppForCert, setSelectedAppForCert] = useState(null);
 
   const navigate = useNavigate();
+
+  // ========== নাম বের করার হেলপার ফাংশন ==========
+const getApplicantName = (app) => {
+  // প্রথমে সরাসরি ফিল্ড চেক
+  if (app.ownerName && app.ownerName !== 'নাম নেই') return app.ownerName;
+  if (app.userName && app.userName !== 'নাম নেই') return app.userName;
+  if (app.fullName && app.fullName !== 'নাম নেই') return app.fullName;
+  if (app.name && app.name !== 'নাম নেই') return app.name;
+  if (app.applicantName && app.applicantName !== 'নাম নেই') return app.applicantName;
+
+  // যদি fullData থাকে, সেখান থেকে খুঁজি
+  if (app.fullData) {
+    const data = app.fullData;
+    if (data.ownerName && data.ownerName !== 'নাম নেই') return data.ownerName;
+    if (data.userName && data.userName !== 'নাম নেই') return data.userName;
+    if (data.fullName && data.fullName !== 'নাম নেই') return data.fullName;
+    if (data.name && data.name !== 'নাম নেই') return data.name;
+    if (data.applicantName && data.applicantName !== 'নাম নেই') return data.applicantName;
+    // বিশেষ কিছু ফর্মের জন্য (যেমন warish-এ applicantInfo.applicantName)
+    if (data.applicantInfo?.applicantName && data.applicantInfo.applicantName !== 'নাম নেই') return data.applicantInfo.applicantName;
+    if (data.deceasedInfo?.deceasedName && data.deceasedInfo.deceasedName !== 'নাম নেই') return data.deceasedInfo.deceasedName;
+    if (data.headInfo?.headName && data.headInfo.headName !== 'নাম নেই') return data.headInfo.headName;
+    if (data.headName && data.headName !== 'নাম নেই') return data.headName;
+  }
+
+  return 'N/A';
+};
 
   useEffect(() => {
     const isAdmin = localStorage.getItem('isAdmin');
@@ -125,7 +152,7 @@ const AdminDashboard = () => {
             <option value="">-- একটি আবেদন বাছাই করুন --</option>
             {applications.map(app => (
               <option key={app.id} value={app.id}>
-                {app.userName} - {app.type} ({app.status}) - {formatDate(app.submittedAt)}
+                {getApplicantName(app)} - {app.type} ({app.status}) - {formatDate(app.submittedAt)}
               </option>
             ))}
           </select>
@@ -167,7 +194,7 @@ const AdminDashboard = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ধরন</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">তারিখ</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">স্ট্যাটাস</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">সনদ</th> {/* নতুন কলাম */}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">সনদ</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">অ্যাকশন</th>
                 </tr>
               </thead>
@@ -175,7 +202,9 @@ const AdminDashboard = () => {
                 {filteredApps.map((app, idx) => (
                   <tr key={app.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{idx + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{app.userName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {getApplicantName(app)}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{app.userEmail || 'N/A'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{app.mobile || 'N/A'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{app.type}</td>

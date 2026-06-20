@@ -123,7 +123,7 @@ const Character_certificate = () => {
               <p className="text-lg">জাতীয় পরিচয়পত্র নং: <strong>{formData.nid || '........'}</strong></p>
               <p className="text-lg">মোবাইল: <strong>{formData.mobile || '........'}</strong></p>
               <p className="text-lg">ইমেইল: <strong>{formData.email || '........'}</strong></p>
-              <p className="text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD') : '........'}</strong></p>
+              <p className="text-lg">জন্ম তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD') : '........'}</strong></p>
               <p className="text-lg">আমি তাকে ব্যক্তিগতভাবে চিনি ও জানি। আমার জানামতে তিনি অত্র এলাকার একজন স্থায়ী বাসিন্দা। তার চরিত্র ও স্বভাব ভালো।</p>
             </div>
 

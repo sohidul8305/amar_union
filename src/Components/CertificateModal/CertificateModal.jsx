@@ -108,14 +108,37 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
     return (
       <div id="certificate-content" className="certificate-wrapper">
         <div className="certificate-card border-pattern">
-          <div className="watermark-logo">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg"
-              alt="Watermark"
-            />
-          </div>
-
+          
           <div className="inner-border">
+            
+            {/* ===== উন্নত ও স্পষ্ট সিল/ওয়াটারমার্ক (ব্যাকগ্রাউন্ড লোগো) ===== */}
+            <div className="watermark-logo">
+              <svg width="260" height="260" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* পিঙ্ক ব্যাকগ্রাউন্ড */}
+                <circle cx="130" cy="130" r="105" fill="#fadbd8" />
+                {/* সবুজ রিং (মোটা করা হয়েছে যাতে ভালো দেখা যায়) */}
+                <circle cx="130" cy="130" r="120" stroke="#bde0c9" strokeWidth="12" />
+                {/* ভেতরের সাদা রিং */}
+                <circle cx="130" cy="130" r="115" stroke="#ffffff" strokeWidth="3" />
+                <circle cx="130" cy="130" r="95" stroke="#ffffff" strokeWidth="3" />
+                
+                {/* গোলাপি/লাল তারা (4টি) */}
+                <path d="M 130 15 L 133 25 L 143 25 L 135 32 L 138 42 L 130 37 L 122 42 L 125 32 L 117 25 L 127 25 Z" fill="#f1948a" />
+                <path d="M 130 245 L 133 235 L 143 235 L 135 228 L 138 218 L 130 223 L 122 218 L 125 228 L 117 235 L 127 235 Z" fill="#f1948a" />
+                <path d="M 245 130 L 235 127 L 235 117 L 228 125 L 218 122 L 223 130 L 218 138 L 228 135 L 235 143 L 235 133 Z" fill="#f1948a" />
+                <path d="M 15 130 L 25 133 L 25 143 L 32 135 L 42 138 L 37 130 L 42 122 L 32 125 L 25 117 L 25 127 Z" fill="#f1948a" />
+
+                {/* বৃত্তাকার পাঠ্য */}
+                <path id="textPathTop" d="M 130 25 A 105 105 0 0 1 130 235" fill="none" />
+                <text fontFamily="'Kalpurush', 'SolaimanLipi', sans-serif" fontSize="16" fill="#9bcbae" fontWeight="bold">
+                  <textPath href="#textPathTop" startOffset="50%" textAnchor="middle">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</textPath>
+                </text>
+
+                {/* বাংলাদেশের মানচিত্র (হলুদ) */}
+                <path d="M148 118 L165 108 L182 115 L190 132 L185 155 L175 168 L188 188 L175 202 L160 196 L145 185 L130 165 L138 145 Z" fill="#f9e79f" transform="translate(-20, -10)" />
+              </svg>
+            </div>
+
             {/* ===== হেডার ===== */}
             <div className="header-section">
               <div className="logo-container">
@@ -263,7 +286,7 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
           <button onClick={handlePrint} className="print-btn">🖨️ প্রিন্ট / ডাউনলোড (PDF)</button>
         </div>
 
-        {/* ========== CSS ========== */}
+        {/* ========== CSS (ফুলের প্যাটার্ন আরও ছোট করা হয়েছে & লোগো আরও পরিষ্কার করা হয়েছে) ========== */}
         <style jsx>{`
           .certificate-wrapper {
             padding: 20px;
@@ -273,40 +296,53 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
             min-height: 100vh;
             justify-content: center;
           }
-          .border-pattern {
-            background: #fff;
-            padding: 12px;
-            border: 15px solid #2e7d32;
-            outline: 2px solid #1b5e20;
-            outline-offset: -20px;
-            position: relative;
-            max-width: 850px;
-            width: 100%;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-            font-family: 'Kalpurush', 'SolaimanLipi', sans-serif;
-          }
-          .inner-border {
-            border: 2px solid #2e7d32;
-            padding: 30px 40px;
-            min-height: 800px;
-            position: relative;
-            background: transparent;
-            z-index: 2;
-          }
-          .watermark-logo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0.07;
-            z-index: 0;
-            pointer-events: none;
-          }
-          .watermark-logo img {
-            width: 450px;
-            height: auto;
-          }
+
+/* মেইন বর্ডার ডিজাইন (অত্যন্ত ছোট ও সূক্ষ্ম প্যাটার্ন) */
+.border-pattern {
+  padding: 16px; /* বর্ডার ও সাদা জায়গার ব্যবধান */
+  position: relative;
+  max-width: 850px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  font-family: 'Kalpurush', 'SolaimanLipi', sans-serif;
+  
+  /* হুবহু ছোট ছোট ফুলের প্যাটার্ন (সাইজ ২০px) */
+  background-color: #1b5e20;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" fill="%231b5e20"/><path d="M10 4 L12 10 L10 16 L8 10 Z" fill="%23ffffff"/><circle cx="4" cy="4" r="2" fill="%23ffffff"/><circle cx="16" cy="4" r="2" fill="%23ffffff"/><circle cx="4" cy="16" r="2" fill="%23ffffff"/><circle cx="16" cy="16" r="2" fill="%23ffffff"/></svg>');
+  background-size: 20px 20px;
+}
+
+/* ভেতরের ডাবল লাইনের বর্ডার */
+.inner-border {
+  position: relative; /* ভেতরের ওয়াটারমার্কের জন্য অত্যন্ত গুরুত্বপূর্ণ */
+  border: 3px solid #1b5e20; /* ভেতরের সবুজ লাইন */
+  padding: 40px;
+  min-height: 800px;
+  background: #ffffff;
+  z-index: 2;
+  outline: 2px solid #1b5e20; /* বাইরের সবুজ লাইন */
+  outline-offset: -10px;
+}
+
+/* ===== ব্যাকগ্রাউন্ডের সিল/লোগো (স্বচ্ছতা বাড়িয়ে পরিষ্কার করা হয়েছে) ===== */
+.watermark-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.25; /* স্বচ্ছতা 0.14 থেকে বাড়িয়ে 0.25 করা হয়েছে */
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.watermark-logo svg {
+  width: 260px;
+  height: 260px;
+}
+
           .header-section {
             display: flex;
             justify-content: space-between;
@@ -531,10 +567,16 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
             .border-pattern {
               box-shadow: none !important;
               max-width: 100% !important;
-              border: 15px solid #2e7d32 !important;
-              -webkit-print-color-adjust: exact;
-              print-color-adjust: exact;
               padding: 12px !important;
+              background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><rect width="20" height="20" fill="%231b5e20"/><path d="M10 4 L12 10 L10 16 L8 10 Z" fill="%23ffffff"/><circle cx="4" cy="4" r="2" fill="%23ffffff"/><circle cx="16" cy="4" r="2" fill="%23ffffff"/><circle cx="4" cy="16" r="2" fill="%23ffffff"/><circle cx="16" cy="16" r="2" fill="%23ffffff"/></svg>') !important;
+              background-size: 20px 20px !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            .watermark-logo {
+              opacity: 0.25 !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
             }
             .title-badge {
               -webkit-print-color-adjust: exact;
@@ -545,8 +587,8 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
           }
           @media (max-width: 640px) {
             .certificate-wrapper { padding: 10px; }
-            .border-pattern { padding: 6px; border-width: 10px; outline-offset: -12px; }
-            .inner-border { padding: 16px 18px; min-height: 600px; }
+            .border-pattern { padding: 6px; background-size: 20px 20px !important; }
+            .inner-border { padding: 16px 18px; min-height: 600px; outline-offset: -8px; }
             .header-section { flex-direction: column; align-items: center; }
             .logo-container { width: 60px; }
             .govt-logo { width: 60px; }

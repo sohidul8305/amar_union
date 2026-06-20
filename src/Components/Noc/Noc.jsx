@@ -143,7 +143,7 @@ const Noc = () => {
             <p className="text-base sm:text-lg">
               তার অনাপত্তির বিষয়: <strong>{formData.nocPurpose || '........'}</strong>।
             </p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

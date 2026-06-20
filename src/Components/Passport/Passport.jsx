@@ -138,7 +138,7 @@ const Passport = () => {
             <p className="text-base sm:text-lg">
               তিনি একজন পাসপোর্ট প্রত্যাশী। পাসপোর্ট প্রাপ্তির ক্ষেত্রে তার কোনো আইনগত বাধা নেই বলে আমি জানি।
             </p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

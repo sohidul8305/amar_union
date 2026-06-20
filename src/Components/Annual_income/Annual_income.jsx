@@ -140,7 +140,7 @@ const Annual_income = () => {
             <p className="text-base sm:text-lg">জাতীয় পরিচয়পত্র নং: <strong>{formData.nid || '........'}</strong></p>
             <p className="text-base sm:text-lg">মোবাইল নম্বর: <strong>{formData.mobile || '........'}</strong></p>
             <p className="text-base sm:text-lg">ইমেইল: <strong>{formData.email || '........'}</strong></p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
             <p className="text-base sm:text-lg">
               আমার জানামতে ও স্থানীয় তথ্যানুযায়ী, তার পরিবারের বার্ষিক আয় সর্বসাকুল্যে প্রায় <strong>{formData.annualIncome || '........'}/- (টাকা)</strong>। আমি তার এই তথ্যের সত্যতা কামনা করছি।
             </p>

@@ -148,7 +148,7 @@ const Disability = () => {
             <p className="text-base sm:text-lg">
               তিনি একজন শারীরিকভাবে প্রতিবন্ধী ব্যক্তি। তার প্রতিবন্ধিতার ধরন: <strong>{formData.disabilityType || '........'}</strong> এবং হার: <strong>{formData.disabilityRate || '........'}%</strong>।
             </p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

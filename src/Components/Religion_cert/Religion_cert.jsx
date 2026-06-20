@@ -143,7 +143,7 @@ const Religion_cert = () => {
             <p className="text-base sm:text-lg">
               তিনি জন্মসূত্রে একজন <strong>{formData.religion || '........'}</strong> ধর্মাবলম্বী। তিনি অত্র এলাকার একজন স্থায়ী বাসিন্দা।
             </p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

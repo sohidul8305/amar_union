@@ -288,7 +288,7 @@ const Successor_certificate = () => {
                                 <input required type="email" name="email" value={applicantInfo.email} onChange={handleApplicantChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" placeholder="example@mail.com" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইস্যুর তারিখ <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জন্ম  তারিখ <span className="text-red-500">*</span></label>
                                 <input required type="date" name="issueDate" value={applicantInfo.issueDate} onChange={handleApplicantChange} className="w-full border border-gray-300 p-2.5 rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#000F9F]" />
                             </div>
                         </div>

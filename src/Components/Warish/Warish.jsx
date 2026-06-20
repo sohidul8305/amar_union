@@ -246,10 +246,10 @@ const Warish = () => {
 
                     {/* ===== ইস্যুর তারিখ ===== */}
                     <div>
-                        <h3 className="text-lg font-bold text-gray-700 border-b pb-2 mb-4">সনদ ইস্যুর তারিখ</h3>
+                        <h3 className="text-lg font-bold text-gray-700 border-b pb-2 mb-4">জন্ম তারিখ</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold">ইস্যুর তারিখ <span className="text-red-500">*</span></label>
+                                <label className="block text-sm font-semibold">জন্ম তারিখ <span className="text-red-500">*</span></label>
                                 <input required type="date" name="issueDate" value={issueDate} onChange={(e) => setIssueDate(e.target.value)} className="w-full border p-2 rounded-lg" />
                             </div>
                         </div>

@@ -149,7 +149,7 @@ const Voter_update = () => {
               সংশোধনের বিষয়: <strong>{formData.updateField || '........'}</strong>। ভুল তথ্যটি ছিল: <strong>{formData.oldInfo || '........'}</strong> এবং সঠিক তথ্যটি হবে: <strong>{formData.newInfo || '........'}</strong>।
             </p>
             <p className="text-base sm:text-lg">মোবাইল: <strong>{formData.mobile || '........'}</strong> | ইমেইল: <strong>{formData.email || '........'}</strong></p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

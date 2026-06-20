@@ -208,7 +208,7 @@ const TradeLicense = () => {
                                 <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইস্যুর তারিখ (দিন/মাস/বছর)</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জন্ম তারিখ (দিন/মাস/বছর)</label>
                                 <input type="text" name="issueDate" value={formData.issueDate} onChange={handleChange} placeholder="যেমন: ১৯/৬/২০২৬" className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
                             </div>
                         </div>

@@ -144,7 +144,7 @@ const Voter_transfer = () => {
               আমার এনআইডি নম্বর: <strong>{formData.nidNumber || '........'}</strong>, মোবাইল: <strong>{formData.mobile || '........'}</strong>। স্থানান্তরের কারণ: <strong>{formData.reason || '........'}</strong>।
             </p>
             <p className="text-base sm:text-lg">ইমেইল: <strong>{formData.email || '........'}</strong></p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

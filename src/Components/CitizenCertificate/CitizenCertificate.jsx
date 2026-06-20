@@ -90,7 +90,7 @@ const CertificateModal = ({ isOpen, onClose, application }) => {
             <div className="flex justify-between items-start mt-6">
               <div>
                 <p><strong>সনদ নং:</strong> {certificateNo}</p>
-                <p><strong>ইস্যুর তারিখ:</strong> {new Date(issueDate).toLocaleDateString('bn-BD')}</p>
+                <p><strong>জন্ম  তারিখ:</strong> {new Date(issueDate).toLocaleDateString('bn-BD')}</p>
               </div>
               <div className="border p-2 bg-gray-50 text-center">
                 <QRCodeSVG value={qrValue} size={80} />

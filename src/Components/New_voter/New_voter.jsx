@@ -156,7 +156,7 @@ const New_voter = () => {
             </p>
             <p className="text-base sm:text-lg">মোবাইল: <strong>{formData.mobile || '........'}</strong> | ইমেইল: <strong>{formData.email || '........'}</strong></p>
             <p className="text-base sm:text-lg">বর্তমান ঠিকানা: <strong>{formData.address || '........'}</strong></p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

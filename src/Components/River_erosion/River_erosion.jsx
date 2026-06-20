@@ -146,7 +146,7 @@ const River_erosion = () => {
             <p className="text-base sm:text-lg">
               নদী ভাঙনের ফলে তার জমি: <strong>{formData.landDetails || '........'}</strong> বিলীন হয়েছে। ঘটনার সংক্ষিপ্ত বিবরণ: <strong>{formData.lossDetails || '........'}</strong>।
             </p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
           </div>
 
           {/* Buttons */}

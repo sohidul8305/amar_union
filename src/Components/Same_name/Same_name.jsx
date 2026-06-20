@@ -141,7 +141,7 @@ const Same_name = () => {
             <p className="text-base sm:text-lg">জাতীয় পরিচয়পত্র নং: <strong>{formData.nid || '........'}</strong></p>
             <p className="text-base sm:text-lg">মোবাইল নম্বর: <strong>{formData.mobile || '........'}</strong></p>
             <p className="text-base sm:text-lg">ইমেইল: <strong>{formData.email || '........'}</strong></p>
-            <p className="text-base sm:text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
+            <p className="text-base sm:text-lg">জন্ম  তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }) : '........'}</strong></p>
             <p className="text-base sm:text-lg mt-4">আমি তার উজ্জ্বল ভবিষ্যৎ কামনা করি।</p>
           </div>
 

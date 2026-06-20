@@ -9,7 +9,7 @@ const Premises = () => {
         mobile: '',
         email: '',
         establishmentName: '',
-        establishmentType: 'বাণিজ্যিক দোকান / শোরুম', 
+        establishmentType: 'বাণিজ্যিক দোকান / শোরুম',
         spaceArea: '',
         village: '',
         postOffice: '',          // নতুন
@@ -166,7 +166,7 @@ const Premises = () => {
                             </div>
                             {/* নতুন: ইস্যুর তারিখ */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">ইস্যুর তারিখ (দিন/মাস/বছর)</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">জন্ম তারিখ (দিন/মাস/বছর)</label>
                                 <input type="text" name="issueDate" value={formData.issueDate} onChange={handleChange} placeholder="যেমন: ১৯/৬/২০২৬" className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] focus:border-transparent outline-none text-sm transition-all" />
                             </div>
                         </div>

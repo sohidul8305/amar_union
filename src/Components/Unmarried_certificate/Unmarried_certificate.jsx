@@ -115,7 +115,7 @@ const Unmarried_certificate = () => {
             <p className="text-lg">জাতীয় পরিচয়পত্র নং: <strong>{formData.nid || '........'}</strong></p>
             <p className="text-lg">মোবাইল নম্বর: <strong>{formData.mobile || '........'}</strong></p>
             <p className="text-lg">ইমেইল: <strong>{formData.email || '........'}</strong></p>
-            <p className="text-lg">ইস্যুর তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD') : '........'}</strong></p>
+            <p className="text-lg">জন্ম তারিখ: <strong>{formData.issueDate ? new Date(formData.issueDate).toLocaleDateString('bn-BD') : '........'}</strong></p>
             <p className="text-lg">
               অত্র এলাকার রেকর্ড অনুযায়ী এবং স্থানীয় গণ্যমান্য ব্যক্তিদের তথ্য মতে, তিনি বর্তমানে একজন অবিবাহিত ব্যক্তি। তিনি অতীতে বিবাহবন্ধনে আবদ্ধ হননি।
             </p>

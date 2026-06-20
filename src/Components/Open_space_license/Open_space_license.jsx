@@ -4,13 +4,14 @@ import Swal from 'sweetalert2';
 const Open_space_license = () => {
   const [formData, setFormData] = useState({
     fullName: '',
-    fatherName: '',        // নতুন (পিতার নাম - ঐচ্ছিক, তবে রাখলাম)
-    village: '',           // নতুন
-    postOffice: '',        // নতুন
-    upazila: '',           // নতুন
-    district: '',          // নতুন
-    nid: '',               // নতুন
-    mobile: '',            // নতুন
+    fatherName: '',
+    dob: '',              // ✅ জন্ম তারিখ যুক্ত করা হয়েছে
+    village: '',
+    postOffice: '',
+    upazila: '',
+    district: '',
+    nid: '',
+    mobile: '',
     email: '',
     areaSize: '',
     purpose: '',
@@ -68,6 +69,7 @@ const Open_space_license = () => {
         setFormData({
           fullName: '',
           fatherName: '',
+          dob: '',              // ✅ রিসেট করার সময়ও dob যুক্ত করা হয়েছে
           village: '',
           postOffice: '',
           upazila: '',
@@ -92,7 +94,7 @@ const Open_space_license = () => {
     }
   };
 
-  // স্ট্যাটিক লাইসেন্স তথ্য (আপনার ইচ্ছামতো রাখতে পারেন)
+  // স্ট্যাটিক লাইসেন্স তথ্য
   const currentLicense = {
     licenseNumber: 'OSL-2025-001284',
     holder: 'মোঃ রহিম উদ্দিন',
@@ -173,6 +175,11 @@ const Open_space_license = () => {
                   <label htmlFor="fatherName">পিতার নাম</label>
                   <input type="text" id="fatherName" name="fatherName" value={formData.fatherName} onChange={handleChange} placeholder="পিতার নাম" />
                 </div>
+                {/* ✅ জন্ম তারিখ যুক্ত করা হয়েছে */}
+                <div className="form-group">
+                  <label htmlFor="dob">জন্ম তারিখ *</label>
+                  <input type="date" id="dob" name="dob" value={formData.dob} onChange={handleChange} required />
+                </div>
                 <div className="form-group">
                   <label htmlFor="nid">জাতীয় পরিচয়পত্র (NID) *</label>
                   <input type="number" id="nid" name="nid" value={formData.nid} onChange={handleChange} placeholder="এনআইডি নম্বর" required />
@@ -227,7 +234,7 @@ const Open_space_license = () => {
           </div>
         </div>
 
-        {/* অতিরিক্ত তথ্য (অপরিবর্তিত) */}
+        {/* অতিরিক্ত তথ্য */}
         <div className="info-grid">
           <div className="info-card">
             <h3>📋 প্রয়োজনীয় ডকুমেন্টস</h3>

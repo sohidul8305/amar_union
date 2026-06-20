@@ -14,6 +14,7 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
       axios
         .get(`http://localhost:5000/api/certificate/${collectionName}/${docId}`)
         .then((res) => {
+          console.log('API Response:', res.data); // ডিবাগ করার জন্য
           setCertData(res.data);
           setLoading(false);
         })
@@ -31,280 +32,546 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
     window.print();
   };
 
+  // ===== হেলপার ফাংশন: যেকোনো অবজেক্ট থেকে ফিল্ড বের করে =====
+  const getField = (obj, keys, defaultValue = 'N/A') => {
+    if (!obj) return defaultValue;
+    for (let key of keys) {
+      // nested path যেমন 'personalInfo.dob'
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        let val = obj;
+        for (let part of parts) {
+          if (val && val[part] !== undefined && val[part] !== null && val[part] !== '') {
+            val = val[part];
+          } else {
+            val = undefined;
+            break;
+          }
+        }
+        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+          return val;
+        }
+      } else {
+        const val = obj[key];
+        if (val !== undefined && val !== null && val !== '' && val !== 'N/A') {
+          return val;
+        }
+      }
+    }
+    return defaultValue;
+  };
+
   const renderCertificate = () => {
-    if (loading) return <div className="text-center py-8 text-gray-600">লোড হচ্ছে...</div>;
-    if (error) return <div className="text-center py-8 text-red-600">{error}</div>;
+    if (loading) return <div className="text-center py-8 text-gray-600 text-lg">লোড হচ্ছে...</div>;
+    if (error) return <div className="text-center py-8 text-red-600 text-lg">{error}</div>;
     if (!certData) return null;
 
     const { application, certificateNo, unionInfo } = certData;
 
-    // ======== নাম সহ সব ফিল্ড ========
-    const name = application.ownerName ||      // TradeLicense
-                 application.name ||
-                 application.fullName ||
-                 application.applicantName ||
-                 'N/A';
+    // ===== সব ফিল্ড এক্সট্রাক্ট =====
+    const name = getField(application, ['ownerName', 'name', 'fullName', 'applicantName', 'userName'], 'N/A');
+    const father = getField(application, ['fatherName', 'father'], 'N/A');
+    const mother = getField(application, ['motherName', 'mother'], null);
+    const village = getField(application, ['village', 'address', 'permanentAddress'], 'N/A');
+    const postOffice = getField(application, ['postOffice', 'postoffice'], 'N/A');
+    const upazila = getField(application, ['upazila', 'thana'], 'N/A');
+    const district = getField(application, ['district', 'zilla'], 'N/A');
+    const nid = getField(application, ['nid', 'nidNumber', 'nationalId'], 'N/A');
+    const mobile = getField(application, ['mobile', 'phone', 'applicantInfo.applicantMobile'], 'N/A');
+    const email = getField(application, ['email', 'applicantInfo.applicantEmail'], 'N/A');
+    const religion = getField(application, ['religion'], 'ইসলাম');
 
-    const father = application.fatherName || application.father || 'N/A';
-    const mother = application.motherName || application.mother || null;
-    const village = application.village || application.address || 'N/A';
-    const postOffice = application.postOffice || 'N/A';
-    const upazila = application.upazila || 'N/A';
-    const district = application.district || 'N/A';
-    const nid = application.nid || application.nidNumber || 'N/A';
-    const email = application.email || application.applicantInfo?.applicantEmail || 'N/A';
-    const mobile = application.mobile || application.applicantInfo?.applicantMobile || 'N/A';
+    // ===== জন্ম তারিখ =====
+    // application ও তার fullData থেকে খোঁজ
+    let dob = getField(application, ['dob', 'dateOfBirth', 'birthDate', 'birthday'], null);
+    if (!dob || dob === 'N/A') {
+      if (application.fullData) {
+        dob = getField(application.fullData, ['dob', 'dateOfBirth', 'birthDate', 'personalInfo.dob', 'personalInfo.dateOfBirth'], null);
+      }
+    }
+    if (!dob || dob === 'N/A') dob = 'N/A';
+
+    // ===== ইস্যুর তারিখ =====
+    // IMPORTANT: ইস্যুর তারিখ হিসেবে জন্ম তারিখ ব্যবহার করা হবে (যেমন ইউজার চেয়েছে)
+    let issueDateValue = dob; // ডিফল্ট জন্ম তারিখ
+    // যদি আলাদা কোনো ইস্যু তারিখ ফিল্ড থাকে, তাহলে সেটা নেবে (কিন্তু ইউজার চাচ্ছে জন্ম তারিখই হোক)
+    // তাই আমরা dob-ই ব্যবহার করছি
+    const issueDate = issueDateValue !== 'N/A' ? issueDateValue : new Date().toLocaleDateString('bn-BD', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      era: 'narrow'
+    });
+
+    const fullAddress = `গ্রাম/মহল্লা: ${village}, ডাকঘর: ${postOffice}, উপজেলা: ${upazila}, জেলা: ${district}।`;
 
     return (
       <div id="certificate-content" className="certificate-wrapper">
-        <div className="certificate-card">
-          {/* ===== ইউনিয়ন হেডার ===== */}
-          <div className="union-header">
-            <h1 className="union-name">{unionInfo.name}</h1>
-            <p className="union-address">{unionInfo.address}</p>
-            <div className="union-contact">
-              <span>📧 {unionInfo.email}</span>
-              <span>📞 {unionInfo.mobile}</span>
-              <span>🌐 {unionInfo.website}</span>
+        <div className="certificate-card border-pattern">
+          <div className="watermark-logo">
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg"
+              alt="Watermark"
+            />
+          </div>
+
+          <div className="inner-border">
+            {/* ===== হেডার ===== */}
+            <div className="header-section">
+              <div className="logo-container">
+                <img
+                  src="https://upload.wikimedia.org/wikipedia/commons/8/84/Government_Seal_of_Bangladesh.svg"
+                  alt="Govt Logo"
+                  className="govt-logo"
+                />
+              </div>
+              <div className="header-text-container">
+                <p className="govt-text">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার</p>
+                <h1 className="union-name">{unionInfo.name}</h1>
+                <p className="union-address">{unionInfo.address}</p>
+                <p className="union-contact">ওয়েব সাইট : {unionInfo.website || 'N/A'}</p>
+                <p className="union-contact">ই-মেইল : {unionInfo.email || 'N/A'}</p>
+                <p className="union-contact">মোবাইল : {unionInfo.mobile || 'N/A'}</p>
+              </div>
+              <div className="logo-container hidden-space"></div>
             </div>
-          </div>
 
-          {/* ===== সনদ শিরোনাম ও নম্বর ===== */}
-          <div className="certificate-title">
-            <h2>🗂️ নাগরিক সনদপত্র</h2>
-            <div className="certificate-number">
-              <span className="label">সনদ নং:</span>
-              <span className="number">{certificateNo}</span>
+            {/* ===== সনদ শিরোনাম ===== */}
+            <div className="certificate-title-box">
+              <span className="title-badge">নাগরিক সনদপত্র</span>
             </div>
-          </div>
 
-          {/* ===== তথ্য তালিকা ===== */}
-          <div className="info-section">
-            <div className="info-row"><span className="info-label">নাম:</span><span className="info-value">{name}</span></div>
-            <div className="info-row"><span className="info-label">পিতা:</span><span className="info-value">{father}</span></div>
-            {mother && mother !== 'N/A' && (
-              <div className="info-row"><span className="info-label">মাতা:</span><span className="info-value">{mother}</span></div>
-            )}
-            <div className="info-row"><span className="info-label">গ্রাম/মহল্লা:</span><span className="info-value">{village}</span></div>
-            <div className="info-row"><span className="info-label">ডাকঘর:</span><span className="info-value">{postOffice}</span></div>
-            <div className="info-row"><span className="info-label">উপজেলা:</span><span className="info-value">{upazila}</span></div>
-            <div className="info-row"><span className="info-label">জেলা:</span><span className="info-value">{district}</span></div>
-            <div className="info-row"><span className="info-label">এনআইডি:</span><span className="info-value">{nid}</span></div>
-            <div className="info-row"><span className="info-label">মোবাইল:</span><span className="info-value">{mobile}</span></div>
-            <div className="info-row"><span className="info-label">ইমেইল:</span><span className="info-value">{email}</span></div>
-            <div className="info-row"><span className="info-label">ইস্যুর তারিখ:</span><span className="info-value">{new Date().toLocaleDateString('bn-BD')}</span></div>
-          </div>
-
-          {/* ===== স্বাক্ষর ===== */}
-          <div className="signature-section">
-            <div className="signature-left">
-              <p>সাক্ষী: __________________</p>
-              <p className="signature-title">(সচিব)</p>
+            {/* ===== সনদ নম্বর ও তারিখ ===== */}
+            <div className="meta-info-row">
+              <div className="cert-no-container">
+                <span className="cert-label">সনদ নং :</span>
+                <div className="digit-boxes">
+                  {String(certificateNo || '00000000000000000')
+                    .split('')
+                    .map((char, index) => (
+                      <span key={index} className="digit-box">{char}</span>
+                    ))}
+                </div>
+              </div>
+              <div className="date-text">
+                তারিখ: {issueDate}
+              </div>
             </div>
-            <div className="signature-right">
-              <p>স্বাক্ষর: __________________</p>
-              <p className="signature-title">(চেয়ারম্যান)</p>
+
+            {/* ===== বডি ===== */}
+            <div className="body-content">
+              <p className="intro-text">এই মর্মে প্রত্যয়ন করা যাইতেছে যে ,</p>
+
+              <table className="info-table">
+                <tbody>
+                  <tr>
+                    <td className="info-label">নাম</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{name}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">পিতার নাম</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{father}</td>
+                  </tr>
+                  {mother && mother !== 'N/A' && (
+                    <tr>
+                      <td className="info-label">মাতার নাম</td>
+                      <td className="info-colon">:</td>
+                      <td className="info-val">{mother}</td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="info-label">বর্তমান ঠিকানা</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{fullAddress}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">স্থায়ী ঠিকানা</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{fullAddress}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">জাতীয় পরিচয়পত্র</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{nid}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">মোবাইল</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{mobile}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">ইমেইল</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{email}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">ধর্ম</td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{religion}</td>
+                  </tr>
+                  <tr>
+                    <td className="info-label">জন্ম তারিখ </td>
+                    <td className="info-colon">:</td>
+                    <td className="info-val">{issueDate}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <p className="paragraph-text">
+                অত্র ইউনিয়নের একজন স্থায়ী বাসিন্দা। তিনি জন্মগত ভাবে বাংলাদেশী এবং আমার পরিচিত। তাহার স্বভাব চরিত্র ভালো। আমার জানামতে তিনি বাংলাদেশের আইন-শৃঙ্খলা ও রাষ্ট্র বিরোধী বা অপরাধমূলক কোন কাজে জড়িত নন। তিনি জন্মসূত্রে বাংলাদেশী।
+              </p>
+              <p className="paragraph-text mt-3">
+                আমি তাহার সর্বাঙ্গীণ মঙ্গল ও উন্নতি কামনা করি।
+              </p>
             </div>
-          </div>
 
-          {/* ===== ফুটার ===== */}
-          <div className="certificate-footer">
-            <p>এই সনদটি ইউনিয়ন পরিষদ কর্তৃক জারি করা হয়েছে এবং এটি বৈধ।</p>
-          </div>
+            {/* ===== স্বাক্ষর ===== */}
+            <div className="signature-area">
+              <div className="signature-box">
+                <div className="sig-line"></div>
+                <p>চেয়ারম্যানের স্বাক্ষর</p>
+              </div>
+            </div>
 
-          {/* ===== প্রিন্ট বাটন ===== */}
-          <div className="print-button-container print-hidden">
-            <button onClick={handlePrint} className="print-btn">🖨️ প্রিন্ট / ডাউনলোড (PDF)</button>
+            {/* ===== ফুটার ===== */}
+            <div className="footer-area">
+              <div className="qr-box">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=CertificateNo:${certificateNo}`}
+                  alt="QR Code"
+                  className="qr-img"
+                />
+                <p className="dev-credit">Developed by IT Village<br />www.itvillagecu.com</p>
+              </div>
+              <div className="instructions-box">
+                <p className="inst-title">নির্দেশাবলী:</p>
+                <p>১) সার্টিফিকেট টি ১৭ ডিজিটের সনদ নম্বর দিয়ে ওয়েবসাইট থেকে যাচাই করুন অথবা QRcode টি Scan করুন</p>
+                <p>২) যে কোন ধরনের তথ্য নেয়ার জন্য ফোন করুন অথবা ইমেইল করুন।</p>
+              </div>
+            </div>
+
+            <div className="footer-bottom-line">
+              <span>{unionInfo.name} - Email: {unionInfo.email}</span>
+            </div>
           </div>
         </div>
 
-        {/* ========== CSS (আগের মতোই) ========== */}
+        {/* ===== প্রিন্ট বাটন ===== */}
+        <div className="print-button-container print-hidden">
+          <button onClick={handlePrint} className="print-btn">🖨️ প্রিন্ট / ডাউনলোড (PDF)</button>
+        </div>
+
+        {/* ========== CSS ========== */}
         <style jsx>{`
           .certificate-wrapper {
             padding: 20px;
-            background: #f0f4f8;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             min-height: 100vh;
-          }
-          .certificate-card {
-            max-width: 900px;
-            width: 100%;
-            background: #ffffff;
-            padding: 40px 45px;
-            border: 18px double #1e3a5f;
-            outline: 3px solid #1e3a5f;
-            outline-offset: -10px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-            border-radius: 4px;
-          }
-          .union-header {
-            text-align: center;
-            border-bottom: 3px solid #1e3a5f;
-            padding-bottom: 16px;
-            margin-bottom: 20px;
-          }
-          .union-name {
-            font-size: 26px;
-            font-weight: 700;
-            color: #1e3a5f;
-            margin: 0 0 4px 0;
-            letter-spacing: 1px;
-          }
-          .union-address {
-            font-size: 14px;
-            color: #4a5568;
-            margin: 0 0 8px 0;
-          }
-          .union-contact {
-            display: flex;
             justify-content: center;
-            gap: 18px;
-            font-size: 13px;
-            color: #2d3748;
-            flex-wrap: wrap;
           }
-          .union-contact span {
-            background: #edf2f7;
-            padding: 3px 14px;
-            border-radius: 30px;
-            font-weight: 500;
+          .border-pattern {
+            background: #fff;
+            padding: 12px;
+            border: 15px solid #2e7d32;
+            outline: 2px solid #1b5e20;
+            outline-offset: -20px;
+            position: relative;
+            max-width: 850px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            font-family: 'Kalpurush', 'SolaimanLipi', sans-serif;
           }
-          .certificate-title {
-            text-align: center;
-            margin-bottom: 22px;
+          .inner-border {
+            border: 2px solid #2e7d32;
+            padding: 30px 40px;
+            min-height: 800px;
+            position: relative;
+            background: transparent;
+            z-index: 2;
           }
-          .certificate-title h2 {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1e3a5f;
-            margin: 0 0 10px 0;
-            letter-spacing: 1px;
+          .watermark-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.07;
+            z-index: 0;
+            pointer-events: none;
           }
-          .certificate-number {
-            display: inline-block;
-            background: #ebf8ff;
-            padding: 6px 24px;
-            border-radius: 40px;
-            border: 2px solid #3182ce;
-            font-size: 16px;
-            font-weight: 600;
+          .watermark-logo img {
+            width: 450px;
+            height: auto;
           }
-          .certificate-number .label {
-            color: #2b6cb0;
-          }
-          .certificate-number .number {
-            color: #1a365d;
-            margin-left: 6px;
-            font-family: 'Courier New', monospace;
-            letter-spacing: 1px;
-          }
-          .info-section {
-            margin: 20px 0 28px 0;
-            border: 1px solid #cbd5e0;
-            border-radius: 12px;
-            padding: 14px 22px;
-            background: #f7fafc;
-          }
-          .info-row {
-            display: flex;
-            padding: 7px 0;
-            border-bottom: 1px dashed #e2e8f0;
-            font-size: 15px;
-          }
-          .info-row:last-child {
-            border-bottom: none;
-          }
-          .info-label {
-            width: 130px;
-            font-weight: 600;
-            color: #2d3748;
-            flex-shrink: 0;
-          }
-          .info-value {
-            color: #1a202c;
-            font-weight: 500;
-            word-break: break-word;
-          }
-          .signature-section {
+          .header-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 28px;
-            padding-top: 18px;
-            border-top: 2px solid #cbd5e0;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
           }
-          .signature-left,
-          .signature-right {
+          .logo-container {
+            width: 100px;
+          }
+          .hidden-space {
+            opacity: 0;
+          }
+          .govt-logo {
+            width: 85px;
+            height: auto;
+          }
+          .header-text-container {
             text-align: center;
+            flex-grow: 1;
           }
-          .signature-left p,
-          .signature-right p {
-            font-size: 14px;
-            color: #2d3748;
+          .govt-text {
+            color: #2e7d32;
+            font-size: 15px;
+            font-weight: bold;
             margin: 0;
-            letter-spacing: 0.5px;
           }
-          .signature-title {
-            font-size: 12px !important;
-            color: #718096 !important;
-            margin-top: 4px !important;
+          .union-name {
+            color: #1b5e20;
+            font-size: 26px;
+            font-weight: bold;
+            margin: 5px 0;
           }
-          .certificate-footer {
-            margin-top: 18px;
-            text-align: center;
+          .union-address {
+            color: #000;
+            font-size: 15px;
+            margin: 0 0 5px 0;
+          }
+          .union-contact {
+            color: #333;
             font-size: 13px;
-            color: #718096;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 14px;
+            margin: 2px 0;
+          }
+          .certificate-title-box {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+            z-index: 2;
+          }
+          .title-badge {
+            background-color: #1b5e20;
+            color: #fff;
+            padding: 6px 25px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+          }
+          .meta-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+          }
+          .cert-no-container {
+            display: flex;
+            align-items: center;
+            border: 2px solid #000;
+            padding: 0;
+          }
+          .cert-label {
+            padding: 4px 10px;
+            font-weight: bold;
+            border-right: 2px solid #000;
+          }
+          .digit-boxes {
+            display: flex;
+          }
+          .digit-box {
+            padding: 4px 8px;
+            border-right: 1px solid #000;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+          }
+          .digit-box:last-child {
+            border-right: none;
+          }
+          .date-text {
+            font-weight: bold;
+            font-size: 15px;
+          }
+          .body-content {
+            position: relative;
+            z-index: 2;
+            font-size: 16px;
+            color: #000;
+            line-height: 1.5;
+          }
+          .intro-text {
+            font-weight: bold;
+            margin-bottom: 15px;
+          }
+          .info-table {
+            width: 100%;
+            margin-bottom: 25px;
+            border-collapse: collapse;
+          }
+          .info-table td {
+            padding: 5px 0;
+            vertical-align: top;
+          }
+          .info-label {
+            width: 160px;
+            padding-left: 30px !important;
+          }
+          .info-colon {
+            width: 20px;
+            text-align: center;
+          }
+          .info-val {
+            font-weight: bold;
+          }
+          .paragraph-text {
+            text-align: justify;
+            margin: 0;
+            padding: 0 10px;
+          }
+          .mt-3 {
+            margin-top: 15px;
+          }
+          .signature-area {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 50px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+          }
+          .signature-box {
+            text-align: center;
+            width: 200px;
+          }
+          .sig-line {
+            border-top: 1px solid #000;
+            margin-bottom: 5px;
+          }
+          .signature-box p {
+            margin: 0;
+            font-weight: bold;
+            font-size: 14px;
+          }
+          .footer-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 10px 0;
+            position: relative;
+            z-index: 2;
+          }
+          .qr-box {
+            width: 120px;
+            text-align: center;
+          }
+          .qr-img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 5px;
+          }
+          .dev-credit {
+            font-size: 8px;
+            color: #555;
+            margin: 0;
+            line-height: 1.2;
+          }
+          .instructions-box {
+            flex-grow: 1;
+            padding-left: 20px;
+          }
+          .inst-title {
+            font-weight: bold;
+            margin: 0 0 5px 0;
+            font-size: 13px;
+          }
+          .instructions-box p {
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.4;
+          }
+          .footer-bottom-line {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 5px;
+            color: #555;
+            position: relative;
+            z-index: 2;
           }
           .print-button-container {
             text-align: center;
-            margin-top: 24px;
+            margin-top: 20px;
           }
           .print-btn {
-            background: #1e3a5f;
+            background: #1b5e20;
             color: white;
             border: none;
-            padding: 12px 36px;
-            border-radius: 40px;
+            padding: 10px 30px;
+            border-radius: 30px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
           }
           .print-btn:hover {
-            background: #0f2a44;
+            background: #0f4a14;
           }
-
           @media print {
             .print-hidden { display: none !important; }
-            .certificate-wrapper { padding: 0; background: white; min-height: auto; }
-            .certificate-card {
-              border: 18px double #1e3a5f !important;
-              outline: 3px solid #1e3a5f !important;
-              outline-offset: -10px !important;
+            .certificate-wrapper { padding: 0; display: block; min-height: auto; justify-content: flex-start; }
+            .border-pattern {
               box-shadow: none !important;
-              padding: 30px 35px !important;
               max-width: 100% !important;
+              border: 15px solid #2e7d32 !important;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+              padding: 12px !important;
             }
-            .union-contact span { background: none !important; padding: 0 6px !important; }
-            .info-section { border: 1px solid #ccc !important; background: white !important; }
-            .signature-section { border-top: 2px solid #000 !important; }
-            .certificate-footer { border-top: 1px solid #ccc !important; }
-            body { background: white !important; margin: 0 !important; }
+            .title-badge {
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+            body { margin: 0; background: white; }
+            @page { size: A4; margin: 10mm; }
           }
-
           @media (max-width: 640px) {
-            .certificate-card { padding: 20px !important; border-width: 10px !important; outline-offset: -6px !important; }
+            .certificate-wrapper { padding: 10px; }
+            .border-pattern { padding: 6px; border-width: 10px; outline-offset: -12px; }
+            .inner-border { padding: 16px 18px; min-height: 600px; }
+            .header-section { flex-direction: column; align-items: center; }
+            .logo-container { width: 60px; }
+            .govt-logo { width: 60px; }
+            .hidden-space { display: none; }
             .union-name { font-size: 20px; }
-            .union-contact { flex-direction: column; gap: 4px; align-items: center; }
-            .info-row { flex-direction: column; align-items: flex-start; padding: 5px 0; }
-            .info-label { width: 100%; font-size: 13px; }
-            .info-value { font-size: 14px; padding-left: 4px; }
-            .signature-section { flex-direction: column; gap: 14px; }
-            .certificate-title h2 { font-size: 18px; }
+            .govt-text { font-size: 13px; }
+            .union-address { font-size: 13px; }
+            .union-contact { font-size: 11px; }
+            .title-badge { font-size: 15px; padding: 4px 18px; }
+            .meta-info-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .cert-no-container { flex-wrap: wrap; }
+            .digit-box { padding: 2px 4px; font-size: 12px; }
+            .cert-label { font-size: 13px; padding: 2px 8px; }
+            .date-text { font-size: 13px; }
+            .info-label { width: 110px !important; padding-left: 10px !important; font-size: 14px; }
+            .info-val { font-size: 14px; }
+            .paragraph-text { font-size: 14px; padding: 0 4px; }
+            .signature-area { justify-content: center; margin-top: 30px; }
+            .signature-box { width: 150px; }
+            .footer-area { flex-direction: column; align-items: center; gap: 10px; }
+            .qr-box { width: 100%; }
+            .instructions-box { padding-left: 0; text-align: center; }
+            .instructions-box p { font-size: 11px; }
+            .footer-bottom-line { font-size: 10px; }
+            .print-btn { font-size: 14px; padding: 8px 20px; }
           }
         `}</style>
       </div>
@@ -312,15 +579,17 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="relative max-w-4xl w-full max-h-[95vh] overflow-y-auto bg-transparent">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 overflow-y-auto print:p-0 print:bg-white">
+      <div className="relative w-full h-full max-w-full max-h-full flex items-center justify-center print:block">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 bg-white rounded-full p-2 shadow-lg z-10 print-hidden"
+          className="absolute top-4 right-4 text-gray-500 hover:text-red-600 bg-white rounded-full p-2 shadow-lg z-20 print-hidden"
         >
-          <FaTimes size={20} />
+          <FaTimes size={24} />
         </button>
-        {renderCertificate()}
+        <div className="w-full h-full overflow-y-auto flex items-start justify-center py-8 print:py-0">
+          {renderCertificate()}
+        </div>
       </div>
     </div>
   );

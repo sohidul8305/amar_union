@@ -13,7 +13,7 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/admin/login', { email, password });
+      const res = await axios.post('https://amar-union-backend.vercel.app/api/admin/login', { email, password });
       if (res.data.success) {
         localStorage.setItem('isAdmin', 'true');
         toast.success('লগইন সফল!');

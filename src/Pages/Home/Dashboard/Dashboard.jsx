@@ -14,7 +14,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (user?.email) {
             setLoadingApps(true);
-            fetch(`http://localhost:5000/api/my-applications/${user.email}`)
+            fetch(`https://amar-union-backend.vercel.app/api/my-applications/${user.email}`)
                 .then(res => res.json())
                 .then(data => {
                     // ডাটা আসলে তা সেট করুন

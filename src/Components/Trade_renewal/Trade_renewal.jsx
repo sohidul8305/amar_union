@@ -69,7 +69,7 @@ const Premises = () => {
                         fireSafetyDoc: formData.fireSafetyDoc ? formData.fireSafetyDoc.name : null,
                     };
 
-                    const response = await fetch('http://localhost:5000/api/premises', {
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/premises', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(submissionData)

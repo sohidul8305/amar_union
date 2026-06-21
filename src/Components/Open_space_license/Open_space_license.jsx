@@ -51,7 +51,7 @@ const Open_space_license = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/open-space-license', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/open-space-license', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

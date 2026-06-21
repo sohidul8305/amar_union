@@ -65,7 +65,7 @@ const Guardian_consent = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/guardian-consent-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/guardian-consent-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

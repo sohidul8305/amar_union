@@ -57,7 +57,7 @@ const getApplicantName = (app) => {
   const fetchApplications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('http://localhost:5000/api/admin/applications');
+      const res = await axios.get('https://amar-union-backend.vercel.app/api/admin/applications');
       setApplications(res.data);
       setFilteredApps(res.data);
     } catch (error) {
@@ -79,7 +79,7 @@ const getApplicantName = (app) => {
   const updateStatus = async (collectionName, docId, newStatus) => {
     setUpdatingId(docId);
     try {
-      await axios.put(`http://localhost:5000/api/admin/application/${collectionName}/${docId}`, { status: newStatus });
+      await axios.put(`https://amar-union-backend.vercel.app/api/admin/application/${collectionName}/${docId}`, { status: newStatus });
       toast.success(`আবেদন ${newStatus === 'Approved' ? 'অনুমোদিত' : 'প্রত্যাখ্যাত'} হয়েছে`);
       fetchApplications();
     } catch (error) {

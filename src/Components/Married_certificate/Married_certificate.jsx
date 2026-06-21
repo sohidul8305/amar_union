@@ -64,7 +64,7 @@ const Married_certificate = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/married-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/married-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

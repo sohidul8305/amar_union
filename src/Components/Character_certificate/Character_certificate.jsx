@@ -50,7 +50,7 @@ const Character_certificate = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/character-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/character-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

@@ -77,7 +77,7 @@ const Power_of_attorney = () => {
                     didOpen: () => Swal.showLoading()
                 });
                 try {
-                    const response = await fetch('http://localhost:5000/api/power-of-attorney', {
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/api/power-of-attorney', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(formData)

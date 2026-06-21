@@ -66,7 +66,7 @@ const New_voter = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/new-voter-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/new-voter-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

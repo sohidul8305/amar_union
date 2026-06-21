@@ -63,7 +63,7 @@ const Annual_income = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/annual-income-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/annual-income-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

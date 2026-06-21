@@ -50,7 +50,7 @@ const Register = () => {
     // ব্যাকএন্ডে ইউজার ডাটা সেভ করার ফাংশন (ত্রুটি থেকেও রেজিস্ট্রেশন সফল দেখাবে)
     const saveUserToBackend = async (userData) => {
         try {
-            const response = await fetch('http://localhost:5000/api/users', {
+            const response = await fetch('https://amar-union-backend.vercel.app/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData)
@@ -188,7 +188,7 @@ const Register = () => {
                 photoURL: result.user.photoURL,
                 createdAt: new Date()
             };
-            await fetch('https://amar-union-backend.vercel.app/api/users', {
+            await fetch('https://amar-union-backend.vercel.app/api/api/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(userData)

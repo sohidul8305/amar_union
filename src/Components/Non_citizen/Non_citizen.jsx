@@ -62,7 +62,7 @@ const Non_citizen = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/non-citizen-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/non-citizen-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)
@@ -145,7 +145,7 @@ const Non_citizen = () => {
             <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition text-sm sm:text-base">
               আবেদন জমা দিন
             </button>
-            <button 
+            <button
               type="button"
               onClick={() => window.print()}
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition text-sm sm:text-base"

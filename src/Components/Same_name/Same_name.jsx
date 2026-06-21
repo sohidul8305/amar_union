@@ -63,7 +63,7 @@ const Same_name = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/same-name-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/same-name-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

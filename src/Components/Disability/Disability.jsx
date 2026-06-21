@@ -64,7 +64,7 @@ const Disability = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/disability-certificate', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/disability-certificate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

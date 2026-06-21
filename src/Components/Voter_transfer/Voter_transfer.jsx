@@ -64,7 +64,7 @@ const Voter_transfer = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:5000/api/voter-transfer', {
+      const response = await fetch('https://amar-union-backend.vercel.app/api/voter-transfer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(submissionData)

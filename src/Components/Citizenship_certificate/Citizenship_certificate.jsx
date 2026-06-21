@@ -48,7 +48,7 @@ const Family_certificate = () => {
                         headNidDocName: files.headNidDoc?.name || null,
                         taxReceiptDocName: files.taxReceiptDoc?.name || null
                     };
-                    const response = await fetch('http://localhost:5000/api/family-certificate', {
+                    const response = await fetch('https://amar-union-backend.vercel.app/api/family-certificate', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(submissionData)

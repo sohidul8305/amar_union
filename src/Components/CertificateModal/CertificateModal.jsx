@@ -12,7 +12,7 @@ const CertificateModal = ({ isOpen, onClose, collectionName, docId }) => {
     if (isOpen && collectionName && docId) {
       setLoading(true);
       axios
-        .get(`http://localhost:5000/api/certificate/${collectionName}/${docId}`)
+        .get(`https://amar-union-backend.vercel.app/api/certificate/${collectionName}/${docId}`)
         .then((res) => {
           console.log('API Response:', res.data); // ডিবাগ করার জন্য
           setCertData(res.data);

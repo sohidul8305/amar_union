@@ -34,6 +34,7 @@ const Navbar = () => {
     logOut()
       .then(() => {
         toast.success('সফলভাবে লগআউট হয়েছে');
+         navigate('/');
         setProfileDropdown(false);
       })
       .catch((error) => toast.error(error.message));

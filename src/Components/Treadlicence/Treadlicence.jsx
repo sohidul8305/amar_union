@@ -197,7 +197,7 @@ const TradeLicense = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">জাতীয় পরিচয়পত্র নম্বর (NID) <span className="text-red-500">*</span></label>
-                                <input required type="number" name="nid" value={formData.nid} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
+                                <input required type="number" name="nid" autoComplete="off"   value={formData.nid} onChange={handleChange} className="w-full border border-gray-300 p-2.5 rounded-xl focus:ring-2 focus:ring-[#000F9F] outline-none text-sm" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">মোবাইল নম্বর <span className="text-red-500">*</span></label>

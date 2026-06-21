@@ -182,7 +182,7 @@ const Open_space_license = () => {
                 </div>
                 <div className="form-group">
                   <label htmlFor="nid">জাতীয় পরিচয়পত্র (NID) *</label>
-                  <input type="number" id="nid" name="nid" value={formData.nid} onChange={handleChange} placeholder="এনআইডি নম্বর" required />
+                  <input type="number" id="nid" name="nid"   autoComplete="off"  value={formData.nid} onChange={handleChange} placeholder="এনআইডি নম্বর" required />
                 </div>
                 <div className="form-group">
                   <label htmlFor="mobile">মোবাইল নম্বর *</label>

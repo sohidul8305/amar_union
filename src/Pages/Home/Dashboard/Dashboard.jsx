@@ -25,13 +25,30 @@ const Dashboard = () => {
         }
     }, [user?.email]);
 
-    const handleLogOut = async () => {
+const handleLogOut = async () => {
+    // SweetAlert এর মাধ্যমে কনফার্মেশন নেওয়া
+    const result = await Swal.fire({
+        title: 'আপনি কি নিশ্চিত?',
+        text: "আপনি লগআউট করতে চাচ্ছেন!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'হ্যাঁ, লগআউট করুন',
+        cancelButtonText: 'বাতিল'
+    });
+
+    if (result.isConfirmed) {
         try {
             await logOut();
-            navigate('/login');
-        } catch (error) { console.error("Logout Error:", error); }
-    };
-
+            Swal.fire('সফল!', 'আপনি সফলভাবে লগআউট করেছেন।', 'success');
+            navigate('/');
+        } catch (error) {
+            console.error("Logout Error:", error);
+            Swal.fire('ত্রুটি!', 'লগআউট করতে সমস্যা হয়েছে।', 'error');
+        }
+    }
+};
 
     return (
         <div className="min-h-screen bg-slate-50 flex">
